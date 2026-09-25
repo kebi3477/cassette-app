@@ -52,6 +52,17 @@ flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 
 - 집 공유기 안에서는 `cassette.lab241.com`에 닿지 않는다(공유기가 되돌아오는 접속을 지원하지 않음). 실기기로 운영 서버를 시험할 때는 와이파이를 끄고 LTE로 한다.
 - 결제·광고를 실제로 쓰려면 `IAP_ENABLED=true`, `ADMOB_REWARDED_ID`를 json에 더한다.
 
+### 실기기에 release 빌드 설치
+
+케이블을 뽑아도 돌아가게 release로 설치한다. `flutter install`은 쓰지 않는다. 설치가 실패하면 dart-define 없이 다시 빌드해서 앞서 만든 빌드를 덮어쓴다.
+
+```bash
+flutter build ios --release --dart-define-from-file=dart_defines/prod.json
+strings build/ios/iphoneos/Runner.app/Frameworks/App.framework/App | grep -c cassette.lab241.com   # 0이면 설정이 빠진 빌드
+xcrun devicectl list devices                                  # 기기 ID 확인
+xcrun devicectl device install app --device <기기 ID> build/ios/iphoneos/Runner.app
+```
+
 ## Firebase (푸시)
 
 Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다.
