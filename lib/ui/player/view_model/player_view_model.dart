@@ -332,7 +332,10 @@ class PlayerViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _loadedDuration = (d != null && d > Duration.zero) ? d : audio!.duration;
+    // 파일 길이 → 서버가 준 길이 → 서랍의 durationMs (캐시 파일은 서버 길이가 없다)
+    _loadedDuration = (d != null && d > Duration.zero)
+        ? d
+        : (audio!.duration > Duration.zero ? audio.duration : null);
     _load = TrackLoad.ready;
     await _player.setLoopOne(_rep == TapeRepeat.one);
     await play();

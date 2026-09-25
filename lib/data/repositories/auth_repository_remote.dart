@@ -5,6 +5,7 @@ import '../model/auth_dto.dart';
 import '../model/me_dto.dart';
 import '../services/api/api_client.dart';
 import '../services/api/token_store.dart';
+import '../services/audio_cache.dart';
 import '../services/push_service.dart';
 import '../services/social_auth_service.dart';
 import 'auth_repository.dart';
@@ -16,12 +17,16 @@ class AuthRepositoryRemote extends AuthRepository {
     required this._tokens,
     required this._social,
     required this._push,
+    this._audioCache,
   });
 
   final ApiClient _api;
   final TokenStore _tokens;
   final SocialAuthService _social;
   final PushService _push;
+
+  /// 로그아웃·탈퇴하면 받은 테이프 파일도 지운다 (다른 계정이 쓸 수 있는 기기).
+  final AudioCache? _audioCache;
 
   AuthStatus _status = AuthStatus.unknown;
   String? _suggested;
@@ -145,6 +150,7 @@ class AuthRepositoryRemote extends AuthRepository {
   Future<void> signedOutByServer() async {
     await _tokens.clear();
     _api.accessToken = null;
+    await _audioCache?.clear().catchError((_) {});
     _suggested = null;
     _set(AuthStatus.signedOut);
   }

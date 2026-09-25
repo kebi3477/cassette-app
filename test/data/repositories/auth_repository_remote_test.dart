@@ -1,6 +1,7 @@
 import 'package:cassette_app/data/model/api_error.dart';
 import 'package:cassette_app/data/repositories/auth_repository.dart';
 import 'package:cassette_app/data/repositories/auth_repository_remote.dart';
+import 'package:cassette_app/data/services/audio_cache.dart';
 import 'package:cassette_app/data/services/local/local_behavior.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/data/services/social_auth_service.dart';
@@ -108,4 +109,31 @@ void main() {
     expect(h.tokens.tokens, isNull);
     expect(h.auth.status, AuthStatus.signedOut);
   });
+
+  test('로그아웃·탈퇴·세션 만료면 받은 테이프 파일 캐시를 지운다', () async {
+    final h = fresh();
+    final cache = _CountingCache();
+    final auth = AuthRepositoryRemote(
+      api: h.client,
+      tokens: h.tokens,
+      social: h.social,
+      push: h.push,
+      audioCache: cache,
+    );
+    await auth.signInDev(key: 'k', name: '민경');
+    await auth.logout();
+    expect(cache.clears, 1);
+    await auth.signedOutByServer();
+    expect(cache.clears, 2);
+  });
+}
+
+class _CountingCache implements AudioCache {
+  int clears = 0;
+
+  @override
+  Future<void> clear() async => clears++;
+
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }

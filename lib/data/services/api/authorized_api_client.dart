@@ -293,4 +293,13 @@ class AuthorizedApiClient implements ApiClient {
   @override
   Future<WalletDto> devCredits(DevCreditsRequest body) =>
       _protected(() => _inner.devCredits(body));
+
+  @override
+  Future<void> devSeed() => _protected(_inner.devSeed);
+
+  @override
+  Future<FriendDto> devFriend({String? userId, String? name, bool? starred}) =>
+      _protected(
+        () => _inner.devFriend(userId: userId, name: name, starred: starred),
+      );
 }

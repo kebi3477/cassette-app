@@ -32,7 +32,7 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ...providersLocal(push: push),
+        ...providers(push: push),
         ...appViewModels,
       ],
       child: const CassetteApp(),

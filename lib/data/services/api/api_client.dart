@@ -11,7 +11,7 @@ import '../../model/wallet_dto.dart';
 /// 서버 API — `cassette-api/docs/api.md`의 엔드포인트와 1:1.
 ///
 /// 실패하면 [ApiException](../../model/api_error.dart)을 던진다.
-/// 지금은 메모리 구현([LocalApiClient])만 있고, 다음 단계에서 HTTP 구현을 넣는다.
+/// 구현: [HttpApiClient](실제 서버), [LocalApiClient](서버 없이 도는 메모리 가짜).
 abstract class ApiClient {
   /// 보호된 API에 붙일 `Authorization: Bearer` 값. [AuthorizedApiClient]가 채운다.
   String? accessToken;
@@ -183,4 +183,10 @@ abstract class ApiClient {
   // dev (운영 404)
   /// `POST /dev/credits` — 스토어·AdMob 없이 광고 보상·충전을 흉내 낸다. 응답은 `GET /wallet`과 같다.
   Future<WalletDto> devCredits(DevCreditsRequest body);
+
+  /// `POST /dev/seed` — 로그인한 계정을 프로토타입 초기 데이터로 (통합 테스트·개발 로그인)
+  Future<void> devSeed();
+
+  /// `POST /dev/friends` `{ userId }` 또는 `{ name, starred? }` — 서로 친구
+  Future<FriendDto> devFriend({String? userId, String? name, bool? starred});
 }

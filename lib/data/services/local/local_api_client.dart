@@ -1089,4 +1089,30 @@ class LocalApiClient implements ApiClient {
     _s.credits += 10;
     _addLedger(10, '광고 보상', 'ad_reward');
   }
+
+  @override
+  Future<void> devSeed() async {
+    await _wait();
+    final name = _s.name;
+    _s.reset();
+    _s.signedUp = true;
+    _s.name = name;
+  }
+
+  @override
+  Future<FriendDto> devFriend({
+    String? userId,
+    String? name,
+    bool? starred,
+  }) async {
+    await _wait();
+    final f = FriendDto(
+      userId: userId ?? _s.nextId('u'),
+      name: name ?? '친구',
+      starred: starred ?? false,
+      lastAt: _s.now(),
+    );
+    _s.friends = [f, ..._s.friends.where((x) => x.userId != f.userId)];
+    return f;
+  }
 }

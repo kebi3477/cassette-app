@@ -13,4 +13,7 @@ abstract final class Env {
 
   /// 링크 도메인 (`https://<PUBLIC_HOST>/t/{token}`). 비어 있으면 도메인을 가리지 않는다.
   static const publicHost = String.fromEnvironment('PUBLIC_HOST');
+
+  /// 실제 서버 주소 (예: `http://localhost:3000/api`). 비어 있으면 서버 없이 도는 가짜 서버를 쓴다.
+  static const apiBaseUrl = String.fromEnvironment('API_BASE_URL');
 }
