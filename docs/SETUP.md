@@ -43,6 +43,8 @@ PUBLIC_HOST = cassette.app
 
 자주 쓰는 dart-define 묶음. 비밀값은 없다(카카오 네이티브 앱 키는 앱에 들어가는 공개 키).
 
+`lib/config/env.dart`에 기본값이 있어서, **Xcode로 빌드하거나 dart-define 없이 빌드해도** 카카오 키·링크 도메인이 들어가고, release 빌드는 운영 서버(`https://cassette.lab241.com/api`)를 쓴다. debug 빌드와 테스트는 `API_BASE_URL`이 없으면 가짜 서버를 쓴다.
+
 ```bash
 flutter run --dart-define-from-file=dart_defines/local.json   # 맥의 로컬 API 서버 (시뮬레이터)
 flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 서버 https://cassette.lab241.com
