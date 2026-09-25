@@ -28,8 +28,10 @@ abstract final class Env {
 
   /// AdMob 테스트 기기 ID (쉼표로 구분). 개발자 기기에서 실제 광고 대신 테스트 광고를 받는다.
   /// 기기 ID는 광고를 한 번 요청하면 SDK가 로그에 찍는다 (docs/SETUP.md).
+  /// 기본값: 개발자 iPhone(kebi_ko). 이 기기에서만 테스트 광고가 나오고 다른 기기에는 영향이 없다.
   static const _admobTestDeviceIds = String.fromEnvironment(
     'ADMOB_TEST_DEVICE_IDS',
+    defaultValue: '5733e92cf4dcc31c58a2c41c8b9656b1',
   );
 
   static List<String> get admobTestDeviceIds => _admobTestDeviceIds
