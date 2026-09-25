@@ -110,7 +110,7 @@ void main() {
       expect(s.groups[1].items[1].groupId, 'g-2');
     });
 
-    test('안 뜯은 소포는 옮길 수 없다(409)', () async {
+    test('안 뜯은 소포는 칸으로 옮길 수 없다(409 TAPE_NOT_OPENED)', () async {
       final repo = ShelfRepositoryRemote(api);
       final s = ok<Shelf>(await repo.getShelf());
       final r = await repo.moveItem(
@@ -118,7 +118,14 @@ void main() {
         groupId: 'g-1',
         afterId: null,
       );
-      expect(apiError(r).status, 409);
+      expect(apiError(r).code, 'TAPE_NOT_OPENED');
+      // 분류 안 함 안에서 순서 바꾸기는 된다
+      final ok2 = await repo.moveItem(
+        s.unsorted.first.id,
+        groupId: null,
+        afterId: s.unsorted.last.id,
+      );
+      expect(ok2, isA<Ok<TapeItem>>());
     });
 
     test('칸 지우기 → 테이프는 분류 안 함 맨 뒤, 뜯은 상태', () async {

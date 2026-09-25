@@ -42,6 +42,9 @@ abstract final class ApiErrorCode {
   static const recordingAlreadySent = 'RECORDING_ALREADY_SENT';
   static const notFriend = 'NOT_FRIEND';
   static const tapeNotFound = 'TAPE_NOT_FOUND';
+  static const tapeNotOpened = 'TAPE_NOT_OPENED';
+  static const uploadNotFound = 'UPLOAD_NOT_FOUND';
+  static const recordingTooLarge = 'RECORDING_TOO_LARGE';
   static const audioNotReady = 'AUDIO_NOT_READY';
   static const groupNotFound = 'GROUP_NOT_FOUND';
   static const invalidGroupName = 'INVALID_GROUP_NAME';

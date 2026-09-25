@@ -129,11 +129,21 @@ void main() {
       });
     });
 
-    test('안 뜯은 소포는 드래그가 시작되지 않는다', () {
+    test('안 뜯은 소포: 분류 안 함 안에서는 순서를 바꾸고, 칸에는 못 넣는다', () {
       fakeAsync((async) {
         vm = make(async);
-        vm.startDrag(vm.shelf.unsorted.first.id);
-        expect(vm.dragging, isFalse);
+        final jihyun = vm.shelf.unsorted.first.id;
+        vm.moveByDrop(jihyun, const DropTarget(null, 2));
+        async.flushMicrotasks();
+        expect(names(null), ['하늘', '지현']);
+        expect(vm.shelf.unsorted.last.opened, isFalse);
+        expect(store.unsorted.map((x) => x.sender.name), ['하늘', '지현']);
+
+        vm.moveByDrop(jihyun, const DropTarget('g-1', 0));
+        async.flushMicrotasks();
+        expect(names(null), ['하늘', '지현']);
+        expect(names('g-1'), hasLength(4));
+        expect(toast.message, '소포를 먼저 뜯어 주세요');
       });
     });
 

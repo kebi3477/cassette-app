@@ -112,7 +112,7 @@ class ShelfListSections extends StatelessWidget {
             lineTop: t == DropTarget(groupId, i),
             lineBottom:
                 i == items.length - 1 && t == DropTarget(groupId, items.length),
-            drag: viewModel.canMove(items[i]) ? drag : null,
+            drag: drag,
             onTap: () => onOpen(items[i]),
             onMore: () => onMore(items[i]),
           ),

@@ -166,8 +166,12 @@ class LocalApiClient implements ApiClient {
       uploadUrl: url,
     );
     return RecordingUploadDto(
-      id: id,
-      status: 'uploading',
+      recording: RecordingDto(
+        id: id,
+        tapeType: body.tapeType,
+        durationMs: body.durationMs,
+        status: 'uploading',
+      ),
       upload: UploadTicketDto(
         url: url,
         method: 'PUT',
@@ -217,7 +221,7 @@ class LocalApiClient implements ApiClient {
     await _wait();
     final r = _rec(id);
     if (!_s.uploads.containsKey(r.uploadUrl)) {
-      _fail(400, ApiErrorCode.validationFailed, '입력한 내용을 다시 확인해 주세요');
+      _fail(409, ApiErrorCode.uploadNotFound, '녹음 파일을 올리지 못했어요. 다시 시도해 주세요');
     }
     _startProcessing(r);
     return _recDto(r);
@@ -359,7 +363,9 @@ class LocalApiClient implements ApiClient {
   Future<AudioUrlDto> getDeliveryAudio(String id) async {
     await _wait();
     final item = _find(id).item;
-    if (!item.opened) _fail(403, 'FORBIDDEN', '할 수 없는 요청이에요');
+    if (!item.opened) {
+      _fail(409, ApiErrorCode.tapeNotOpened, '소포를 먼저 뜯어 주세요');
+    }
     if (_b.failsAudio) {
       _fail(409, ApiErrorCode.audioNotReady, '테이프를 불러오지 못했어요');
     }
@@ -379,6 +385,7 @@ class LocalApiClient implements ApiClient {
       stored: me.drawer.stored,
       cap: me.drawer.cap,
       full: me.drawer.full,
+      unopenedCount: me.drawer.unopenedCount,
       unsorted: List.of(_s.unsorted),
       groups: [
         for (final g in _s.groups)
@@ -433,8 +440,9 @@ class LocalApiClient implements ApiClient {
   ) async {
     await _wait();
     final from = _find(id);
-    if (!from.item.opened) {
-      _fail(409, 'TAPE_NOT_OPENED', '소포를 뜯은 뒤에 옮길 수 있어요');
+    // 안 뜯은 소포는 칸으로 못 옮긴다. 분류 안 함 안에서 순서 바꾸기는 된다.
+    if (!from.item.opened && body.groupId != null) {
+      _fail(409, ApiErrorCode.tapeNotOpened, '소포를 먼저 뜯어 주세요');
     }
     final target = body.groupId == null ? null : _group(body.groupId!);
     // 빼기

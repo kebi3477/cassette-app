@@ -125,6 +125,7 @@ class ShelfDto {
     required this.stored,
     required this.cap,
     required this.full,
+    this.unopenedCount = 0,
     required this.unsorted,
     required this.groups,
   });
@@ -132,6 +133,9 @@ class ShelfDto {
   final int stored;
   final int cap;
   final bool full;
+
+  /// 분류 안 함의 안 뜯은 소포 수 (= `Me.drawer.unopenedCount`)
+  final int unopenedCount;
   final List<ShelfItemDto> unsorted;
   final List<ShelfGroupDto> groups;
 
@@ -139,6 +143,7 @@ class ShelfDto {
     stored: j['stored'] as int,
     cap: j['cap'] as int,
     full: j['full'] as bool,
+    unopenedCount: (j['unopenedCount'] as int?) ?? 0,
     unsorted: parseList(j['unsorted'], ShelfItemDto.fromJson),
     groups: parseList(j['groups'], ShelfGroupDto.fromJson),
   );
@@ -147,6 +152,7 @@ class ShelfDto {
     'stored': stored,
     'cap': cap,
     'full': full,
+    'unopenedCount': unopenedCount,
     'unsorted': unsorted.map((e) => e.toJson()).toList(),
     'groups': groups.map((e) => e.toJson()).toList(),
   };

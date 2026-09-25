@@ -101,8 +101,12 @@ class ShelfViewModel extends ChangeNotifier {
   String whereOf(TapeItem x) =>
       x.groupId == null ? unsortedName : (_shelf.group(x.groupId!)?.name ?? '');
 
-  /// 안 뜯은 소포는 옮길 수 없다 (계약서 `PATCH /shelf/items` 409).
+  /// 칸으로 옮길 수 있는지. 안 뜯은 소포는 분류 안 함 안에서 순서만 바꿀 수 있다
+  /// (계약서 `PATCH /shelf/items` `409 TAPE_NOT_OPENED`).
   bool canMove(TapeItem x) => x.opened;
+
+  /// 안 뜯은 소포를 칸에 놓았을 때 (계약서 `TAPE_NOT_OPENED` 문구)
+  static const notOpenedMessage = '소포를 먼저 뜯어 주세요';
 
   // ── 불러오기 ─────────────────────────────────────
   Future<void> load() async {
@@ -138,8 +142,7 @@ class ShelfViewModel extends ChangeNotifier {
 
   // ── 드래그 정렬 (`rowDown` / `dragMove` / `dragEnd`) ──
   void startDrag(String itemId) {
-    final x = _shelf.find(itemId);
-    if (x == null || !canMove(x)) return;
+    if (_shelf.find(itemId) == null) return;
     _dragId = itemId;
     _drop = null;
     notifyListeners();
@@ -175,6 +178,11 @@ class ShelfViewModel extends ChangeNotifier {
     final from = _shelf.find(itemId);
     if (from == null) return;
     if (t.groupId != null && _shelf.group(t.groupId!) == null) return;
+    if (t.groupId != null && !canMove(from)) {
+      _toast.show(notOpenedMessage);
+      notifyListeners();
+      return;
+    }
     var idx = t.index;
     if (from.groupId == t.groupId) {
       final oi = _shelf.itemsOf(t.groupId).indexWhere((x) => x.id == itemId);
@@ -197,13 +205,13 @@ class ShelfViewModel extends ChangeNotifier {
     bool toastIfCross = false,
     bool toastAlways = false,
   }) async {
-    if (!canMove(item)) return;
+    if (groupId != null && !canMove(item)) return;
     final prev = _shelf;
     final removed = _without(prev, item.id);
     final target = [...removed.itemsOf(groupId)];
     final at = (index ?? target.length).clamp(0, target.length);
     final afterId = at > 0 ? target[at - 1].id : null;
-    target.insert(at, item.copyWith(opened: true, groupId: () => groupId));
+    target.insert(at, item.copyWith(groupId: () => groupId));
     _shelf = _withList(removed, groupId, target);
     _landOn(item.id);
     notifyListeners();

@@ -19,25 +19,21 @@ class CreateRecordingRequest {
   };
 }
 
-/// `POST /recordings` 응답 `{ id, status, upload }`
+/// `POST /recordings` 응답 = Recording + `upload`
 class RecordingUploadDto {
-  const RecordingUploadDto({
-    required this.id,
-    required this.status,
-    required this.upload,
-  });
+  const RecordingUploadDto({required this.recording, required this.upload});
 
-  final String id;
-  final String status;
+  final RecordingDto recording;
   final UploadTicketDto upload;
 
+  String get id => recording.id;
+
   factory RecordingUploadDto.fromJson(Json j) => RecordingUploadDto(
-    id: j['id'] as String,
-    status: j['status'] as String,
+    recording: RecordingDto.fromJson(j),
     upload: UploadTicketDto.fromJson(j['upload'] as Json),
   );
 
-  Json toJson() => {'id': id, 'status': status, 'upload': upload.toJson()};
+  Json toJson() => {...recording.toJson(), 'upload': upload.toJson()};
 }
 
 /// presigned PUT 정보
