@@ -9,7 +9,7 @@
         <!-- AdMob 앱 ID. 지금은 Google 공식 테스트 ID — 출시 전에 실제 ID로 바꾼다 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-6280185901199691~7721729800" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

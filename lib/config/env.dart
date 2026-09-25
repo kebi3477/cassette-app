@@ -8,11 +8,31 @@ import 'package:flutter/foundation.dart';
 abstract final class Env {
   static const _prodApiBaseUrl = 'https://cassette.lab241.com/api';
 
-  /// AdMob 보상형 광고 단위 ID. 비어 있으면 광고를 디자인의 광고 시트로 흉내 낸다.
-  static const admobRewardedId = String.fromEnvironment('ADMOB_REWARDED_ID');
+  /// AdMob 보상형 광고 단위 ID. 비어 있으면 광고를 디자인의 광고 시트로 흉내 낸다
+  /// (가짜 광고는 개발 전용 `POST /dev/credits`로 보상하므로 운영 서버에서는 쓸 수 없다).
+  /// release 빌드는 플랫폼별 실제 광고 단위가 기본값이다. debug에서 실제 광고를 보려면
+  /// Google 테스트 광고 단위를 넣는다 (자기 광고를 직접 보면 무효 트래픽이 된다).
+  static const _admobRewardedIdOverride = String.fromEnvironment(
+    'ADMOB_REWARDED_ID',
+  );
+  static const _admobRewardedIos = 'ca-app-pub-6280185901199691/7070993115';
+  static const _admobRewardedAndroid =
+      'ca-app-pub-6280185901199691/5757911441';
 
-  /// true면 App Store / Google Play 결제를 쓴다. 아니면 가짜 결제(1.4초 뒤 성공).
-  static const iapEnabled = bool.fromEnvironment('IAP_ENABLED');
+  static String get admobRewardedId {
+    if (_admobRewardedIdOverride.isNotEmpty) return _admobRewardedIdOverride;
+    if (!kReleaseMode) return '';
+    return defaultTargetPlatform == TargetPlatform.iOS
+        ? _admobRewardedIos
+        : _admobRewardedAndroid;
+  }
+
+  /// true면 App Store / Google Play 결제를 쓴다. 아니면 가짜 결제(1.4초 뒤 성공, 개발 전용
+  /// `POST /dev/credits`). release 빌드는 실제 결제가 기본값이다.
+  static const iapEnabled = bool.fromEnvironment(
+    'IAP_ENABLED',
+    defaultValue: kReleaseMode,
+  );
 
   /// 카카오 네이티브 앱 키. 앱에 들어가는 공개 키라 기본값을 둔다 (iOS는 Env.xcconfig에도 같은 값).
   static const kakaoNativeAppKey = String.fromEnvironment(
