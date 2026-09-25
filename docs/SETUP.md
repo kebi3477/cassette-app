@@ -39,6 +39,19 @@ PUBLIC_HOST = cassette.app
 2. 서버(`cassette-api`)가 그 도메인에서 `/.well-known/apple-app-site-association`, `/.well-known/assetlinks.json`을 준다 (팀 ID·서명 인증서 SHA-256 필요).
 3. Apple Developer에서 App ID에 Associated Domains·Sign in with Apple·Push Notifications를 켠다.
 
+## 실행 설정 파일 (dart_defines/)
+
+자주 쓰는 dart-define 묶음. 비밀값은 없다(카카오 네이티브 앱 키는 앱에 들어가는 공개 키).
+
+```bash
+flutter run --dart-define-from-file=dart_defines/local.json   # 맥의 로컬 API 서버 (시뮬레이터)
+flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 서버 https://cassette.lab241.com
+```
+
+- 운영 서버: API `https://cassette.lab241.com/api`, 테이프 링크 `https://cassette.lab241.com/t/{token}`. iOS `Env.xcconfig`의 `PUBLIC_HOST`도 같은 도메인이다.
+- 집 공유기 안에서는 `cassette.lab241.com`에 닿지 않는다(공유기가 되돌아오는 접속을 지원하지 않음). 실기기로 운영 서버를 시험할 때는 와이파이를 끄고 LTE로 한다.
+- 결제·광고를 실제로 쓰려면 `IAP_ENABLED=true`, `ADMOB_REWARDED_ID`를 json에 더한다.
+
 ## Firebase (푸시)
 
 Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다.
