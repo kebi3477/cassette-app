@@ -20,9 +20,13 @@ class FakeAudioPlayerService implements AudioPlayerService {
     _completed.add(null);
   }
 
+  /// 불러오기를 실패하게 한다 (재생 불러오기 실패 `vErrorOn`)
+  bool failLoad = false;
+
   @override
   Future<Duration?> load(String source) async {
     calls.add('load');
+    if (failLoad) throw Exception('load failed');
     loaded = source;
     return duration;
   }
@@ -47,6 +51,11 @@ class FakeAudioPlayerService implements AudioPlayerService {
     calls.add('stop');
     playing = false;
   }
+
+  bool loopOne = false;
+
+  @override
+  Future<void> setLoopOne(bool on) async => loopOne = on;
 
   @override
   Stream<Duration> get position => _position.stream;
