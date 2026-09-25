@@ -68,10 +68,12 @@ class ToastHost extends StatelessWidget {
                     color: AppColors.ink,
                     borderRadius: BorderRadius.circular(22),
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    msg,
-                    style: AppText.suit(700, 14, color: AppColors.paper),
+                  child: Center(
+                    widthFactor: 1,
+                    child: Text(
+                      msg,
+                      style: AppText.suit(700, 14, color: AppColors.paper),
+                    ),
                   ),
                 ),
               ),
