@@ -122,10 +122,7 @@ class _TapeWidgetState extends State<TapeWidget>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('A', style: _t(800, 12, AppColors.paper)),
-                Text(
-                  p.len,
-                  style: _t(700, 10.5, AppColors.paper, ls: .06),
-                ),
+                Text(p.len, style: _t(700, 10.5, AppColors.paper, ls: .06)),
               ],
             ),
           ),
@@ -187,7 +184,12 @@ class TapeNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasTo = to != null;
-    final caption = AppText.suit(600, 10, height: 1, color: AppColors.textMuted);
+    final caption = AppText.suit(
+      600,
+      10,
+      height: 1,
+      color: AppColors.textMuted,
+    );
     return Container(
       constraints: const BoxConstraints(minWidth: 104),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
@@ -207,7 +209,12 @@ class TapeNote extends StatelessWidget {
               constraints: const BoxConstraints(minHeight: 20),
               child: Text(
                 to!,
-                style: AppText.suit(800, 17, height: 1.2, letterSpacingEm: -.02),
+                style: AppText.suit(
+                  800,
+                  17,
+                  height: 1.2,
+                  letterSpacingEm: -.02,
+                ),
               ),
             ),
             const SizedBox(height: 8),

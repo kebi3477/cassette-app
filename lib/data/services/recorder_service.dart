@@ -55,8 +55,7 @@ class RecordRecorderService implements RecorderService {
   @override
   Future<void> start() async {
     final dir = await getTemporaryDirectory();
-    final path =
-        '${dir.path}/rec_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    final path = '${dir.path}/rec_${DateTime.now().millisecondsSinceEpoch}.m4a';
     await _recorder.start(config, path: path);
   }
 

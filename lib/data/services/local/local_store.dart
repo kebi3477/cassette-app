@@ -114,8 +114,11 @@ class LocalStore {
     ];
   }
 
-  Wallet get wallet =>
-      Wallet(credits: credits, owned: Map.unmodifiable(owned), adsLeft: adsLeft);
+  Wallet get wallet => Wallet(
+    credits: credits,
+    owned: Map.unmodifiable(owned),
+    adsLeft: adsLeft,
+  );
 
   Shelf get shelf => Shelf(
     inbox: List.unmodifiable(inbox),
