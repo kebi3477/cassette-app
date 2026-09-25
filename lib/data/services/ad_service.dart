@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -57,7 +59,13 @@ class AdMobAdService implements AdService {
           _ad = ad;
           done.complete(true);
         },
-        onAdFailedToLoad: (_) => done.complete(false),
+        onAdFailedToLoad: (error) {
+          // 실패 이유는 AdMob만 안다 (no fill, 계정·광고 단위 미승인 등). 운영에서도 원인을 보려고 남긴다
+          debugPrint(
+            'AdMob 광고 불러오기 실패: code=${error.code} domain=${error.domain} message=${error.message}',
+          );
+          done.complete(false);
+        },
       ),
     );
     return done.future;
@@ -77,7 +85,10 @@ class AdMobAdService implements AdService {
           done.complete(rewarded ? AdOutcome.rewarded : AdOutcome.closedEarly);
         }
       },
-      onAdFailedToShowFullScreenContent: (ad, _) {
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint(
+          'AdMob 광고 표시 실패: code=${error.code} message=${error.message}',
+        );
         ad.dispose();
         if (!done.isCompleted) done.complete(AdOutcome.failed);
       },
