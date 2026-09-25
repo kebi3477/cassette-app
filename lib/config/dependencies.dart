@@ -25,6 +25,7 @@ import '../data/services/share_service.dart';
 import '../data/services/upload_service.dart';
 import '../ui/core/ui/toast.dart';
 import '../ui/record/view_model/record_view_model.dart';
+import '../ui/shelf/view_model/shelf_view_model.dart';
 import '../ui/shell/view_model/shell_view_model.dart';
 
 /// 서버 없이 도는 구성. [LocalApiClient]가 계약서 모양 그대로 응답하고,
@@ -91,6 +92,10 @@ List<SingleChildWidget> get appViewModels => [
     create: (c) =>
         ShellViewModel(userRepository: c.read(), shelfRepository: c.read())
           ..load(),
+  ),
+  ChangeNotifierProvider(
+    create: (c) =>
+        ShelfViewModel(shelfRepository: c.read(), toast: c.read())..load(),
   ),
   ChangeNotifierProvider(
     create: (c) => RecordViewModel(

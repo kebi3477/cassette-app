@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'config/dependencies.dart';
 import 'routing/router.dart';
+import 'routing/routes.dart';
 import 'ui/core/themes/theme.dart';
 import 'ui/core/ui/toast.dart';
 
@@ -20,14 +21,16 @@ void main() {
 }
 
 class CassetteApp extends StatefulWidget {
-  const CassetteApp({super.key});
+  const CassetteApp({super.key, this.initialLocation = Routes.record});
+
+  final String initialLocation;
 
   @override
   State<CassetteApp> createState() => _CassetteAppState();
 }
 
 class _CassetteAppState extends State<CassetteApp> {
-  late final GoRouter _router = router();
+  late final GoRouter _router = router(initialLocation: widget.initialLocation);
 
   @override
   Widget build(BuildContext context) {
