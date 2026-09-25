@@ -361,4 +361,16 @@ void main() {
       ),
     );
   });
+
+  test('GET /deliveries/sent 커서', () async {
+    for (var i = 0; i < 30; i++) {
+      store.sent = [...store.sent, store.sent.last];
+    }
+    final repo = DeliveryRepositoryRemote(api);
+    final p1 = ok<SentPage>(await repo.getSent());
+    expect(p1.items, hasLength(30));
+    final p2 = ok<SentPage>(await repo.getSent(cursor: p1.nextCursor));
+    expect(p2.items, hasLength(4));
+    expect(p2.nextCursor, isNull);
+  });
 }

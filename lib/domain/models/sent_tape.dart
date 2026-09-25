@@ -37,3 +37,11 @@ class SentTape {
   /// 링크로 보냈을 때 공유할 주소
   final Uri? shareUrl;
 }
+
+/// 보낸 테이프 한 페이지 (`GET /deliveries/sent?cursor=`)
+class SentPage {
+  const SentPage({required this.items, this.nextCursor});
+
+  final List<SentTape> items;
+  final String? nextCursor;
+}

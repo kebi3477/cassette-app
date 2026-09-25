@@ -29,9 +29,13 @@ class DeliveryRepositoryRemote implements DeliveryRepository {
   );
 
   @override
-  Future<Result<List<SentTape>>> getSent() => guard(
-    () async => (await _api.getSent()).items.map((e) => e.toDomain()).toList(),
-  );
+  Future<Result<SentPage>> getSent({String? cursor}) => guard(() async {
+    final page = await _api.getSent(cursor: cursor);
+    return SentPage(
+      items: page.items.map((e) => e.toDomain()).toList(),
+      nextCursor: page.nextCursor,
+    );
+  });
 
   @override
   Future<Result<Uri>> reshare(String sentId) =>

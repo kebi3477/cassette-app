@@ -65,6 +65,8 @@ class MyViewModel extends ChangeNotifier {
   Wallet _wallet = const Wallet(credits: 0, owned: {}, adsLeft: 0);
   List<Friend> _friends = const [];
   List<SentTape> _sent = const [];
+  String? _sentCursor;
+  bool _loadingSent = false;
   List<BlockedUser> _blocked = const [];
   String _version = '';
   bool _editing = false;
@@ -84,6 +86,7 @@ class MyViewModel extends ChangeNotifier {
   String get version => _version;
   bool get skeleton => _skeleton;
   List<SentTape> get sent => _sent;
+  bool get hasMoreSent => _sentCursor != null;
   List<BlockedUser> get blocked => _blocked;
   int ownedOf(TapeType t) => _wallet.ownedOf(t);
 
@@ -164,10 +167,26 @@ class MyViewModel extends ChangeNotifier {
     await Future.wait([_loadSent(), _loadMe()]);
   }
 
+  /// 처음부터 다시 (보내기·다시 공유 뒤)
   Future<void> _loadSent() async {
     final r = await _deliveries.getSent();
-    if (r is Ok<List<SentTape>>) {
-      _sent = r.value;
+    if (r is Ok<SentPage>) {
+      _sent = r.value.items;
+      _sentCursor = r.value.nextCursor;
+      notifyListeners();
+    }
+  }
+
+  /// 보낸 테이프 다음 페이지 (`nextCursor`). 마지막이면 아무것도 안 한다.
+  Future<void> loadMoreSent() async {
+    final cursor = _sentCursor;
+    if (cursor == null || _loadingSent) return;
+    _loadingSent = true;
+    final r = await _deliveries.getSent(cursor: cursor);
+    _loadingSent = false;
+    if (r is Ok<SentPage>) {
+      _sent = [..._sent, ...r.value.items];
+      _sentCursor = r.value.nextCursor;
       notifyListeners();
     }
   }

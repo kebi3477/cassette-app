@@ -82,7 +82,7 @@ void main() {
       // FakeDeliveryRepository 대신 로컬 서버를 쓰는 repository로 확인
       final r = DeliveryRepositoryRemote(h.api);
       late List<SentTape> list;
-      r.getSent().then((v) => list = (v as dynamic).value as List<SentTape>);
+      r.getSent().then((v) => list = ((v as dynamic).value as SentPage).items);
       async.flushMicrotasks();
       expect(list.map(MyViewModel.sentStatus), [
         '링크 대기',
@@ -241,6 +241,24 @@ void main() {
       final purchase = history.entries.firstWhere((e) => e.amount < 0);
       expect(CreditHistoryViewModel.amountText(purchase), '−30');
       expect(CreditHistoryViewModel.dateText(purchase), '09.20');
+    });
+  });
+
+  test('보낸 테이프 커서 페이지', () {
+    fakeAsync((async) {
+      h = RecordHarness();
+      h.deliveries.pageSize = 3;
+      vm = h.myVm..load();
+      async.flushMicrotasks();
+      expect(vm.sent, hasLength(3));
+      expect(vm.hasMoreSent, isTrue);
+      vm.loadMoreSent();
+      async.flushMicrotasks();
+      expect(vm.sent.map((s) => s.to), ['유진', '엄마', '민수', '박과장님']);
+      expect(vm.hasMoreSent, isFalse);
+      vm.loadMoreSent();
+      async.flushMicrotasks();
+      expect(vm.sent, hasLength(4));
     });
   });
 }

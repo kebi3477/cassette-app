@@ -48,6 +48,7 @@ class MyScreen extends StatefulWidget {
 
 class _MyScreenState extends State<MyScreen> {
   late final TextEditingController _name = TextEditingController();
+  final ScrollController _scroll = ScrollController();
   final FocusNode _nameFocus = FocusNode();
 
   @override
@@ -58,12 +59,18 @@ class _MyScreenState extends State<MyScreen> {
     _nameFocus.addListener(() {
       if (!_nameFocus.hasFocus) widget.viewModel.commitName();
     });
+    // 보낸 테이프: 끝 가까이 오면 다음 페이지
+    _scroll.addListener(() {
+      final p = _scroll.position;
+      if (p.pixels > p.maxScrollExtent - 400) widget.viewModel.loadMoreSent();
+    });
   }
 
   @override
   void dispose() {
     _name.dispose();
     _nameFocus.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -85,6 +92,7 @@ class _MyScreenState extends State<MyScreen> {
         children: [
           Positioned.fill(
             child: SingleChildScrollView(
+              controller: _scroll,
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

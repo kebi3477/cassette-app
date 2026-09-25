@@ -50,14 +50,25 @@ class FakeDeliveryRepository implements DeliveryRepository {
     return Result.ok(t);
   }
 
-  /// 프로토타입 보낸 기록(유진·엄마·민수·박과장님) 뒤에 이 가짜로 보낸 것을 앞에 붙인다.
+  /// 프로토타입 보낸 기록(유진·엄마·민수·박과장님) 앞에 이 가짜로 보낸 것을 붙인다.
+  /// [pageSize]개씩 커서로 나눈다.
+  int pageSize = 30;
+
   @override
-  Future<Result<List<SentTape>>> getSent() async {
+  Future<Result<SentPage>> getSent({String? cursor}) async {
     final s = store;
     final seed = s == null
         ? const <SentTape>[]
         : [for (final d in s.sent) d.toDomain()];
-    return Result.ok([...sent.reversed, ...seed]);
+    final all = [...sent.reversed, ...seed];
+    final start = int.tryParse(cursor ?? '') ?? 0;
+    final end = (start + pageSize).clamp(0, all.length);
+    return Result.ok(
+      SentPage(
+        items: all.sublist(start, end),
+        nextCursor: end < all.length ? '$end' : null,
+      ),
+    );
   }
 
   int reshares = 0;

@@ -393,7 +393,17 @@ class LocalApiClient implements ApiClient {
   @override
   Future<PageDto<SentTapeDto>> getSent({String? cursor, int? limit}) async {
     await _wait();
-    return PageDto(items: List.of(_s.sent));
+    return _page(_s.sent, cursor, limit);
+  }
+
+  /// `{ items, nextCursor }` — 커서는 다음 시작 위치
+  static PageDto<T> _page<T>(List<T> all, String? cursor, int? limit) {
+    final start = (int.tryParse(cursor ?? '') ?? 0).clamp(0, all.length);
+    final end = (start + (limit ?? 30).clamp(1, 100)).clamp(0, all.length);
+    return PageDto(
+      items: all.sublist(start, end),
+      nextCursor: end < all.length ? '$end' : null,
+    );
   }
 
   /// 아직 아무도 받지 않은 링크만. 만료됐으면 새 링크(7일).
@@ -601,13 +611,7 @@ class LocalApiClient implements ApiClient {
     int? limit,
   }) async {
     await _wait();
-    final start = int.tryParse(cursor ?? '') ?? 0;
-    final n = (limit ?? 30).clamp(1, 100);
-    final end = (start + n).clamp(0, _s.ledger.length);
-    return PageDto(
-      items: _s.ledger.sublist(start.clamp(0, _s.ledger.length), end),
-      nextCursor: end < _s.ledger.length ? '$end' : null,
-    );
+    return _page(_s.ledger, cursor, limit);
   }
 
   void _addLedger(int delta, String reason, String kind) => _s.ledger = [
