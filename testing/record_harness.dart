@@ -1,7 +1,9 @@
-import 'package:cassette_app/data/repositories/friend_repository_local.dart';
-import 'package:cassette_app/data/repositories/shelf_repository_local.dart';
-import 'package:cassette_app/data/repositories/user_repository_local.dart';
-import 'package:cassette_app/data/repositories/wallet_repository_local.dart';
+import 'package:cassette_app/data/repositories/friend_repository_remote.dart';
+import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
+import 'package:cassette_app/data/repositories/user_repository_remote.dart';
+import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
+import 'package:cassette_app/data/services/local/local_api_client.dart';
+import 'package:cassette_app/data/services/local/local_behavior.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/ui/core/ui/toast.dart';
 import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
@@ -13,21 +15,24 @@ import 'fakes/services/fake_audio_player_service.dart';
 import 'fakes/services/fake_recorder_service.dart';
 import 'fakes/services/fake_share_service.dart';
 
-/// 프로토타입 초기 데이터(친구 6명, 보유 {3:2, 5:0} 등) + 가짜 기기 기능으로
-/// [RecordViewModel]을 만든다.
+/// 프로토타입 초기 데이터(친구 6명, 보유 {3:2, 5:0} 등)를 계약서 모양으로 돌려주는
+/// 지연 없는 [LocalApiClient] + 가짜 기기 기능으로 앱 조각을 만든다.
 class RecordHarness {
   RecordHarness({
     FakeRecorderService? recorder,
     FakeRecordingRepository? recordings,
     FakeDeliveryRepository? deliveries,
+    LocalBehavior behavior = LocalBehavior.instant,
   }) : recorder = recorder ?? FakeRecorderService(),
        recordings = recordings ?? FakeRecordingRepository() {
-    friends = FriendRepositoryLocal(store);
-    wallet = WalletRepositoryLocal(store);
-    shelf = ShelfRepositoryLocal(store);
-    this.deliveries = deliveries ?? FakeDeliveryRepository(wallet: wallet);
+    api = LocalApiClient(store, behavior);
+    users = UserRepositoryRemote(api);
+    friends = FriendRepositoryRemote(api);
+    wallet = WalletRepositoryRemote(api);
+    shelf = ShelfRepositoryRemote(api);
+    this.deliveries = deliveries ?? FakeDeliveryRepository(store: store);
     vm = RecordViewModel(
-      userRepository: UserRepositoryLocal(store),
+      userRepository: users,
       friendRepository: friends,
       walletRepository: wallet,
       recordingRepository: this.recordings,
@@ -40,10 +45,14 @@ class RecordHarness {
     );
   }
 
-  final LocalStore store = LocalStore(clock: () => DateTime(2026, 9, 25));
-  late final FriendRepositoryLocal friends;
-  late final WalletRepositoryLocal wallet;
-  late final ShelfRepositoryLocal shelf;
+  final LocalStore store = LocalStore(
+    clock: () => DateTime.utc(2026, 9, 25, 3),
+  );
+  late final LocalApiClient api;
+  late final UserRepositoryRemote users;
+  late final FriendRepositoryRemote friends;
+  late final WalletRepositoryRemote wallet;
+  late final ShelfRepositoryRemote shelf;
   final FakeRecorderService recorder;
   final FakeRecordingRepository recordings;
   late final FakeDeliveryRepository deliveries;

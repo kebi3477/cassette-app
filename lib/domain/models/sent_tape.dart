@@ -1,9 +1,13 @@
 import 'tape_type.dart';
 
+/// 계약서 SentTape `status`
+enum SentStatus { linkPending, linkExpired, unopened, opened }
+
 /// 보낸 테이프 — logic.js `sent[]` (`{ to, date, type, link?, claimed?, opened? }`).
 class SentTape {
   const SentTape({
     required this.id,
+    required this.status,
     required this.to,
     required this.date,
     required this.type,
@@ -14,6 +18,7 @@ class SentTape {
   });
 
   final String id;
+  final SentStatus status;
 
   /// 받는 사람 이름 (링크로 보냈으면 보낼 때 적은 이름)
   final String to;

@@ -13,9 +13,11 @@ import '../../../data/services/audio_player_service.dart';
 import '../../../data/services/recorder_service.dart';
 import '../../../data/services/share_service.dart';
 import '../../../domain/models/friend.dart';
+import '../../../domain/models/me.dart';
 import '../../../domain/models/recipient.dart';
 import '../../../domain/models/recording.dart';
 import '../../../domain/models/sent_tape.dart';
+import '../../../domain/models/tape_tag.dart';
 import '../../../domain/models/tape_type.dart';
 import '../../../domain/models/user.dart';
 import '../../../domain/models/wallet.dart';
@@ -117,7 +119,10 @@ class RecordViewModel extends ChangeNotifier {
   int _sendAttempt = 0;
   String _pauseWhy = '';
   MicPermission _mic = MicPermission.unknown;
-  User _me = const User(id: '', name: '');
+  String _myName = '';
+
+  /// 라벨 태그. 디자인에 고르는 화면이 없어 프로토타입 기본값(`tag: '생일'`)을 쓴다.
+  final TapeTag _tag = TapeTag.birthday;
   Wallet _wallet = const Wallet(credits: 0, owned: {}, adsLeft: 0);
   List<Friend> _friends = const [];
   SentTape? _lastSent;
@@ -128,6 +133,7 @@ class RecordViewModel extends ChangeNotifier {
   String? _idemFor;
   bool _openedSettings = false;
   bool _starting = false;
+  bool _convertFailedOnce = false;
 
   Timer? _tickTimer;
   Timer? _typeTimer;
@@ -155,7 +161,8 @@ class RecordViewModel extends ChangeNotifier {
   int get sendAttempt => _sendAttempt;
   String get pauseWhy => _pauseWhy;
   MicPermission get mic => _mic;
-  String get myName => _me.name;
+  String get myName => _myName;
+  TapeTag get tag => _tag;
   Wallet get wallet => _wallet;
   SentTape? get lastSent => _lastSent;
 
@@ -219,7 +226,7 @@ class RecordViewModel extends ChangeNotifier {
   // ── 불러오기 ────────────────────────────────────────
   Future<void> load() async {
     final me = await _users.getMe();
-    if (me is Ok<User>) _me = me.value;
+    if (me is Ok<Me>) _myName = me.value.name;
     await _loadWallet();
     await _loadFriends();
     try {
@@ -326,6 +333,7 @@ class RecordViewModel extends ChangeNotifier {
     _pos = 0;
     _playing = false;
     _recording = null;
+    _convertFailedOnce = false;
     _converting = true;
     notifyListeners();
     String? path;
@@ -401,6 +409,7 @@ class RecordViewModel extends ChangeNotifier {
           _startPreview(value, gen);
         case Error<Recording>():
           _convFail = true;
+          _convertFailedOnce = _recording != null;
           notifyListeners();
       }
     }
@@ -443,7 +452,10 @@ class RecordViewModel extends ChangeNotifier {
             return Result.error(error);
         }
       }
-      return await _recordings.convert(rec.id);
+      // 변환에 실패했던 녹음은 `POST /recordings/{id}/retry`로 다시 변환한다.
+      return _convertFailedOnce
+          ? await _recordings.retry(rec.id)
+          : await _recordings.convert(rec.id);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -455,6 +467,9 @@ class RecordViewModel extends ChangeNotifier {
     try {
       final d = await _player.load(url);
       if (gen != _convGen) return;
+      if (rec.duration > Duration.zero) {
+        _recorded = rec.duration.inMilliseconds / 1000;
+      }
       if (d != null && d > Duration.zero) {
         _recorded = d.inMilliseconds / 1000;
       }
@@ -665,8 +680,8 @@ class RecordViewModel extends ChangeNotifier {
         ? Future.value(Result.error(Exception('녹음이 없어요')))
         : _deliveries.send(
             recordingId: rec.id,
-            type: _tape,
             to: to,
+            tag: _tag,
             idempotencyKey: _idemKey!,
           );
     call.then((r) {
@@ -676,6 +691,9 @@ class RecordViewModel extends ChangeNotifier {
           _lastSent = value;
           _sendState = SendState.success;
           notifyListeners();
+          // 보유 테이프와 친구 lastAt이 서버에서 바뀌었다.
+          _walletRepo.invalidate();
+          _friendsRepo.invalidate();
           // 박스가 72%에서 기다리고 있었다면 남은 비행 뒤에 완료한다.
           // 아니면 2.7초 타이머가 완료시킨다.
           if (holdReached) _sendTimers.add(Timer(flyTail, toSent));

@@ -65,6 +65,8 @@ flutter:
 
   assets:
     - assets/svg/
+    # 로컬 가짜 재생용 샘플 (직접 합성한 사인파 + 약한 잡음. 외부 저작물 아님)
+    - assets/audio/
 
   fonts:
     - family: SUIT

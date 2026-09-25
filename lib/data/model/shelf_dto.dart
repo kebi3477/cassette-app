@@ -1,0 +1,191 @@
+import 'json.dart';
+
+/// 받은 테이프 — 계약서 §2 ShelfItem.
+class ShelfItemDto {
+  const ShelfItemDto({
+    required this.id,
+    required this.sender,
+    required this.tapeType,
+    required this.durationMs,
+    required this.tag,
+    required this.sentAt,
+    required this.opened,
+    this.openedAt,
+    required this.viaLink,
+    this.groupId,
+    this.groupName,
+  });
+
+  final String id;
+  final UserRefDto sender;
+  final int tapeType;
+  final int durationMs;
+
+  /// `birthday` · `congrats` · `thinking`
+  final String? tag;
+  final DateTime sentAt;
+  final bool opened;
+  final DateTime? openedAt;
+  final bool viaLink;
+
+  /// null = 분류 안 함
+  final String? groupId;
+
+  /// 친구 화면 응답에만 붙는다 (칸이 없으면 null)
+  final String? groupName;
+
+  factory ShelfItemDto.fromJson(Json j) => ShelfItemDto(
+    id: j['id'] as String,
+    sender: UserRefDto.fromJson(j['sender'] as Json),
+    tapeType: j['tapeType'] as int,
+    durationMs: j['durationMs'] as int,
+    tag: j['tag'] as String?,
+    sentAt: parseDate(j['sentAt']),
+    opened: j['opened'] as bool,
+    openedAt: parseDateOrNull(j['openedAt']),
+    viaLink: j['viaLink'] as bool,
+    groupId: j['groupId'] as String?,
+    groupName: j['groupName'] as String?,
+  );
+
+  Json toJson() => {
+    'id': id,
+    'sender': sender.toJson(),
+    'tapeType': tapeType,
+    'durationMs': durationMs,
+    'tag': tag,
+    'sentAt': dateToJson(sentAt),
+    'opened': opened,
+    'openedAt': openedAt == null ? null : dateToJson(openedAt!),
+    'viaLink': viaLink,
+    'groupId': groupId,
+    'groupName': ?groupName,
+  };
+
+  ShelfItemDto copyWith({
+    bool? opened,
+    DateTime? openedAt,
+    String? Function()? groupId,
+    String? Function()? groupName,
+  }) => ShelfItemDto(
+    id: id,
+    sender: sender,
+    tapeType: tapeType,
+    durationMs: durationMs,
+    tag: tag,
+    sentAt: sentAt,
+    opened: opened ?? this.opened,
+    openedAt: openedAt ?? this.openedAt,
+    viaLink: viaLink,
+    groupId: groupId == null ? this.groupId : groupId(),
+    groupName: groupName == null ? this.groupName : groupName(),
+  );
+}
+
+/// `{ userId, name }` — 탈퇴한 사용자면 `userId: null`.
+class UserRefDto {
+  const UserRefDto({required this.userId, required this.name});
+
+  final String? userId;
+  final String name;
+
+  factory UserRefDto.fromJson(Json j) =>
+      UserRefDto(userId: j['userId'] as String?, name: j['name'] as String);
+
+  Json toJson() => {'userId': userId, 'name': name};
+}
+
+class ShelfGroupDto {
+  const ShelfGroupDto({
+    required this.id,
+    required this.name,
+    required this.items,
+  });
+
+  final String id;
+  final String name;
+  final List<ShelfItemDto> items;
+
+  factory ShelfGroupDto.fromJson(Json j) => ShelfGroupDto(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    items: parseList(j['items'], ShelfItemDto.fromJson),
+  );
+
+  Json toJson() => {
+    'id': id,
+    'name': name,
+    'items': items.map((e) => e.toJson()).toList(),
+  };
+}
+
+/// `GET /shelf`
+class ShelfDto {
+  const ShelfDto({
+    required this.stored,
+    required this.cap,
+    required this.full,
+    required this.unsorted,
+    required this.groups,
+  });
+
+  final int stored;
+  final int cap;
+  final bool full;
+  final List<ShelfItemDto> unsorted;
+  final List<ShelfGroupDto> groups;
+
+  factory ShelfDto.fromJson(Json j) => ShelfDto(
+    stored: j['stored'] as int,
+    cap: j['cap'] as int,
+    full: j['full'] as bool,
+    unsorted: parseList(j['unsorted'], ShelfItemDto.fromJson),
+    groups: parseList(j['groups'], ShelfGroupDto.fromJson),
+  );
+
+  Json toJson() => {
+    'stored': stored,
+    'cap': cap,
+    'full': full,
+    'unsorted': unsorted.map((e) => e.toJson()).toList(),
+    'groups': groups.map((e) => e.toJson()).toList(),
+  };
+}
+
+/// `PATCH /shelf/items/{id}` 요청 — 드래그 정렬·옮기기.
+class MoveShelfItemRequest {
+  const MoveShelfItemRequest({required this.groupId, required this.afterId});
+
+  /// null = 분류 안 함
+  final String? groupId;
+
+  /// 바로 앞 테이프 id, null = 맨 앞
+  final String? afterId;
+
+  Json toJson() => {'groupId': groupId, 'afterId': afterId};
+}
+
+/// `GET /deliveries/{id}/audio`
+class AudioUrlDto {
+  const AudioUrlDto({
+    required this.url,
+    required this.expiresAt,
+    required this.durationMs,
+  });
+
+  final String url;
+  final DateTime expiresAt;
+  final int durationMs;
+
+  factory AudioUrlDto.fromJson(Json j) => AudioUrlDto(
+    url: j['url'] as String,
+    expiresAt: parseDate(j['expiresAt']),
+    durationMs: j['durationMs'] as int,
+  );
+
+  Json toJson() => {
+    'url': url,
+    'expiresAt': dateToJson(expiresAt),
+    'durationMs': durationMs,
+  };
+}

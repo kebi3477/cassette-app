@@ -18,6 +18,7 @@ class FakeRecordingRepository implements RecordingRepository {
   bool failConvert;
   int uploads = 0;
   int converts = 0;
+  int retries = 0;
 
   @override
   Future<Result<Recording>> upload({
@@ -33,7 +34,7 @@ class FakeRecordingRepository implements RecordingRepository {
         id: 'r$uploads',
         type: type,
         duration: duration,
-        status: RecordingStatus.converting,
+        status: RecordingStatus.processing,
       ),
     );
   }
@@ -41,6 +42,16 @@ class FakeRecordingRepository implements RecordingRepository {
   @override
   Future<Result<Recording>> convert(String recordingId) async {
     converts++;
+    return _wait(recordingId);
+  }
+
+  @override
+  Future<Result<Recording>> retry(String recordingId) async {
+    retries++;
+    return _wait(recordingId);
+  }
+
+  Future<Result<Recording>> _wait(String recordingId) async {
     await Future<void>.delayed(convertDelay);
     if (failConvert) return Result.error(Exception('convert failed'));
     return Result.ok(

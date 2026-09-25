@@ -1,5 +1,6 @@
 import 'package:cassette_app/data/repositories/friend_repository.dart';
 import 'package:cassette_app/data/repositories/shelf_repository.dart';
+import 'package:cassette_app/data/repositories/user_repository.dart';
 import 'package:cassette_app/data/repositories/wallet_repository.dart';
 import 'package:cassette_app/main.dart';
 import 'package:cassette_app/ui/core/ui/toast.dart';
@@ -22,12 +23,15 @@ void useDesignScreen(WidgetTester tester) {
 Widget testApp(RecordHarness h) {
   return MultiProvider(
     providers: [
+      ChangeNotifierProvider<UserRepository>.value(value: h.users),
       ChangeNotifierProvider<FriendRepository>.value(value: h.friends),
       ChangeNotifierProvider<WalletRepository>.value(value: h.wallet),
       ChangeNotifierProvider<ShelfRepository>.value(value: h.shelf),
       ChangeNotifierProvider<ToastController>.value(value: h.toast),
       ChangeNotifierProvider(
-        create: (c) => ShellViewModel(shelfRepository: h.shelf)..load(),
+        create: (c) =>
+            ShellViewModel(userRepository: h.users, shelfRepository: h.shelf)
+              ..load(),
       ),
       ChangeNotifierProvider<RecordViewModel>.value(value: h.vm..load()),
     ],

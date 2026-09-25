@@ -38,6 +38,9 @@ class JustAudioPlayerService implements AudioPlayerService {
 
   @override
   Future<Duration?> load(String source) {
+    if (source.startsWith('asset:///')) {
+      return _player.setAsset(source.substring('asset:///'.length));
+    }
     final uri = Uri.tryParse(source);
     if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
       return _player.setUrl(source);

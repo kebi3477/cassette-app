@@ -1,6 +1,7 @@
 import 'tape_type.dart';
 
-enum RecordingStatus { uploading, converting, ready, failed }
+/// 계약서 §9: `uploading | processing | ready | failed`
+enum RecordingStatus { uploading, processing, ready, failed }
 
 /// 서버에 올린 녹음 — 원본 업로드 → "테이프 소리" 변환 → 미리 듣기.
 class Recording {

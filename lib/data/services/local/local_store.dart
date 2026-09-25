@@ -1,15 +1,13 @@
-import '../../../domain/models/friend.dart';
-import '../../../domain/models/sent_tape.dart';
-import '../../../domain/models/shelf.dart';
-import '../../../domain/models/tape_item.dart';
-import '../../../domain/models/tape_type.dart';
-import '../../../domain/models/user.dart';
-import '../../../domain/models/wallet.dart';
+import '../../model/delivery_dto.dart';
+import '../../model/friend_dto.dart';
+import '../../model/shelf_dto.dart';
+import '../../model/wallet_dto.dart';
 
-/// 서버 없이 앱을 돌리기 위한 메모리 저장소.
+/// 서버 없이 앱을 돌리기 위한 메모리 저장소. [LocalApiClient]가 서버처럼 읽고 쓴다.
 ///
 /// 초기값은 프로토타입 `state = {…}`(source/CassetteApp.logic.js)와 같다.
-/// 날짜는 프로토타입의 `MM.DD`에 2026년을 붙였다.
+/// 날짜는 프로토타입의 `MM.DD`에 2026년을 붙이고, 시간대와 상관없이 같은 날로 보이게
+/// UTC 정오로 둔다. 재생 길이는 프로토타입 `DUR`(1분 20s · 3분 34s · 5분 48s)과 같다.
 class LocalStore {
   LocalStore({DateTime Function()? clock}) : now = clock ?? DateTime.now {
     reset();
@@ -17,132 +15,229 @@ class LocalStore {
 
   final DateTime Function() now;
 
-  late User me;
+  /// 프로토타입 `DUR`과 번들 샘플 파일 길이
+  static const durationMs = {1: 20000, 3: 34000, 5: 48000};
+
+  static const meId = 'u-me';
+
+  late String? name;
   late int credits;
-  late Map<TapeType, int> owned;
-  late int adsLeft;
   late int cap;
-  late List<LedgerEntry> ledger;
-  late List<Friend> friends;
-  late List<TapeItem> inbox;
-  late List<ShelfGroup> groups;
-  late List<SentTape> sent;
+  late bool notificationsEnabled;
+  late Map<int, int> owned;
+  late int adsRemaining;
+  late List<LedgerEntryDto> ledger;
+  late List<FriendDto> friends;
+  late List<ShelfItemDto> unsorted;
+  late List<LocalGroup> groups;
+  late List<SentTapeDto> sent;
+  final Map<String, LocalRecording> recordings = {};
+
+  /// presigned URL → 올린 파일 경로
+  final Map<String, String> uploads = {};
+
+  /// Idempotency-Key → 첫 응답
+  final Map<String, Object> idempotency = {};
 
   int _uid = 100;
 
-  String nextId(String prefix) => '$prefix${_uid++}';
+  String nextId(String prefix) => '$prefix-${_uid++}';
 
   /// 프로토타입 초기 상태로 되돌린다.
   void reset() {
     _uid = 100;
-    me = const User(id: 'me', name: '민경');
+    recordings.clear();
+    uploads.clear();
+    idempotency.clear();
+    name = '민경';
     credits = 120;
-    owned = {TapeType.three: 2, TapeType.five: 0};
-    adsLeft = 3;
     cap = 12;
+    notificationsEnabled = true;
+    owned = {3: 2, 5: 0};
+    adsRemaining = 3;
     ledger = [
-      LedgerEntry(date: _d(9, 24), reason: '광고 보상', amount: 10),
-      LedgerEntry(date: _d(9, 20), reason: '3분 테이프 구매', amount: -30),
-      LedgerEntry(date: _d(9, 18), reason: '크레딧 충전 · ₩1,100', amount: 100),
-      LedgerEntry(date: _d(9, 12), reason: '지현님이 선물', amount: 30),
-      LedgerEntry(date: _d(9, 1), reason: '가입 선물', amount: 10),
+      _ledger(9, 24, 10, '광고 보상', 'ad_reward'),
+      _ledger(9, 20, -30, '3분 테이프 구매', 'tape_purchase'),
+      _ledger(9, 18, 100, '크레딧 충전 · ₩1,100', 'iap'),
+      _ledger(9, 12, 30, '지현님이 선물', 'gift_received'),
+      _ledger(9, 1, 10, '가입 선물', 'signup_gift'),
     ];
     friends = [
-      Friend(id: 'f1', name: '지현', starred: true, lastAt: _d(9, 24)),
-      Friend(id: 'f2', name: '엄마', starred: true, lastAt: _d(9, 10)),
-      Friend(id: 'f3', name: '민수', starred: false, lastAt: _d(8, 30)),
-      Friend(id: 'f4', name: '하늘', starred: false, lastAt: _d(9, 23)),
-      Friend(id: 'f5', name: '박과장님', starred: false, lastAt: _d(6, 2)),
-      Friend(id: 'f6', name: '은비', starred: false, lastAt: _d(6, 3)),
+      FriendDto(
+        userId: 'u-jihyun',
+        name: '지현',
+        starred: true,
+        lastAt: d(9, 24),
+      ),
+      FriendDto(userId: 'u-mom', name: '엄마', starred: true, lastAt: d(9, 10)),
+      FriendDto(
+        userId: 'u-minsu',
+        name: '민수',
+        starred: false,
+        lastAt: d(8, 30),
+      ),
+      FriendDto(
+        userId: 'u-haneul',
+        name: '하늘',
+        starred: false,
+        lastAt: d(9, 23),
+      ),
+      FriendDto(
+        userId: 'u-park',
+        name: '박과장님',
+        starred: false,
+        lastAt: d(6, 2),
+      ),
+      FriendDto(userId: 'u-eunbi', name: '은비', starred: false, lastAt: d(6, 3)),
     ];
-    inbox = [
-      _it('지현', 9, 24, TapeType.three, opened: false),
-      _it('하늘', 9, 23, TapeType.one, tag: '그냥', opened: false, viaLink: true),
+    unsorted = [
+      _it('u-jihyun', '지현', 9, 24, 3, opened: false),
+      _it(
+        'u-haneul',
+        '하늘',
+        9,
+        23,
+        1,
+        tag: 'thinking',
+        opened: false,
+        viaLink: true,
+      ),
     ];
     groups = [
-      ShelfGroup(
-        id: 'g1',
-        name: '2026 생일',
-        items: [
-          _it('엄마', 3, 14, TapeType.five),
-          _it('민수', 3, 14, TapeType.one),
-          _it('수아', 3, 15, TapeType.three),
-          _it('할머니', 3, 14, TapeType.one),
-        ],
-      ),
-      ShelfGroup(
-        id: 'g2',
-        name: '승진 축하',
-        items: [
-          _it('박과장님', 6, 2, TapeType.three, tag: '축하'),
-          _it('은비', 6, 3, TapeType.one, tag: '축하'),
-        ],
-      ),
-      ShelfGroup(
-        id: 'g3',
-        name: '엄마 목소리',
-        items: [
-          _it('엄마', 1, 1, TapeType.five, tag: '그냥'),
-          _it('엄마', 5, 8, TapeType.three, tag: '그냥'),
-        ],
-      ),
+      LocalGroup('g-1', '2026 생일', [
+        _it('u-mom', '엄마', 3, 14, 5),
+        _it('u-minsu', '민수', 3, 14, 1),
+        _it('u-sua', '수아', 3, 15, 3),
+        _it('u-grandma', '할머니', 3, 14, 1),
+      ]),
+      LocalGroup('g-2', '승진 축하', [
+        _it('u-park', '박과장님', 6, 2, 3, tag: 'congrats'),
+        _it('u-eunbi', '은비', 6, 3, 1, tag: 'congrats'),
+      ]),
+      LocalGroup('g-3', '엄마 목소리', [
+        _it('u-mom', '엄마', 1, 1, 5, tag: 'thinking'),
+        _it('u-mom', '엄마', 5, 8, 3, tag: 'thinking'),
+      ]),
     ];
+    for (final g in groups) {
+      g.items = [for (final x in g.items) x.copyWith(groupId: () => g.id)];
+    }
     sent = [
-      SentTape(
-        id: 's1',
-        to: '유진',
-        date: _d(9, 22),
-        type: TapeType.one,
-        link: true,
-        shareUrl: Uri.parse('https://cassette.app/t/demo-yujin'),
+      SentTapeDto(
+        id: 's-1',
+        linkName: '유진',
+        tapeType: 1,
+        durationMs: durationMs[1]!,
+        tag: 'thinking',
+        sentAt: d(9, 22),
+        status: 'link_pending',
+        share: ShareLinkDto(
+          url: 'https://cassette.app/t/demo-yujin',
+          expiresAt: d(9, 29),
+        ),
       ),
-      SentTape(
-        id: 's2',
-        to: '엄마',
-        date: _d(9, 10),
-        type: TapeType.three,
-        openedAt: _d(9, 11),
+      SentTapeDto(
+        id: 's-2',
+        recipient: const UserRefDto(userId: 'u-mom', name: '엄마'),
+        tapeType: 3,
+        durationMs: durationMs[3]!,
+        tag: 'thinking',
+        sentAt: d(9, 10),
+        status: 'opened',
+        claimedAt: d(9, 10),
+        openedAt: d(9, 11),
       ),
-      SentTape(id: 's3', to: '민수', date: _d(8, 30), type: TapeType.one),
-      SentTape(
-        id: 's4',
-        to: '박과장님',
-        date: _d(6, 1),
-        type: TapeType.one,
-        openedAt: _d(6, 2),
+      SentTapeDto(
+        id: 's-3',
+        recipient: const UserRefDto(userId: 'u-minsu', name: '민수'),
+        tapeType: 1,
+        durationMs: durationMs[1]!,
+        tag: 'birthday',
+        sentAt: d(8, 30),
+        status: 'unopened',
+        claimedAt: d(8, 30),
+      ),
+      SentTapeDto(
+        id: 's-4',
+        recipient: const UserRefDto(userId: 'u-park', name: '박과장님'),
+        tapeType: 1,
+        durationMs: durationMs[1]!,
+        tag: 'congrats',
+        sentAt: d(6, 1),
+        status: 'opened',
+        claimedAt: d(6, 1),
+        openedAt: d(6, 2),
       ),
     ];
   }
 
-  Wallet get wallet => Wallet(
-    credits: credits,
-    owned: Map.unmodifiable(owned),
-    adsLeft: adsLeft,
+  /// 2026-MM-DD (UTC 정오)
+  static DateTime d(int m, int day) => DateTime.utc(2026, m, day, 12);
+
+  LedgerEntryDto _ledger(
+    int m,
+    int day,
+    int delta,
+    String reason,
+    String kind,
+  ) => LedgerEntryDto(
+    id: nextId('l'),
+    delta: delta,
+    reason: reason,
+    kind: kind,
+    createdAt: d(m, day),
   );
 
-  Shelf get shelf => Shelf(
-    inbox: List.unmodifiable(inbox),
-    groups: List.unmodifiable(groups),
-    cap: cap,
-  );
-
-  static DateTime _d(int m, int d) => DateTime(2026, m, d);
-
-  TapeItem _it(
+  ShelfItemDto _it(
+    String senderId,
     String from,
     int m,
-    int d,
-    TapeType type, {
-    String tag = '생일',
+    int day,
+    int type, {
+    String tag = 'birthday',
     bool opened = true,
     bool viaLink = false,
-  }) => TapeItem(
+  }) => ShelfItemDto(
     id: nextId('t'),
-    from: from,
-    date: _d(m, d),
-    type: type,
+    sender: UserRefDto(userId: senderId, name: from),
+    tapeType: type,
+    durationMs: durationMs[type]!,
     tag: tag,
+    sentAt: d(m, day),
     opened: opened,
+    openedAt: opened ? d(m, day) : null,
     viaLink: viaLink,
   );
+}
+
+/// 칸 (서버 테이블 `shelf_groups` + 순서)
+class LocalGroup {
+  LocalGroup(this.id, this.name, this.items);
+
+  final String id;
+  String name;
+  List<ShelfItemDto> items;
+}
+
+/// 올린 녹음 (서버 테이블 `recordings`)
+class LocalRecording {
+  LocalRecording({
+    required this.id,
+    required this.tapeType,
+    required this.durationMs,
+    required this.uploadUrl,
+  });
+
+  final String id;
+  final int tapeType;
+  int durationMs;
+  final String uploadUrl;
+
+  /// `uploading | processing | ready | failed`
+  String status = 'uploading';
+
+  /// 변환이 끝나는 시각
+  DateTime? readyAt;
+  bool willFail = false;
+  bool sent = false;
 }

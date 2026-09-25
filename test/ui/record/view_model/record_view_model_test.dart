@@ -29,13 +29,14 @@ void main() {
         expect(h.vm.wallet.credits, 120);
         expect(h.vm.wallet.ownedOf(TapeType.three), 2);
         expect(h.vm.wallet.ownedOf(TapeType.five), 0);
+        // 계약서 정렬: 즐겨찾기 → lastAt 최근 순
         expect(h.vm.sortedFriends.map((f) => f.name), [
           '지현',
           '엄마',
-          '민수',
           '하늘',
-          '박과장님',
+          '민수',
           '은비',
+          '박과장님',
         ]);
         expect(h.vm.myName, '민경');
         expect(h.vm.mic, MicPermission.granted);
@@ -230,7 +231,9 @@ void main() {
         expect(h.vm.convFail, isFalse);
         expect(h.vm.playing, isTrue);
         expect(repo.uploads, 1);
-        expect(repo.converts, 2);
+        expect(repo.converts, 1);
+        // 실패했던 녹음은 POST /recordings/{id}/retry
+        expect(repo.retries, 1);
       });
     });
 
@@ -330,6 +333,7 @@ void main() {
         h.vm.load();
         async.flushMicrotasks();
         h.vm.selectTape(TapeType.three);
+        h.deliveries.type = TapeType.three;
         record(async, h, 8);
         async.elapse(const Duration(seconds: 2));
         h.vm.goSend();
@@ -356,7 +360,8 @@ void main() {
     test('마지막 3분 테이프를 보내면 완료 후 1분으로 돌아간다', () {
       fakeAsync((async) {
         final h = RecordHarness();
-        h.store.owned = {TapeType.three: 1, TapeType.five: 0};
+        h.store.owned = {3: 1, 5: 0};
+        h.deliveries.type = TapeType.three;
         h.vm.load();
         async.flushMicrotasks();
         h.vm.selectTape(TapeType.three);
