@@ -1,3 +1,4 @@
+import java.net.URI
 import java.util.Base64
 
 plugins {
@@ -16,6 +17,38 @@ val dartDefines: Map<String, String> = run {
         if (i > 0) out[decoded.substring(0, i)] = decoded.substring(i + 1)
     }
     out
+}
+
+// debug·profile 빌드에서만 http 개발 서버에 붙을 수 있게 하는 network_security_config.
+// 허용: localhost, 127.0.0.1, 10.0.2.2(에뮬레이터), 그리고 API_BASE_URL의 호스트가 사설 IP면 그 주소.
+// Android는 IP 대역(CIDR)을 쓸 수 없어서 dart-define의 맥 IP를 빌드할 때 넣는다. release에는 넣지 않는다.
+val devApiHost: String? = dartDefines["API_BASE_URL"]?.let { url: String ->
+    try {
+        URI(url).host
+    } catch (e: Exception) {
+        null
+    }
+}
+val privateIp = Regex("""^(10\.\d+|192\.168|172\.(1[6-9]|2\d|3[01]))\.\d+\.\d+$""")
+val devCleartextHosts =
+    (listOf("localhost", "127.0.0.1", "10.0.2.2") +
+        listOfNotNull(devApiHost?.takeIf { privateIp.matches(it) })).distinct()
+val devNetworkRes = layout.buildDirectory.dir("generated/devNetworkSecurity/res").get().asFile
+File(devNetworkRes, "xml/network_security_config.xml").apply {
+    parentFile.mkdirs()
+    writeText(
+        buildString {
+            appendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+            appendLine("<!-- 빌드가 만든 파일 (android/app/build.gradle.kts). debug·profile 전용 -->")
+            appendLine("<network-security-config>")
+            appendLine("    <domain-config cleartextTrafficPermitted=\"true\">")
+            devCleartextHosts.forEach {
+                appendLine("        <domain includeSubdomains=\"false\">$it</domain>")
+            }
+            appendLine("    </domain-config>")
+            appendLine("</network-security-config>")
+        },
+    )
 }
 
 android {
@@ -43,6 +76,11 @@ android {
         versionName = flutter.versionName
         manifestPlaceholders["kakaoNativeAppKey"] = dartDefines["KAKAO_NATIVE_APP_KEY"] ?: "NONE"
         manifestPlaceholders["publicHost"] = dartDefines["PUBLIC_HOST"] ?: "cassette.example"
+    }
+
+    sourceSets {
+        getByName("debug").res.srcDir(devNetworkRes)
+        getByName("profile").res.srcDir(devNetworkRes)
     }
 
     buildTypes {

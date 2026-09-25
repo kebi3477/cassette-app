@@ -80,7 +80,12 @@ PUBLIC_HOST = cassette.app
 - 업로드·재생 URL과 링크 주소는 서버가 `PUBLIC_BASE_URL`로 만든다. **기기에서 닿지 않는 주소면 녹음 업로드와 재생이 실패한다.** 바꾼 뒤 서버를 다시 켠다.
 - 맥 IP: `ipconfig getifaddr en0`
 - iOS는 `Info.plist`의 `NSAllowsLocalNetworking`으로 로컬 주소(`localhost`, `192.168.x.x`)에만 http를 허용한다. 운영 주소는 https여야 한다.
-- Android에서 http 개발 서버에 붙으려면 cleartext 허용이 필요하다 (아직 설정하지 않음 — 출시 빌드에는 넣지 않는다).
+- Android는 **debug·profile 빌드에서만** http를 허용한다. 빌드할 때 `network_security_config.xml`을 만들어(`android/app/build.gradle.kts`) `src/debug`·`src/profile` 매니페스트로 붙인다. 허용하는 곳은 `localhost`, `127.0.0.1`, `10.0.2.2`(에뮬레이터), 그리고 `API_BASE_URL`의 호스트가 사설 IP(`10.x`, `172.16~31.x`, `192.168.x`)면 그 주소다. Android 설정은 IP 대역을 쓸 수 없어서 dart-define의 맥 IP를 그대로 넣는다. release 빌드에는 들어가지 않는다.
+  ```bash
+  flutter run -d emulator-5554 --dart-define=API_BASE_URL=http://10.0.2.2:3000/api     # 에뮬레이터
+  flutter run -d <기기> --dart-define=API_BASE_URL=http://192.168.0.10:3000/api        # 실기기 (맥 IP)
+  ```
+  맥 IP가 바뀌면 다시 빌드한다 (hot reload로는 바뀌지 않는다).
 
 ### 받은 테이프 캐시
 

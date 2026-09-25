@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- http 개발 서버(localhost, 10.0.2.2, 맥 IP)만 허용. release 매니페스트에는 없다 (docs/SETUP.md) -->
+    <application android:networkSecurityConfig="@xml/network_security_config" />
 </manifest>
