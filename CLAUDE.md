@@ -69,7 +69,12 @@ testing/                     # 가짜 repository·service (프로토타입 초�
 flutter run
 flutter analyze
 flutter test
+flutter test --tags server --dart-define=API_BASE_URL=http://localhost:3000/api   # ../cassette-api 서버를 띄운 상태에서
+flutter build ios --debug --no-codesign
+flutter build apk --debug
 ```
+
+변경을 마치면 analyze, test와 **iOS·Android 빌드를 둘 다** 확인한다. iOS만 확인하다가 Android 빌드가 여러 커밋 동안 깨져 있었던 적이 있다.
 
 ## 커밋
 
