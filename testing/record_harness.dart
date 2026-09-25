@@ -1,17 +1,24 @@
+import 'package:cassette_app/data/repositories/auth_repository_local.dart';
 import 'package:cassette_app/data/repositories/friend_repository_remote.dart';
+import 'package:cassette_app/data/repositories/shop_repository_remote.dart';
 import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
 import 'package:cassette_app/data/repositories/user_repository_remote.dart';
 import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
+import 'package:cassette_app/data/services/local/local_ad_service.dart';
 import 'package:cassette_app/data/services/local/local_api_client.dart';
 import 'package:cassette_app/data/services/local/local_behavior.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/ui/core/ui/toast.dart';
+import 'package:cassette_app/ui/my/view_model/my_view_model.dart';
 import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
+import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
 
 import 'fakes/repositories/fake_delivery_repository.dart';
 import 'fakes/repositories/fake_recording_repository.dart';
 import 'fakes/services/fake_app_settings_service.dart';
 import 'fakes/services/fake_audio_player_service.dart';
+import 'fakes/services/fake_iap_service.dart';
+import 'fakes/services/fake_link_service.dart';
 import 'fakes/services/fake_recorder_service.dart';
 import 'fakes/services/fake_share_service.dart';
 
@@ -31,6 +38,29 @@ class RecordHarness {
     wallet = WalletRepositoryRemote(api);
     shelf = ShelfRepositoryRemote(api);
     this.deliveries = deliveries ?? FakeDeliveryRepository(store: store);
+    shop = ShopRepositoryRemote(api);
+    ads = LocalAdService(api, behavior);
+    shopVm = ShopViewModel(
+      shopRepository: shop,
+      walletRepository: wallet,
+      userRepository: users,
+      friendRepository: friends,
+      shelfRepository: shelf,
+      iap: iap,
+      ads: ads,
+      toast: toast,
+    );
+    myVm = MyViewModel(
+      userRepository: users,
+      friendRepository: friends,
+      walletRepository: wallet,
+      deliveryRepository: this.deliveries,
+      authRepository: auth,
+      share: share,
+      links: links,
+      appInfo: FakeAppInfoService(),
+      toast: toast,
+    );
     vm = RecordViewModel(
       userRepository: users,
       friendRepository: friends,
@@ -61,4 +91,11 @@ class RecordHarness {
   final FakeAppSettingsService settings = FakeAppSettingsService();
   final ToastController toast = ToastController();
   late final RecordViewModel vm;
+  late final ShopRepositoryRemote shop;
+  late final LocalAdService ads;
+  final FakeIapService iap = FakeIapService();
+  final FakeLinkService links = FakeLinkService();
+  final AuthRepositoryLocal auth = AuthRepositoryLocal();
+  late final ShopViewModel shopVm;
+  late final MyViewModel myVm;
 }

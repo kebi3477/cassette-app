@@ -85,6 +85,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('상점'), findsNWidgets(2));
     expect(h.vm.phase, RecordPhase.idle);
+    expect(h.shopVm.highlight, TapeType.five);
+    await tester.pump(const Duration(seconds: 2));
   });
 
   testWidgets('기존 친구에게 보내는 흐름 전체 (탭바는 확인부터 숨김)', (tester) async {

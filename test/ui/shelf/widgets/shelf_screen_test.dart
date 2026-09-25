@@ -80,6 +80,7 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(find.text('상점'), findsNWidgets(2));
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('빈 서랍 → 녹음하러 가기', (tester) async {

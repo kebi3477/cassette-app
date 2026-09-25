@@ -7,6 +7,10 @@ import '../domain/models/tape_type.dart';
 import '../ui/core/themes/dimens.dart';
 import '../ui/friend/view_model/friend_view_model.dart';
 import '../ui/friend/widgets/friend_screen.dart';
+import '../data/repositories/shelf_repository.dart';
+import '../ui/my/view_model/credit_history_view_model.dart';
+import '../ui/my/view_model/my_view_model.dart';
+import '../ui/my/widgets/credit_history_screen.dart';
 import '../ui/my/widgets/my_screen.dart';
 import '../ui/player/view_model/player_view_model.dart';
 import '../ui/player/widgets/player_screen.dart';
@@ -16,6 +20,7 @@ import '../ui/shelf/view_model/shelf_view_model.dart';
 import '../ui/shelf/widgets/shelf_screen.dart';
 import '../ui/shell/view_model/shell_view_model.dart';
 import '../ui/shell/widgets/app_shell.dart';
+import '../ui/shop/view_model/shop_view_model.dart';
 import '../ui/shop/widgets/shop_screen.dart';
 import 'routes.dart';
 
@@ -29,6 +34,7 @@ GoRouter router({String initialLocation = Routes.record}) => GoRouter(
         navigationShell: shell,
         shellViewModel: context.read<ShellViewModel>(),
         recordViewModel: context.read<RecordViewModel>(),
+        shopViewModel: context.read<ShopViewModel>(),
       ),
       branches: [
         StatefulShellBranch(
@@ -75,7 +81,7 @@ GoRouter router({String initialLocation = Routes.record}) => GoRouter(
               builder: (context, state) {
                 final hl = int.tryParse(state.uri.queryParameters['hl'] ?? '');
                 return ShopScreen(
-                  key: ValueKey(state.uri.toString()),
+                  viewModel: context.read<ShopViewModel>(),
                   highlight: hl == null ? null : TapeType.fromMinutes(hl),
                 );
               },
@@ -86,7 +92,22 @@ GoRouter router({String initialLocation = Routes.record}) => GoRouter(
           routes: [
             GoRoute(
               path: Routes.my,
-              builder: (context, state) => const MyScreen(),
+              builder: (context, state) => MyScreen(
+                viewModel: context.read<MyViewModel>(),
+                onOpenHistory: () => context.push(Routes.credits),
+                onGoShop: () => context.go(Routes.shop),
+                onOpenFriend: (f) => context.push(Routes.friend(f.id)),
+                onRecordTo: (f) {
+                  context.read<RecordViewModel>().recordTo(f);
+                  context.go(Routes.record);
+                },
+                onGift: (f) => context.read<ShopViewModel>().openGift(to: f),
+                onSignedOut: () {
+                  // 로그인 화면은 4단계. 지금은 앱 첫 화면으로 돌아간다.
+                  context.read<ShelfRepository>().invalidate();
+                  context.go(Routes.record);
+                },
+              ),
             ),
           ],
         ),
@@ -101,6 +122,10 @@ GoRouter router({String initialLocation = Routes.record}) => GoRouter(
           itemId: state.uri.queryParameters['id'] ?? '',
         ),
       ),
+    ),
+    GoRoute(
+      path: Routes.credits,
+      pageBuilder: (context, state) => _overlay(state, const CreditsRoute()),
     ),
     GoRoute(
       path: Routes.friendPattern,
@@ -212,4 +237,31 @@ class _FriendRouteState extends State<FriendRoute> {
       },
     );
   }
+}
+
+/// 크레딧 내역: `GET /wallet/ledger`
+class CreditsRoute extends StatefulWidget {
+  const CreditsRoute({super.key});
+
+  @override
+  State<CreditsRoute> createState() => _CreditsRouteState();
+}
+
+class _CreditsRouteState extends State<CreditsRoute> {
+  late final CreditHistoryViewModel _vm = CreditHistoryViewModel(
+    walletRepository: context.read(),
+  )..load();
+
+  @override
+  void dispose() {
+    _vm.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CreditHistoryScreen(
+    viewModel: _vm,
+    onBack: () => context.pop(),
+    onCharge: () => context.go(Routes.shop),
+  );
 }

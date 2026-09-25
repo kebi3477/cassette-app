@@ -4,14 +4,18 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'config/dependencies.dart';
+import 'config/env.dart';
+import 'data/services/ad_service.dart';
 import 'routing/router.dart';
 import 'routing/routes.dart';
 import 'ui/core/themes/theme.dart';
 import 'ui/core/ui/toast.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // 광고 단위 ID가 있을 때만 광고 SDK를 켠다.
+  if (Env.admobRewardedId.isNotEmpty) await AdMobAdService.initialize();
   runApp(
     MultiProvider(
       providers: [...providersLocal(), ...appViewModels],

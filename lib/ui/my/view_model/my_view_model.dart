@@ -1,0 +1,339 @@
+import 'dart:async';
+
+import 'package:characters/characters.dart';
+import 'package:flutter/foundation.dart';
+
+import '../../../config/links.dart';
+import '../../../data/model/api_error.dart';
+import '../../../data/repositories/auth_repository.dart';
+import '../../../data/repositories/delivery_repository.dart';
+import '../../../data/repositories/friend_repository.dart';
+import '../../../data/repositories/user_repository.dart';
+import '../../../data/repositories/wallet_repository.dart';
+import '../../../data/services/app_info_service.dart';
+import '../../../data/services/link_service.dart';
+import '../../../data/services/share_service.dart';
+import '../../../domain/models/blocked_user.dart';
+import '../../../domain/models/friend.dart';
+import '../../../domain/models/me.dart';
+import '../../../domain/models/sent_tape.dart';
+import '../../../domain/models/tape_type.dart';
+import '../../../domain/models/user.dart';
+import '../../../domain/models/wallet.dart';
+import '../../../utils/format.dart';
+import '../../../utils/result.dart';
+import '../../core/ui/toast.dart';
+
+/// 설정 > 정보의 문서
+enum AppDoc { terms, privacy, contact }
+
+/// 마이 탭 ViewModel — logic.js의 마이·친구 시트·보낸 테이프·설정 부분.
+class MyViewModel extends ChangeNotifier {
+  MyViewModel({
+    required UserRepository userRepository,
+    required FriendRepository friendRepository,
+    required WalletRepository walletRepository,
+    required DeliveryRepository deliveryRepository,
+    required AuthRepository authRepository,
+    required this._share,
+    required this._links,
+    required this._appInfo,
+    required this._toast,
+  }) : _users = userRepository,
+       _friendsRepo = friendRepository,
+       _walletRepo = walletRepository,
+       _deliveries = deliveryRepository,
+       _auth = authRepository {
+    _users.addListener(_loadMe);
+    _friendsRepo.addListener(_loadFriends);
+    _walletRepo.addListener(_loadWallet);
+  }
+
+  static const skeletonTime = Duration(milliseconds: 650);
+
+  final UserRepository _users;
+  final FriendRepository _friendsRepo;
+  final WalletRepository _walletRepo;
+  final DeliveryRepository _deliveries;
+  final AuthRepository _auth;
+  final ShareService _share;
+  final LinkService _links;
+  final AppInfoService _appInfo;
+  final ToastController _toast;
+
+  Me? _me;
+  Wallet _wallet = const Wallet(credits: 0, owned: {}, adsLeft: 0);
+  List<Friend> _friends = const [];
+  List<SentTape> _sent = const [];
+  List<BlockedUser> _blocked = const [];
+  String _version = '';
+  bool _editing = false;
+  String _draft = '';
+  bool _seen = false;
+  bool _skeleton = false;
+  Timer? _skelTimer;
+
+  String get name => _me?.name ?? '';
+  bool get editingName => _editing;
+  String get nameDraft => _draft;
+  int get credits => _wallet.credits;
+  int get receivedCount => _me?.receivedCount ?? 0;
+  int get sentCount => _me?.sentCount ?? 0;
+  int get friendCount => _me?.friendCount ?? _friends.length;
+  bool get notificationsOn => _me?.notificationsEnabled ?? true;
+  String get version => _version;
+  bool get skeleton => _skeleton;
+  List<SentTape> get sent => _sent;
+  List<BlockedUser> get blocked => _blocked;
+  int ownedOf(TapeType t) => _wallet.ownedOf(t);
+
+  /// 즐겨찾기 먼저 (`myFriends`)
+  List<Friend> get friends => [
+    ..._friends.where((f) => f.starred),
+    ..._friends.where((f) => !f.starred),
+  ];
+
+  /// 연결된 계정 (`provider`) — `kakao` · `apple` · `dev`
+  String get providerText {
+    const label = {'kakao': '카카오', 'apple': 'Apple', 'dev': '개발'};
+    final p = _me?.providers ?? const [];
+    return p.map((x) => label[x] ?? x).join(' · ');
+  }
+
+  /// 차단한 친구 행 오른쪽 (`blockedCount`)
+  String get blockedCountText =>
+      _blocked.isEmpty ? '없음' : '${_blocked.length}명';
+
+  /// 보낸 테이프 목록 상태 (`sentList.status`, 계약서 SentTape 표)
+  static String sentStatus(SentTape s) => switch (s.status) {
+    SentStatus.linkPending => '링크 대기',
+    SentStatus.linkExpired => '링크 만료',
+    SentStatus.unopened => '안 뜯음',
+    SentStatus.opened =>
+      s.openedAt == null ? '들음' : '${formatMonthDay(s.openedAt!)} 들음',
+  };
+
+  /// 보낸 테이프 상세 상태 (`sdStatus`)
+  static String sentDetailStatus(SentTape s) => switch (s.status) {
+    SentStatus.linkPending => '아직 아무도 받지 않았어요',
+    SentStatus.linkExpired => '링크가 만료됐어요',
+    SentStatus.unopened => '아직 소포를 안 뜯었어요',
+    SentStatus.opened =>
+      s.openedAt == null ? '들었어요' : '${formatMonthDay(s.openedAt!)}에 들었어요',
+  };
+
+  /// 링크 다시 공유하기 버튼 (`sdLink`) — 아직 아무도 받지 않은 링크
+  static bool canReshare(SentTape s) =>
+      s.status == SentStatus.linkPending || s.status == SentStatus.linkExpired;
+
+  // ── 불러오기 ─────────────────────────────────────
+  Future<void> load() async {
+    await Future.wait([
+      _loadMe(),
+      _loadWallet(),
+      _loadFriends(),
+      _loadSent(),
+      _loadBlocked(),
+      _loadVersion(),
+    ]);
+  }
+
+  Future<void> _loadMe() async {
+    final r = await _users.getMe();
+    if (r is Ok<Me>) {
+      _me = r.value;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadWallet() async {
+    final r = await _walletRepo.getWallet();
+    if (r is Ok<Wallet>) {
+      _wallet = r.value;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadFriends() async {
+    final r = await _friendsRepo.getFriends();
+    if (r is Ok<List<Friend>>) {
+      _friends = r.value;
+      notifyListeners();
+    }
+    // 보내기로 친구·보낸 기록·통계가 바뀌었을 수 있다.
+    await Future.wait([_loadSent(), _loadMe()]);
+  }
+
+  Future<void> _loadSent() async {
+    final r = await _deliveries.getSent();
+    if (r is Ok<List<SentTape>>) {
+      _sent = r.value;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadBlocked() async {
+    final r = await _friendsRepo.getBlocked();
+    if (r is Ok<List<BlockedUser>>) {
+      _blocked = r.value;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadVersion() async {
+    try {
+      _version = await _appInfo.version();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// 처음 들어올 때 0.65초 스켈레톤. 화면 initState에서 부르므로 알리지 않는다.
+  void enter() {
+    if (_seen) return;
+    _seen = true;
+    _skeleton = true;
+    _skelTimer = Timer(skeletonTime, () {
+      _skeleton = false;
+      notifyListeners();
+    });
+  }
+
+  // ── 이름 (`editName`, `doneName`) ──────────────────────
+  void startEditName() {
+    _editing = true;
+    _draft = name;
+    notifyListeners();
+  }
+
+  void setNameDraft(String v) {
+    _draft = v.characters.take(User.maxNameLength).toString();
+    notifyListeners();
+  }
+
+  /// 이름 저장. 비우면 원래 이름으로 돌아간다.
+  Future<void> commitName() async {
+    if (!_editing) return;
+    _editing = false;
+    final next = _draft.trim();
+    notifyListeners();
+    if (next.isEmpty || next == name) return;
+    final prev = _me;
+    final r = await _users.updateName(next);
+    switch (r) {
+      case Ok<Me>(:final value):
+        _me = value;
+      case Error<Me>(:final error):
+        _me = prev;
+        _toast.show(_message(error));
+    }
+    notifyListeners();
+  }
+
+  // ── 친구 ──────────────────────────────────────────
+  Future<void> toggleStar(Friend f) async {
+    final prev = _friends;
+    _friends = [
+      for (final x in _friends)
+        x.id == f.id ? x.copyWith(starred: !x.starred) : x,
+    ];
+    notifyListeners();
+    final r = await _friendsRepo.setStarred(f.id, !f.starred);
+    if (r is Error) {
+      _friends = prev;
+      notifyListeners();
+    }
+  }
+
+  /// 친구 삭제 (`friendDel`)
+  Future<void> removeFriend(Friend f) async {
+    final r = await _friendsRepo.remove(f.id);
+    if (r case Error(:final error)) {
+      _toast.show(_message(error));
+      return;
+    }
+    _toast.show('${f.name}님을 목록에서 뺐어요');
+  }
+
+  /// 차단하기 (`doBlock`)
+  Future<void> block(Friend f) async {
+    final r = await _friendsRepo.block(f.id);
+    if (r case Error(:final error)) {
+      _toast.show(_message(error));
+      return;
+    }
+    _toast.show('${f.name}님을 차단했어요');
+    await _loadBlocked();
+  }
+
+  /// 해제 (`onUnblock`)
+  Future<void> unblock(BlockedUser b) async {
+    final r = await _friendsRepo.unblock(b.id);
+    if (r case Error(:final error)) {
+      _toast.show(_message(error));
+      return;
+    }
+    _toast.show('${b.name}님 차단을 풀었어요');
+    await _loadBlocked();
+  }
+
+  // ── 보낸 테이프 ────────────────────────────────────
+  /// 링크 다시 공유하기 (`sdShare`) — `POST /deliveries/sent/{id}/share` 뒤 공유 시트.
+  Future<void> reshare(SentTape s) async {
+    final r = await _deliveries.reshare(s.id);
+    switch (r) {
+      case Ok<Uri>(:final value):
+        await _share.shareText('$name님이 테이프를 보냈어요\n$value');
+        await _loadSent();
+      case Error<Uri>(:final error):
+        _toast.show(_message(error));
+        await _loadSent();
+    }
+  }
+
+  // ── 설정 ──────────────────────────────────────────
+  Future<void> toggleNotifications() async {
+    final next = !notificationsOn;
+    final r = await _users.setNotifications(next);
+    if (r case Ok<Me>(:final value)) {
+      _me = value;
+      notifyListeners();
+    }
+  }
+
+  Future<void> openDoc(AppDoc doc) => _links.open(switch (doc) {
+    AppDoc.terms => AppLinks.terms,
+    AppDoc.privacy => AppLinks.privacy,
+    AppDoc.contact => AppLinks.contact,
+  });
+
+  /// 로그아웃. 로그인 화면(4단계)이 생기기 전까지는 앱 첫 화면으로 돌아간다.
+  Future<void> logout() => _auth.logout();
+
+  /// 회원 탈퇴 (`wdGo`) — 성공하면 true.
+  Future<bool> withdraw() async {
+    final r = await _users.withdraw();
+    switch (r) {
+      case Ok():
+        _toast.show('탈퇴했어요. 그동안 고마웠어요');
+        await _auth.logout();
+        _friendsRepo.invalidate();
+        _walletRepo.invalidate();
+        return true;
+      case Error(:final error):
+        _toast.show(_message(error));
+        return false;
+    }
+  }
+
+  static String _message(Exception e) =>
+      e is ApiException ? e.message : '잠시 문제가 생겼어요. 다시 시도해 주세요';
+
+  @override
+  void dispose() {
+    _skelTimer?.cancel();
+    _users.removeListener(_loadMe);
+    _friendsRepo.removeListener(_loadFriends);
+    _walletRepo.removeListener(_loadWallet);
+    super.dispose();
+  }
+}

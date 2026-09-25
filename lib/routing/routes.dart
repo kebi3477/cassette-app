@@ -9,6 +9,9 @@ abstract final class Routes {
   /// 재생 오버레이 (탭바 위)
   static const play = '/play';
 
+  /// 크레딧 내역 (탭바 위)
+  static const credits = '/credits';
+
   /// 친구 화면 (탭바 위)
   static const friendPattern = '/friends/:userId';
 

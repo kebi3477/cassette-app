@@ -79,6 +79,19 @@ abstract final class AppColors {
   static const kraftRightLight = Color(0xFFC9A066);
   static const kraftRightDark = Color(0xFFB98B4F);
 
+  // 상점·마이 (vShop, vMy, 시트)
+  /// 선물 아이콘 바탕 (`#F3E6E4`)
+  static const giftTint = Color(0xFFF3E6E4);
+
+  /// 서랍 넓히기 견본 (`#F0ECE4`)
+  static const drawerSwatch = Color(0xFFF0ECE4);
+
+  /// 보낸 테이프 카드 (`#FAFAF8`)
+  static const sentCard = Color(0xFFFAFAF8);
+
+  /// 탈퇴 시트 요약 구분선 (`#EDEDEA`)
+  static const withdrawLine = Color(0xFFEDEDEA);
+
   /// 그림자·반투명 막의 바탕 (rgba(0,0,0,α)는 `black.withValues(alpha: α)`)
   static const black = Color(0xFF000000);
 

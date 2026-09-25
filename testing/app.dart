@@ -6,7 +6,9 @@ import 'package:cassette_app/data/services/audio_player_service.dart';
 import 'package:cassette_app/main.dart';
 import 'package:cassette_app/routing/routes.dart';
 import 'package:cassette_app/ui/core/ui/toast.dart';
+import 'package:cassette_app/ui/my/view_model/my_view_model.dart';
 import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
+import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
 import 'package:cassette_app/ui/shelf/view_model/shelf_view_model.dart';
 import 'package:cassette_app/ui/shell/view_model/shell_view_model.dart';
 import 'package:flutter/widgets.dart';
@@ -42,6 +44,8 @@ Widget testApp(RecordHarness h, {String initialLocation = Routes.record}) {
             ShelfViewModel(shelfRepository: h.shelf, toast: h.toast)..load(),
       ),
       ChangeNotifierProvider<RecordViewModel>.value(value: h.vm..load()),
+      ChangeNotifierProvider<ShopViewModel>.value(value: h.shopVm..load()),
+      ChangeNotifierProvider<MyViewModel>.value(value: h.myVm..load()),
     ],
     child: CassetteApp(initialLocation: initialLocation),
   );
