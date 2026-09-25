@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -5,13 +7,16 @@ plugins {
 }
 
 // `flutter run --dart-define=KEY=VALUE` 값을 매니페스트에 넘긴다 (카카오 키, 링크 도메인).
-val dartDefines: Map<String, String> =
-    (project.findProperty("dart-defines") as String?)
-        ?.split(",")
-        ?.map { String(java.util.Base64.getDecoder().decode(it)) }
-        ?.mapNotNull { d -> d.split("=", limit = 2).takeIf { it.size == 2 }?.let { it[0] to it[1] } }
-        ?.toMap()
-        ?: emptyMap()
+val dartDefines: Map<String, String> = run {
+    val out = mutableMapOf<String, String>()
+    val raw = project.findProperty("dart-defines") as String?
+    raw?.split(",")?.forEach { encoded: String ->
+        val decoded = Base64.getDecoder().decode(encoded).toString(Charsets.UTF_8)
+        val i = decoded.indexOf('=')
+        if (i > 0) out[decoded.substring(0, i)] = decoded.substring(i + 1)
+    }
+    out
+}
 
 android {
     namespace = "com.kebi.cassette"

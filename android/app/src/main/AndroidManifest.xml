@@ -32,7 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <!-- 테이프 링크 https://<PUBLIC_HOST>/t/{token} (App Links).
-                 도메인은 --dart-define=PUBLIC_HOST= 로 정한다. docs/SETUP.md 참고 -->
+                 도메인은 dart-define PUBLIC_HOST로 정한다. docs/SETUP.md 참고 -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
