@@ -201,9 +201,9 @@ void main() {
       vm.openDoc(AppDoc.contact);
       async.flushMicrotasks();
       expect(h.links.opened.map((u) => u.toString()), [
-        'https://cassette.app/terms',
-        'https://cassette.app/privacy',
-        'mailto:help@cassette.app',
+        'https://cassette.lab241.com/terms',
+        'https://cassette.lab241.com/privacy',
+        'https://cassette.lab241.com/privacy#officer',
       ]);
     });
   });
