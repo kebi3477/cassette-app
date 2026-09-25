@@ -269,6 +269,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
   late final PlayerViewModel _vm = PlayerViewModel(
     shelfRepository: context.read(),
     friendRepository: context.read(),
+    shareRepository: context.read(),
     player: context.read(),
     toast: context.read(),
   );
@@ -276,11 +277,22 @@ class _PlayerRouteState extends State<PlayerRoute> {
   @override
   void initState() {
     super.initState();
+    _vm.addListener(_onLinkError);
     _vm.open(widget.source, widget.itemId, linkChip: widget.linkChip);
+  }
+
+  /// 링크 테이프를 받지 못했다 → 소포 화면을 링크 오류 화면으로 바꾼다.
+  void _onLinkError() {
+    final e = _vm.linkError;
+    if (e == null || !mounted) return;
+    _vm.removeListener(_onLinkError);
+    final (kind, url) = e;
+    context.pushReplacement(Routes.linkErrorOf(kind.name, url: url));
   }
 
   @override
   void dispose() {
+    _vm.removeListener(_onLinkError);
     _vm.dispose();
     super.dispose();
   }

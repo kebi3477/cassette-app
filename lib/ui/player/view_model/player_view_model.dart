@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../../data/model/api_error.dart';
 import '../../../data/repositories/friend_repository.dart';
+import '../../../data/repositories/share_repository.dart';
+import '../../../domain/models/share_link.dart';
 import '../../../data/repositories/shelf_repository.dart';
 import '../../../domain/models/friend_tapes.dart';
 import '../../../domain/models/tape_repeat.dart';
@@ -25,6 +27,7 @@ sealed class QueueSource {
   static QueueSource parse(String key) {
     if (key.startsWith('group:')) return GroupSource(key.substring(6));
     if (key.startsWith('friend:')) return FriendSource(key.substring(7));
+    if (key.startsWith('link:')) return LinkSource(key.substring(5));
     return const UnsortedSource();
   }
 }
@@ -45,6 +48,16 @@ class UnsortedSource extends QueueSource {
 
   @override
   String get key => 'unsorted';
+}
+
+/// 아직 받지 않은 링크 테이프 — 뜯을 때 받는다 (`POST /share/{token}/claim`)
+class LinkSource extends QueueSource {
+  const LinkSource(this.token);
+
+  final String token;
+
+  @override
+  String get key => 'link:$token';
 }
 
 /// 그 친구가 보낸 테이프 전부 (친구 화면 "모두 재생")
@@ -68,10 +81,12 @@ class PlayerViewModel extends ChangeNotifier {
   PlayerViewModel({
     required ShelfRepository shelfRepository,
     required FriendRepository friendRepository,
+    ShareRepository? shareRepository,
     required this._player,
     required this._toast,
   }) : _shelf = shelfRepository,
-       _friends = friendRepository {
+       _friends = friendRepository,
+       _share = shareRepository {
     _subs.add(_player.position.listen(_onPosition));
     _subs.add(_player.completed.listen((_) => _onEnd()));
   }
@@ -90,6 +105,7 @@ class PlayerViewModel extends ChangeNotifier {
 
   final ShelfRepository _shelf;
   final FriendRepository _friends;
+  final ShareRepository? _share;
   final AudioPlayerService _player;
   final ToastController _toast;
   final List<StreamSubscription<void>> _subs = [];
@@ -109,8 +125,16 @@ class PlayerViewModel extends ChangeNotifier {
   int _loadGen = 0;
   Timer? _tearTimer;
   bool _closed = false;
+  bool _claiming = false;
+  (LinkErrorKind, String?)? _linkError;
 
   QueueSource? get source => _source;
+
+  /// 링크 테이프를 받지 못했다 (이미 받음·만료) → 링크 오류 화면으로
+  (LinkErrorKind, String?)? get linkError => _linkError;
+
+  /// 받는 중 (`POST /share/{token}/claim`)
+  bool get claiming => _claiming;
 
   /// 링크로 받은 소포의 "○○님과 친구가 되었어요" 칩 (`viaLink`)
   bool get showLinkChip => _linkChip && (current?.viaLink ?? false);
@@ -176,6 +200,21 @@ class PlayerViewModel extends ChangeNotifier {
           _queue = [for (final x in r.value.items) x.item];
           _queueName = '${r.value.friend.name}님의 테이프';
         }
+      case LinkSource(:final token):
+        // 받기 전: 소포만 보여 준다. 칩은 받은 뒤 친구가 됐을 때.
+        _linkChip = false;
+        _queueName = '분류 안 함';
+        var link = _share?.peek(token);
+        if (link == null) {
+          final r = await _share?.open(token);
+          if (r case Error(:final error)) {
+            _linkError = linkErrorOf(error);
+          } else if (r case Ok(:final value)) {
+            link = value;
+          }
+        }
+        if (link != null) _queue = [link.parcel];
+        itemId = 'link:$token';
     }
     if (_closed) return;
     _index = _queue.indexWhere((x) => x.id == itemId);
@@ -195,10 +234,44 @@ class PlayerViewModel extends ChangeNotifier {
     _loadTrack(openLoad);
   }
 
-  /// 소포 뜯기 (`unwrap`) — `POST /deliveries/{id}/open`
+  /// 링크 테이프 받기 — 성공하면 서랍의 그 테이프로 바꾸고, 친구가 됐으면 칩.
+  Future<TapeItem?> _claim(String token) async {
+    final share = _share;
+    if (share == null || _claiming) return null;
+    _claiming = true;
+    notifyListeners();
+    final r = await share.claim(token);
+    _claiming = false;
+    if (_closed) return null;
+    switch (r) {
+      case Ok(:final value):
+        _linkChip = value.friend != null;
+        _queue = [value.item];
+        _index = 0;
+        return value.item;
+      case Error(:final error):
+        final kind = linkErrorOf(error);
+        if (kind != null) {
+          _linkError = kind;
+        } else {
+          _toast.show(
+            error is ApiException ? error.message : '잠시 문제가 생겼어요. 다시 시도해 주세요',
+          );
+        }
+        notifyListeners();
+        return null;
+    }
+  }
+
+  /// 소포 뜯기 (`unwrap`) — `POST /deliveries/{id}/open`.
+  /// 링크 테이프면 먼저 받는다 (`POST /share/{token}/claim`).
   Future<void> unwrap() async {
-    final item = current;
+    var item = current;
     if (_phase != ViewerPhase.parcel || item == null) return;
+    if (_source case LinkSource(:final token) when item.id == 'link:$token') {
+      item = await _claim(token);
+      if (item == null || _phase != ViewerPhase.parcel) return;
+    }
     _phase = ViewerPhase.tearing;
     _queue = [
       for (final x in _queue) x.id == item.id ? x.copyWith(opened: true) : x,

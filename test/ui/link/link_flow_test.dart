@@ -35,20 +35,57 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('링크로 받기: 서랍 + 소포 화면, "친구가 되었어요" 칩', (tester) async {
+  testWidgets('링크 열기: 소포 화면만, 뜯으면 받고 칩 → 재생', (tester) async {
     final h = await pump(tester);
     await open(tester, h, 'https://cassette.example/t/abc');
     expect(find.byType(PlayerScreen), findsOneWidget);
-    expect(find.text('유진님과 친구가 되었어요'), findsOneWidget);
     expect(find.text('탭해서 뜯기'), findsOneWidget);
+    expect(find.text('유진'), findsOneWidget, reason: '보낸 사람');
+    expect(find.text('유진님과 친구가 되었어요'), findsNothing, reason: '받기 전');
+    expect(h.store.claimedLinks, isEmpty);
     expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('탭해서 뜯기'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(h.store.claimedLinks, contains('abc'));
+    expect(find.text('유진님과 친구가 되었어요'), findsOneWidget);
+    await settle(tester);
+    expect(find.text('탭해서 뜯기'), findsNothing, reason: '재생 화면');
+    final id = h.store.claimedLinks['abc']!;
+    expect(h.store.unsorted.first.id, id);
+    expect(h.store.unsorted.first.opened, isTrue);
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 3));
   });
 
-  testWidgets('cassette://t/{token} 도 소포 화면으로', (tester) async {
+  testWidgets('뜯지 않고 닫으면 링크는 그대로 받을 수 있다', (tester) async {
     final h = await pump(tester);
     await open(tester, h, 'cassette://t/abc');
     expect(find.byType(PlayerScreen), findsOneWidget);
-    expect(find.text('유진님과 친구가 되었어요'), findsOneWidget);
+    await tester.tap(find.text('✕'));
+    await settle(tester);
+    expect(find.byType(PlayerScreen), findsNothing);
+    expect(h.store.claimedLinks, isEmpty);
+  });
+
+  testWidgets('연 뒤 다른 분이 먼저 받았으면 뜯을 때 오류 화면', (tester) async {
+    final h = await pump(tester);
+    await open(tester, h, 'cassette://t/abc');
+    h.store.takenLinks.add('abc');
+    await tester.tap(find.text('탭해서 뜯기'));
+    await settle(tester);
+    expect(find.byType(PlayerScreen), findsNothing);
+    expect(find.text('이미 다른 분이 받은 테이프예요'), findsOneWidget);
+  });
+
+  testWidgets('연 뒤 만료됐으면 뜯을 때 오류 화면', (tester) async {
+    final h = await pump(tester);
+    await open(tester, h, 'cassette://t/abc');
+    h.store.expiredLinks.add('abc');
+    await tester.tap(find.text('탭해서 뜯기'));
+    await settle(tester);
+    expect(find.text('링크가 만료됐어요'), findsOneWidget);
   });
 
   testWidgets('이미 다른 분이 받은 링크', (tester) async {
@@ -95,6 +132,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     await settle(tester);
     expect(find.byType(PlayerScreen), findsOneWidget);
-    expect(find.text('유진님과 친구가 되었어요'), findsOneWidget);
+    expect(find.text('탭해서 뜯기'), findsOneWidget);
   });
 }

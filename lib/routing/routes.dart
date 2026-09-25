@@ -58,6 +58,10 @@ abstract final class Routes {
   static String mySent(String sentId) =>
       Uri(path: my, queryParameters: {'sent': sentId}).toString();
 
+  /// 아직 받지 않은 링크 테이프의 소포 화면 (뜯을 때 받는다)
+  static String playLink(String token) =>
+      playItem(LinkSource(token), 'link:$token');
+
   static String friend(String userId) => '/friends/$userId';
 
   /// [kind]는 `taken` · `expired` · `own`. own이면 다시 공유할 [url].

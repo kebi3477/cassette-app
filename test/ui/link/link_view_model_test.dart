@@ -1,6 +1,7 @@
 import 'package:cassette_app/data/services/local/local_behavior.dart';
 import 'package:cassette_app/domain/models/share_link.dart';
 import 'package:cassette_app/ui/link/view_model/link_view_model.dart';
+import 'package:cassette_app/utils/result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../testing/record_harness.dart';
@@ -51,38 +52,31 @@ void main() {
     });
   });
 
-  test('받기 성공: 서랍 맨 위에 들어가고 친구가 된다', () async {
+  test('열기: GET /share만 부르고 소포 화면으로 (받지는 않는다)', () async {
     final (h, events) = await setup();
     h.deepLinks.open(Uri.parse('https://cassette.example/t/tok1'));
     await pumpEventQueue();
-    final e = events.single as OpenClaimedParcel;
-    expect(e.friendMade, isTrue);
-    expect(h.store.unsorted.first.id, e.itemId);
-    expect(h.store.unsorted.first.viaLink, isTrue);
-    expect(h.store.friends.first.name, '유진');
+    expect((events.single as OpenLinkParcel).token, 'tok1');
+    expect(h.store.claimedLinks, isEmpty);
+    expect(h.shareRepo.peek('tok1')?.senderName, '유진');
   });
 
   test('cassette:// 링크도 같은 처리', () async {
     final (h, events) = await setup();
     h.deepLinks.open(Uri.parse('cassette://t/tok2'));
     await pumpEventQueue();
-    expect(events.single, isA<OpenClaimedParcel>());
-    expect(h.store.claimedLinks, contains('tok2'));
+    expect(events.single, isA<OpenLinkParcel>());
   });
 
-  test('이미 내가 받은 링크를 다시 열면 그 테이프로', () async {
+  test('이미 내가 받은 링크를 다시 열면 서랍의 그 테이프로', () async {
     final (h, events) = await setup();
+    final c = await h.shareRepo.claim('tok3');
+    final id = (c as Ok<ClaimedTape>).value.item.id;
     h.deepLinks.open(Uri.parse('cassette://t/tok3'));
     await pumpEventQueue();
-    final count = h.store.unsorted.length;
-    h.deepLinks.open(Uri.parse('cassette://t/tok3'));
-    await pumpEventQueue();
-    expect(events, hasLength(2));
-    expect(
-      (events[1] as OpenClaimedParcel).itemId,
-      (events[0] as OpenClaimedParcel).itemId,
-    );
-    expect(h.store.unsorted.length, count, reason: '한 번만 들어간다');
+    final e = events.single as OpenClaimedParcel;
+    expect(e.itemId, id);
+    expect(e.friendMade, isFalse);
   });
 
   for (final (mode, kind) in [
@@ -109,7 +103,7 @@ void main() {
 
     await h.auth.signInKakao();
     await pumpEventQueue();
-    expect(events.single, isA<OpenClaimedParcel>());
+    expect(events.single, isA<OpenLinkParcel>());
     expect(await h.prefs.pendingLink(), isNull);
   });
 
@@ -122,6 +116,6 @@ void main() {
     expect(await h.prefs.pendingLink(), 'cold');
     await h.auth.signInDev(key: 'k');
     await pumpEventQueue();
-    expect(events.single, isA<OpenClaimedParcel>());
+    expect(events.single, isA<OpenLinkParcel>());
   });
 }

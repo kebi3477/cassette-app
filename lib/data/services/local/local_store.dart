@@ -57,6 +57,10 @@ class LocalStore {
   /// 링크 토큰 → 내가 받은 테이프 id
   final Map<String, String> claimedLinks = {};
 
+  /// 다른 사람이 받은 링크 / 만료된 링크 (시험에서 소포를 연 뒤에 바꿔 본다)
+  final Set<String> takenLinks = {};
+  final Set<String> expiredLinks = {};
+
   int _uid = 100;
 
   String nextId(String prefix) => '$prefix-${_uid++}';
@@ -71,6 +75,8 @@ class LocalStore {
     refreshTokens.clear();
     devices.clear();
     claimedLinks.clear();
+    takenLinks.clear();
+    expiredLinks.clear();
     signedUp = !newUser;
     blocked = [];
     name = newUser ? null : '민경';

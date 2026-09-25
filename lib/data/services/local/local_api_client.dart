@@ -210,6 +210,12 @@ class LocalApiClient implements ApiClient {
         _linkOwn(_s.sent.firstWhere((x) => x.share != null));
       default:
     }
+    if (_s.takenLinks.contains(token)) {
+      _fail(409, ApiErrorCode.linkTaken, '이미 다른 분이 받은 테이프예요');
+    }
+    if (_s.expiredLinks.contains(token)) {
+      _fail(410, ApiErrorCode.linkExpired, '링크가 만료됐어요');
+    }
     for (final t in _s.sent) {
       final url = t.share?.url;
       if (url != null && url.endsWith('/t/$token')) _linkOwn(t);

@@ -84,6 +84,8 @@ class _CassetteAppState extends State<CassetteApp> {
   /// 링크로 받은 테이프 → 서랍 + 소포 화면, 오류 → 링크 오류 화면
   void _onLink(LinkEvent e) {
     switch (e) {
+      case OpenLinkParcel(:final token):
+        _goThenPush(Routes.shelf, Routes.playLink(token));
       case OpenClaimedParcel(:final itemId, :final friendMade):
         _goThenPush(
           Routes.shelf,

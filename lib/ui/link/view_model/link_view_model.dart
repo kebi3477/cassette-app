@@ -16,6 +16,13 @@ sealed class LinkEvent {
   const LinkEvent();
 }
 
+/// 아직 받지 않은 링크의 소포 화면 — 뜯을 때 받는다(`POST /share/{token}/claim`).
+class OpenLinkParcel extends LinkEvent {
+  const OpenLinkParcel(this.token);
+
+  final String token;
+}
+
 /// 받은 소포 열기 (`vParcel` + `viaLink` 칩)
 class OpenClaimedParcel extends LinkEvent {
   const OpenClaimedParcel(this.itemId, {required this.friendMade});
@@ -37,7 +44,7 @@ class ShowLinkError extends LinkEvent {
 }
 
 /// `https://<도메인>/t/{token}`(유니버설 링크·앱 링크)과 `cassette://t/{token}`(웹 페이지의 "앱에서 열기")을
-/// 받아 `GET /share/{token}` → `POST /share/{token}/claim`으로 처리한다.
+/// 받아 `GET /share/{token}`으로 연다. 받기(claim)는 소포를 뜯을 때 재생 화면이 한다.
 /// 로그인 전이면 토큰을 기기에 보관했다가 앱 본문에 들어온 뒤 처리한다.
 class LinkViewModel extends ChangeNotifier {
   LinkViewModel({
@@ -116,18 +123,8 @@ class LinkViewModel extends ChangeNotifier {
           // 내가 이미 받은 링크 → 서랍의 그 테이프
           _events.add(OpenClaimedParcel(value.deliveryId!, friendMade: false));
         case Ok<ShareLink>():
-          final c = await _share.claim(token);
-          switch (c) {
-            case Ok<ClaimedTape>(:final value):
-              _events.add(
-                OpenClaimedParcel(
-                  value.item.id,
-                  friendMade: value.friend != null,
-                ),
-              );
-            case Error<ClaimedTape>(:final error):
-              _fail(error);
-          }
+          // 뜯기 전 소포 화면. 닫으면 링크는 그대로 받을 수 있다.
+          _events.add(OpenLinkParcel(token));
         case Error<ShareLink>(:final error):
           _fail(error);
       }
@@ -137,21 +134,10 @@ class LinkViewModel extends ChangeNotifier {
   }
 
   void _fail(Exception e) {
-    if (e is ApiException) {
-      switch (e.code) {
-        case ApiErrorCode.linkTaken:
-          return _events.add(const ShowLinkError(LinkErrorKind.taken));
-        case ApiErrorCode.linkExpired:
-          return _events.add(const ShowLinkError(LinkErrorKind.expired));
-        case ApiErrorCode.linkOwn:
-          return _events.add(
-            ShowLinkError(LinkErrorKind.own, url: e.extra['url'] as String?),
-          );
-      }
-      _toast.show(e.message);
-      return;
+    if (linkErrorOf(e) case (final kind, final url)) {
+      return _events.add(ShowLinkError(kind, url: url));
     }
-    _toast.show('잠시 문제가 생겼어요. 다시 시도해 주세요');
+    _toast.show(e is ApiException ? e.message : '잠시 문제가 생겼어요. 다시 시도해 주세요');
   }
 
   @override

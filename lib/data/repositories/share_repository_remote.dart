@@ -1,4 +1,6 @@
 import '../../domain/models/share_link.dart';
+import '../../domain/models/tape_tag.dart';
+import '../../domain/models/tape_type.dart';
 import '../../utils/idempotency.dart';
 import '../../utils/result.dart';
 import '../model/mappers.dart';
@@ -15,17 +17,26 @@ class ShareRepositoryRemote implements ShareRepository {
   /// 받으면 서랍이 바뀐다
   final ShelfRepository _shelf;
   final Map<String, String> _keys = {};
+  final Map<String, ShareLink> _opened = {};
 
   @override
   Future<Result<ShareLink>> open(String token) => guard(() async {
     final s = await _api.getShare(token);
-    return ShareLink(
+    return _opened[token] = ShareLink(
       token: token,
       claimed: s.state == 'claimed',
       deliveryId: s.deliveryId,
       senderName: s.sender.name,
+      senderId: s.sender.userId,
+      type: TapeType.fromMinutes(s.tapeType),
+      duration: Duration(milliseconds: s.durationMs),
+      tag: TapeTag.fromCode(s.tag),
+      sentAt: s.sentAt,
     );
   });
+
+  @override
+  ShareLink? peek(String token) => _opened[token];
 
   @override
   Future<Result<ClaimedTape>> claim(String token) async {
@@ -35,7 +46,10 @@ class ShareRepositoryRemote implements ShareRepository {
       final c = await _api.claimShare(token, idempotencyKey: key);
       return ClaimedTape(item: c.item.toDomain(), friend: c.friend?.toDomain());
     });
-    if (r is Ok) _shelf.invalidate();
+    if (r is Ok) {
+      _opened.remove(token);
+      _shelf.invalidate();
+    }
     return r;
   }
 }
