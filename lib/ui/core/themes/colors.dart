@@ -1,0 +1,71 @@
+import 'package:flutter/painting.dart';
+
+/// 디자인 토큰 `tokens/tokens.json`의 `color`와, 원본 템플릿에서 쓰는 보조 색.
+///
+/// 위젯에는 hex를 직접 쓰지 않고 여기 이름만 쓴다.
+abstract final class AppColors {
+  // tokens.json › color
+  static const ink = Color(0xFF111111);
+  static const paper = Color(0xFFFFFFFF);
+  static const red = Color(0xFFE5402B);
+  static const redTint = Color(0xFFFDECE9);
+  static const surface = Color(0xFFF3F3F1);
+  static const surfaceSoft = Color(0xFFF6F6F4);
+  static const line = Color(0xFFF0F0EE);
+  static const cardStroke = Color(0xFFEFEFEC);
+  static const textMuted = Color(0xFF9A9A97);
+  static const textFaint = Color(0xFFB5B5B2);
+  static const textFainter = Color(0xFFCFCFCC);
+  static const disabled = Color(0xFFCFCFCC);
+  static const toggleOff = Color(0xFFDADAD7);
+  static const kraft = Color(0xFFC9A06A);
+  static const kraftLight = Color(0xFFD2AB72);
+  static const kraftDark = Color(0xFFC29558);
+  static const kraftTape = Color(0xFFEFE4CF);
+  static const labelPaper = Color(0xFFF7F5F0);
+  static const dim = Color(0x5C000000); // rgba(0,0,0,.36)
+
+  // 원본 템플릿에서 쓰는 보조 색 (source/CassetteApp.template.html)
+  /// 부제·설명 글자 (`#8A8A87`)
+  static const textSub = Color(0xFF8A8A87);
+
+  /// 진한 보조 글자 (`#6E6E6B`)
+  static const textSecondary = Color(0xFF6E6E6B);
+
+  /// 꺼진 길이 표시·반복 아이콘 (`#C5C5C2`)
+  static const textOff = Color(0xFFC5C5C2);
+
+  /// 개수 표시 등 (`#A5A5A2`)
+  static const textCount = Color(0xFFA5A5A2);
+
+  /// 녹음 버튼 바깥 링 (`#E6E6E3`)
+  static const recRing = Color(0xFFE6E6E3);
+
+  /// 진행 바 트랙 (`#EEEEEC`)
+  static const progressTrack = Color(0xFFEEEEEC);
+
+  /// 즐겨찾기 별 (`#E3A92B`)
+  static const star = Color(0xFFE3A92B);
+
+  /// 카카오 노랑과 글자
+  static const kakao = Color(0xFFFEE500);
+  static const kakaoInk = Color(0xFF191600);
+
+  /// 시트 손잡이 (`#E3E3E0`)
+  static const handle = Color(0xFFE3E3E0);
+
+  /// 녹음 중 빨간 링 펄스 (`rgba(229,64,43,.35)`)
+  static const recPulse = Color(0x59E5402B);
+
+  /// 앱 바깥 배경 (`#EDEDEB`) — 프로토타입 폰 프레임 밖
+  static const backdrop = Color(0xFFEDEDEB);
+
+  // 소포 박스 (vSending)
+  static const boxInside = Color(0xFFA87C44);
+  static const flapTop = Color(0xFFC99E62);
+  static const flapBottom = Color(0xFFBB8E52);
+  static const flapTape = Color(0xFFE6D9C0);
+
+  /// 가리는 흰 막 (`rgba(255,255,255,.55)`) — 0개인 테이프
+  static const lockVeil = Color(0x8CFFFFFF);
+}
