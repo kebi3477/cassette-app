@@ -1,0 +1,72 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 프로젝트 개요
+
+Cassette 앱. 목소리를 1·3·5분짜리 카세트테이프에 녹음해 친구에게 소포로 보내고, 받은 테이프를 서랍에 칸별로 정리해 이어 듣는다. 테이프는 크레딧으로 사고, 크레딧은 광고 시청이나 결제로 얻는다.
+
+- Flutter, iOS·Android. 번들 ID는 iOS `com.kebi3477.cassetteApp`, Android `com.kebi3477.cassette_app` (flutter create 기본값)
+- API: `../cassette-api` (NestJS). 응답 스펙은 이 앱의 도메인 모델과 맞춘다
+- 두 저장소에 공통으로 적용되는 아키텍처 결정은 `../ARCHITECTURE.md`에 있다 (저장소 바깥 파일)
+
+## 디자인
+
+- Claude Design 프로젝트: https://claude.ai/design/p/42baf543-407c-43b6-a96e-04d5997ef801 (`Cassette App.dc.html`)
+- 핸드오프: 위 Claude Design 프로젝트 안의 `design_handoff_cassette_app/` (로컬에 없음, claude_design MCP로 읽는다). **수치·문구·타이밍·상태 전이는 `source/CassetteApp.logic.js`와 `source/CassetteApp.template.html`이 정답이다.** README나 docs가 source와 다르면 source를 따른다. 추측하지 않는다
+- 하이파이이고 기준 화면은 390×844다. 색·글자·간격·모서리·애니메이션·문구를 픽셀 단위로 맞춘다
+- 토큰(`tokens/tokens.json`)은 `lib/ui/core/themes/`로 옮긴다. 글꼴은 SUIT 하나, 숫자는 tabular figures
+- 테이프, 미니 테이프, 소포 박스, 탭 아이콘은 원본이 CSS 도형이다. 같은 치수의 `CustomPainter`로 만든다
+
+프로토타입과 다르게 구현할 것:
+
+- 가짜 250ms 타이머 → 실제 녹음(`record`)과 재생(`just_audio`)
+- 데모용 재생 길이 `DUR` → 실제 파일 길이
+- 공유·결제·광고 토스트 목업 → 실제 연동
+- 고정 날짜 `09.25` → 실제 날짜
+
+## 폴더 구조 — 공식 앱 아키텍처 가이드
+
+https://docs.flutter.dev/app-architecture 의 구조와 MVVM을 따른다. 다른 구조(feature-first 등)로 바꾸지 않는다.
+
+```
+lib/
+├── config/                  # 환경 설정, 의존성 등록
+├── data/
+│   ├── repositories/        # <이름>_repository.dart
+│   ├── services/            # API 클라이언트, 녹음, 재생, 결제 등 외부 접점
+│   └── model/               # API 모델 (DTO)
+├── domain/
+│   └── models/              # 앱 도메인 모델
+├── routing/
+├── ui/
+│   ├── core/
+│   │   ├── ui/              # 공용 위젯 (TapeWidget, MiniTape, ParcelBox, 시트, 토스트)
+│   │   └── themes/
+│   └── <기능>/              # record, shelf, player, shop, my, friend
+│       ├── view_model/
+│       └── widgets/         # <기능>_screen.dart + 하위 위젯
+├── utils/
+└── main.dart
+test/                        # lib/와 같은 구조
+testing/                     # 가짜 repository·service (프로토타입 초기 데이터)
+```
+
+- 상태 관리: ViewModel(`ChangeNotifier`) + `provider`
+- 라우팅: `go_router` (탭 4개는 `StatefulShellRoute`)
+- 녹음 흐름은 phase enum 하나로 관리한다: `idle → rec → confirm → pick → label → sending → sent`
+- 반복 모드 "순서대로 / 전체 반복 / 한 개 반복"은 `LoopMode.off / all / one`에 대응한다
+
+## 명령어
+
+```bash
+flutter run
+flutter analyze
+flutter test
+```
+
+## 커밋
+
+- **커밋 메시지는 한 줄만 쓴다.** 본문이나 트레일러(Co-Authored-By 등)를 붙이지 않는다
+- 접두어를 붙인다: `feat:` `fix:` `refactor:` `style:` `docs:` `test:` `chore:`
+- 메시지 본문은 한국어로 쓴다. 예: `feat: 녹음 화면 테이프 캐러셀 추가`
