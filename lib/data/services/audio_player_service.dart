@@ -15,6 +15,10 @@ abstract class AudioPlayerService {
 
   Future<void> stop();
 
+  /// 한 곡 반복 (`LoopMode.one`). 끄면 `LoopMode.off`이고, 전체 반복과 다음 곡은
+  /// 곡마다 새 재생 주소를 받아야 해서 ViewModel이 처리한다.
+  Future<void> setLoopOne(bool on);
+
   Stream<Duration> get position;
 
   /// 끝까지 재생했을 때.
@@ -65,6 +69,10 @@ class JustAudioPlayerService implements AudioPlayerService {
 
   @override
   Future<void> stop() => _player.stop();
+
+  @override
+  Future<void> setLoopOne(bool on) =>
+      _player.setLoopMode(on ? LoopMode.one : LoopMode.off);
 
   @override
   Stream<Duration> get position => _player.positionStream;
