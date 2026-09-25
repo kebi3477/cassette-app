@@ -1,6 +1,5 @@
 import '../../domain/models/recipient.dart';
 import '../../domain/models/sent_tape.dart';
-import '../../domain/models/tape_tag.dart';
 import '../../utils/result.dart';
 
 /// 테이프 보내기와 보낸 기록 (`/deliveries`).
@@ -12,7 +11,6 @@ abstract class DeliveryRepository {
   Future<Result<SentTape>> send({
     required String recordingId,
     required Recipient to,
-    required TapeTag tag,
     required String idempotencyKey,
   });
 

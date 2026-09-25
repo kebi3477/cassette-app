@@ -88,23 +88,34 @@ void main() {
     expect(r.duration, const Duration(seconds: 95));
   });
 
-  test('POST /deliveries 요청 본문: recipientId 또는 linkName + tag', () {
+  test('POST /deliveries 요청 본문: recipientId 또는 linkName (tag는 보내지 않음)', () {
     expect(
       const CreateDeliveryRequest(
         recordingId: 'r1',
         recipientId: 'u1',
-        tag: 'birthday',
       ).toJson(),
-      {'recordingId': 'r1', 'recipientId': 'u1', 'tag': 'birthday'},
+      {'recordingId': 'r1', 'recipientId': 'u1'},
     );
     expect(
-      const CreateDeliveryRequest(
-        recordingId: 'r1',
-        linkName: '유진',
-        tag: 'thinking',
-      ).toJson(),
-      {'recordingId': 'r1', 'linkName': '유진', 'tag': 'thinking'},
+      const CreateDeliveryRequest(recordingId: 'r1', linkName: '유진').toJson(),
+      {'recordingId': 'r1', 'linkName': '유진'},
     );
+  });
+
+  test('응답의 tag는 null일 수 있다', () {
+    final x = ShelfItemDto.fromJson({
+      'id': 'd1',
+      'sender': {'userId': 'u1', 'name': '지현'},
+      'tapeType': 1,
+      'durationMs': 20000,
+      'tag': null,
+      'sentAt': '2026-09-24T09:00:00.000Z',
+      'opened': true,
+      'openedAt': null,
+      'viaLink': false,
+      'groupId': null,
+    }).toDomain();
+    expect(x.tag, isNull);
   });
 
   test('오류 형식 {code, message, …추가 필드}', () {

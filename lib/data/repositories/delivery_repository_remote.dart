@@ -1,6 +1,5 @@
 import '../../domain/models/recipient.dart';
 import '../../domain/models/sent_tape.dart';
-import '../../domain/models/tape_tag.dart';
 import '../../utils/result.dart';
 import '../model/delivery_dto.dart';
 import '../model/mappers.dart';
@@ -17,7 +16,6 @@ class DeliveryRepositoryRemote implements DeliveryRepository {
   Future<Result<SentTape>> send({
     required String recordingId,
     required Recipient to,
-    required TapeTag tag,
     required String idempotencyKey,
   }) => guard(
     () async => (await _api.createDelivery(
@@ -25,7 +23,6 @@ class DeliveryRepositoryRemote implements DeliveryRepository {
         recordingId: recordingId,
         recipientId: to.isNew ? null : to.friendId,
         linkName: to.isNew ? to.name : null,
-        tag: tag.code,
       ),
       idempotencyKey: idempotencyKey,
     )).toDomain(),

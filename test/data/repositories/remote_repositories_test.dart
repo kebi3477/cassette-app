@@ -205,24 +205,19 @@ void main() {
       expect(await repo.retry(up.id), isA<Error<Recording>>());
     });
 
-    test('3분 보내기: 차감, lastAt 갱신, 같은 키는 한 번만, tag 코드', () async {
+    test('3분 보내기: 차감, lastAt 갱신, 같은 키는 한 번만, tag 없음', () async {
       final rec = await uploadReady(TapeType.three);
       final repo = DeliveryRepositoryRemote(api);
       const to = Recipient.friend(friendId: 'u-haneul', name: '하늘');
       Future<SentTape> send() async => ok<SentTape>(
-        await repo.send(
-          recordingId: rec.id,
-          to: to,
-          tag: TapeTag.congrats,
-          idempotencyKey: 'k1',
-        ),
+        await repo.send(recordingId: rec.id, to: to, idempotencyKey: 'k1'),
       );
       final a = await send();
       final b = await send();
       expect(a.id, b.id);
       expect(a.status, SentStatus.unopened);
       expect(store.owned[3], 1);
-      expect(store.sent.first.tag, 'congrats');
+      expect(store.sent.first.tag, isNull, reason: '앱은 tag를 보내지 않는다');
       expect(
         store.friends.firstWhere((f) => f.name == '하늘').lastAt,
         store.now(),
@@ -235,7 +230,6 @@ void main() {
       final r = await repo.send(
         recordingId: five.id,
         to: const Recipient.friend(friendId: 'u-jihyun', name: '지현'),
-        tag: TapeTag.birthday,
         idempotencyKey: 'k2',
       );
       expect(apiError(r).code, 'NO_TAPE_LEFT');
@@ -245,7 +239,6 @@ void main() {
         await repo.send(
           recordingId: one.id,
           to: const Recipient.newFriend(name: '유진'),
-          tag: TapeTag.birthday,
           idempotencyKey: 'k3',
         ),
       );

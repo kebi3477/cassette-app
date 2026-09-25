@@ -2,7 +2,6 @@ import 'package:cassette_app/data/repositories/delivery_repository.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/domain/models/recipient.dart';
 import 'package:cassette_app/domain/models/sent_tape.dart';
-import 'package:cassette_app/domain/models/tape_tag.dart';
 import 'package:cassette_app/domain/models/tape_type.dart';
 import 'package:cassette_app/utils/result.dart';
 
@@ -22,18 +21,15 @@ class FakeDeliveryRepository implements DeliveryRepository {
   /// 보낸 녹음의 테이프 종류 (가짜 녹음은 종류를 모르므로 시험이 정한다)
   TapeType type = TapeType.one;
   final List<String> keys = [];
-  final List<TapeTag> tags = [];
   final List<SentTape> sent = [];
 
   @override
   Future<Result<SentTape>> send({
     required String recordingId,
     required Recipient to,
-    required TapeTag tag,
     required String idempotencyKey,
   }) async {
     keys.add(idempotencyKey);
-    tags.add(tag);
     await Future<void>.delayed(delay);
     if (fail) return Result.error(Exception('offline'));
     final s = store;

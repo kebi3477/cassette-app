@@ -17,7 +17,6 @@ import '../../../domain/models/me.dart';
 import '../../../domain/models/recipient.dart';
 import '../../../domain/models/recording.dart';
 import '../../../domain/models/sent_tape.dart';
-import '../../../domain/models/tape_tag.dart';
 import '../../../domain/models/tape_type.dart';
 import '../../../domain/models/user.dart';
 import '../../../domain/models/wallet.dart';
@@ -121,8 +120,6 @@ class RecordViewModel extends ChangeNotifier {
   MicPermission _mic = MicPermission.unknown;
   String _myName = '';
 
-  /// 라벨 태그. 디자인에 고르는 화면이 없어 프로토타입 기본값(`tag: '생일'`)을 쓴다.
-  final TapeTag _tag = TapeTag.birthday;
   Wallet _wallet = const Wallet(credits: 0, owned: {}, adsLeft: 0);
   List<Friend> _friends = const [];
   SentTape? _lastSent;
@@ -162,7 +159,6 @@ class RecordViewModel extends ChangeNotifier {
   String get pauseWhy => _pauseWhy;
   MicPermission get mic => _mic;
   String get myName => _myName;
-  TapeTag get tag => _tag;
   Wallet get wallet => _wallet;
   SentTape? get lastSent => _lastSent;
 
@@ -681,7 +677,6 @@ class RecordViewModel extends ChangeNotifier {
         : _deliveries.send(
             recordingId: rec.id,
             to: to,
-            tag: _tag,
             idempotencyKey: _idemKey!,
           );
     call.then((r) {

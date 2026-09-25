@@ -7,21 +7,22 @@ class CreateDeliveryRequest {
     required this.recordingId,
     this.recipientId,
     this.linkName,
-    required this.tag,
+    this.tag,
   }) : assert((recipientId == null) != (linkName == null));
 
   final String recordingId;
   final String? recipientId;
   final String? linkName;
 
-  /// `birthday` · `congrats` · `thinking`
-  final String tag;
+  /// `birthday` · `congrats` · `thinking`. 선택 필드 — 디자인에 태그를 고르거나
+  /// 보여 주는 화면이 없어서 앱은 보내지 않는다.
+  final String? tag;
 
   Json toJson() => {
     'recordingId': recordingId,
     'recipientId': ?recipientId,
     'linkName': ?linkName,
-    'tag': tag,
+    'tag': ?tag,
   };
 }
 
