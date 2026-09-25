@@ -1,0 +1,39 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+/// 핸드오프 `assets/`의 SVG.
+abstract final class AppIcons {
+  static const credit = 'assets/svg/icon-credit.svg';
+  static const infinity = 'assets/svg/icon-infinity.svg';
+  static const repeat = 'assets/svg/icon-repeat.svg';
+  static const symbolBlack = 'assets/svg/symbol-black.svg';
+  static const symbolRed = 'assets/svg/symbol-red.svg';
+  static const symbolWhite = 'assets/svg/symbol-white.svg';
+  static const appIcon = 'assets/svg/app-icon.svg';
+}
+
+/// SVG 아이콘. `stroke="currentColor"`인 아이콘은 [color]로 칠한다.
+class SvgIcon extends StatelessWidget {
+  const SvgIcon(
+    this.asset, {
+    super.key,
+    required this.width,
+    required this.height,
+    this.color,
+  });
+
+  final String asset;
+  final double width;
+  final double height;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      asset,
+      width: width,
+      height: height,
+      theme: color == null ? const SvgTheme() : SvgTheme(currentColor: color!),
+    );
+  }
+}
