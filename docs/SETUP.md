@@ -41,13 +41,14 @@ PUBLIC_HOST = cassette.app
 
 ## Firebase (푸시)
 
-설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). 각자 Firebase 콘솔에서 받아 넣는다.
+Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다.
 
-- iOS: `ios/Runner/GoogleService-Info.plist` (Xcode에서 Runner 타깃에 추가)
-- Android: `android/app/google-services.json`, 그리고 Google Services Gradle 플러그인(`com.google.gms.google-services`)을 `android/settings.gradle.kts`·`android/app/build.gradle.kts`에 추가
-- APNs 인증 키를 Firebase 프로젝트에 올린다
+- iOS: `ios/Runner/GoogleService-Info.plist`. Xcode에 따로 추가할 필요 없다. Runner 타깃의 "Copy GoogleService-Info.plist" 빌드 단계가 파일이 있을 때만 앱 번들에 복사한다.
+- Android: `android/app/google-services.json`. `app/build.gradle.kts`가 파일이 있을 때만 Google Services 플러그인을 적용한다.
+- APNs 인증 키(.p8)는 Firebase 콘솔 > 프로젝트 설정 > 클라우드 메시징에 올린다.
+- 서버 발송용 서비스 계정 키는 앱이 아니라 `cassette-api/.env`의 `FCM_SERVICE_ACCOUNT_JSON`에 넣는다.
 
-파일이 없으면 `Firebase.initializeApp`이 실패하고 앱은 가짜 푸시(`LocalPushService`)로 돈다. 권한 요청·배너·알림 누르기는 가짜로도 시험할 수 있다.
+파일이 없어도 빌드는 된다. 이때 `Firebase.initializeApp`이 실패하고 앱은 가짜 푸시(`LocalPushService`)로 돈다. 권한 요청·배너·알림 누르기는 가짜로도 시험할 수 있다.
 
 ## 실제 서버로 실행하기
 

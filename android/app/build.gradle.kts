@@ -7,6 +7,11 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase 설정 파일은 커밋하지 않는다(.gitignore). 있을 때만 Google Services 플러그인을 적용한다. docs/SETUP.md 참고
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // `flutter run --dart-define=KEY=VALUE` 값을 매니페스트에 넘긴다 (카카오 키, 링크 도메인).
 val dartDefines: Map<String, String> = run {
     val out = mutableMapOf<String, String>()
