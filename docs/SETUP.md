@@ -48,3 +48,53 @@ PUBLIC_HOST = cassette.app
 - APNs 인증 키를 Firebase 프로젝트에 올린다
 
 파일이 없으면 `Firebase.initializeApp`이 실패하고 앱은 가짜 푸시(`LocalPushService`)로 돈다. 권한 요청·배너·알림 누르기는 가짜로도 시험할 수 있다.
+
+## 실제 서버로 실행하기
+
+`--dart-define=API_BASE_URL=`이 있으면 앱이 실제 서버(`HttpApiClient`, dio)에 붙고, 없으면 서버 없이 도는 가짜 서버(`LocalApiClient`)를 쓴다. 실제 서버일 때 토큰은 Keychain / Keystore(`flutter_secure_storage`)에 저장된다.
+
+1. 서버 실행 (`../cassette-api`, 계약서 `docs/api.md` "0. 로컬 개발 서버에 붙기")
+   ```bash
+   cd ../cassette-api && npm run start:dev      # Postgres·Redis가 떠 있어야 한다
+   ```
+2. 앱 실행
+   ```bash
+   flutter run --dart-define=API_BASE_URL=http://localhost:3000/api
+   ```
+3. 로그인 화면에서 **앱 아이콘을 길게 누르면** 개발 로그인(`POST /auth/dev`, key `minkyung`, 이름 "민경")이다. 개발 빌드에서만 된다.
+   프로토타입 데이터가 필요하면 먼저 시드를 만든다.
+   ```bash
+   T=$(curl -s -X POST localhost:3000/api/auth/dev -H 'content-type: application/json' \
+     -d '{"key":"minkyung","name":"민경"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["accessToken"])')
+   curl -s -X POST localhost:3000/api/dev/seed -H "authorization: Bearer $T"
+   ```
+
+### 기기별 주소
+
+| 기기 | `API_BASE_URL` | API `.env`의 `PUBLIC_BASE_URL` |
+|---|---|---|
+| iOS 시뮬레이터 | `http://localhost:3000/api` | `http://localhost:3000` |
+| Android 에뮬레이터 | `http://10.0.2.2:3000/api` | `http://10.0.2.2:3000` |
+| 실기기 (같은 와이파이) | `http://<맥 IP>:3000/api` (예: `http://192.168.0.10:3000/api`) | `http://<맥 IP>:3000` |
+
+- 업로드·재생 URL과 링크 주소는 서버가 `PUBLIC_BASE_URL`로 만든다. **기기에서 닿지 않는 주소면 녹음 업로드와 재생이 실패한다.** 바꾼 뒤 서버를 다시 켠다.
+- 맥 IP: `ipconfig getifaddr en0`
+- iOS는 `Info.plist`의 `NSAllowsLocalNetworking`으로 로컬 주소(`localhost`, `192.168.x.x`)에만 http를 허용한다. 운영 주소는 https여야 한다.
+- Android에서 http 개발 서버에 붙으려면 cleartext 허용이 필요하다 (아직 설정하지 않음 — 출시 빌드에는 넣지 않는다).
+
+### 받은 테이프 캐시
+
+재생 URL은 10분짜리라, 한 번 받은 파일은 **delivery id**를 이름으로 앱 캐시 폴더(`<cache>/tapes/`)에 두고 다음부터는 그 파일을 재생한다. 테이프를 지우면 그 파일을, 로그아웃·탈퇴하면 전부 지운다.
+
+### 서버에 붙는 시험
+
+```bash
+# 계약서의 흐름을 실제 HTTP로 (기본 flutter test에서는 건너뛴다)
+flutter test --tags server --dart-define=API_BASE_URL=http://localhost:3000/api
+
+# 시뮬레이터에서 화면 흐름 (개발 로그인 → 녹음 → 서랍 → 재생 → 상점 → 마이) + 캡처
+tool/sim_flow.sh <시뮬레이터 UDID> http://localhost:3000/api   # build/screenshots/server_*.png
+tool/sim_flow.sh <시뮬레이터 UDID>                             # 가짜 서버: local_*.png
+```
+- 개발 로그인은 IP당 1분 20번이라(`429 RATE_LIMITED`) 서버 시험을 연달아 돌리면 잠시 기다린다.
+- 시뮬레이터 흐름은 마이크·알림 안내를 건너뛴다(`flutter drive`가 앱을 다시 설치하면서 마이크 권한이 초기화돼 OS 권한 창이 화면을 가린다). 안내 화면은 위젯 시험이 확인한다.
