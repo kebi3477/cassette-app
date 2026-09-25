@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Firebase 설정 파일 — 커밋하지 않는다 (docs/SETUP.md)
+/ios/Runner/GoogleService-Info.plist
+/android/app/google-services.json
+/lib/firebase_options.dart

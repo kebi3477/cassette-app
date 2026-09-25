@@ -4,6 +4,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// `flutter run --dart-define=KEY=VALUE` 값을 매니페스트에 넘긴다 (카카오 키, 링크 도메인).
+val dartDefines: Map<String, String> =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.map { String(java.util.Base64.getDecoder().decode(it)) }
+        ?.mapNotNull { d -> d.split("=", limit = 2).takeIf { it.size == 2 }?.let { it[0] to it[1] } }
+        ?.toMap()
+        ?: emptyMap()
+
 android {
     namespace = "com.kebi.cassette"
     compileSdk = flutter.compileSdkVersion
@@ -27,6 +36,8 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["kakaoNativeAppKey"] = dartDefines["KAKAO_NATIVE_APP_KEY"] ?: "NONE"
+        manifestPlaceholders["publicHost"] = dartDefines["PUBLIC_HOST"] ?: "cassette.example"
     }
 
     buildTypes {
