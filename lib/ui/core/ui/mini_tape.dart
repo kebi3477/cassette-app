@@ -55,7 +55,10 @@ class _MiniTapePainter extends CustomPainter {
       ..lineTo(36, 32)
       ..lineTo(12, 32)
       ..close();
-    canvas.drawPath(trap, Paint()..color = const Color(0x33000000));
+    canvas.drawPath(
+      trap,
+      Paint()..color = AppColors.black.withValues(alpha: .2),
+    );
   }
 
   @override

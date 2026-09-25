@@ -112,7 +112,7 @@ class _FrontPainter extends CustomPainter {
       canvas,
       RRect.fromRectAndRadius(rect, const Radius.circular(8)),
       spread: 1,
-      color: const Color(0x0F000000),
+      color: AppColors.black.withValues(alpha: .06),
     );
   }
 

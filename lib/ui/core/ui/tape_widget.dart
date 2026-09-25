@@ -247,8 +247,8 @@ class TapeBodyPainter extends CustomPainter {
   final double packR;
   final double hubAngle;
 
-  static const _white = Color(0xFFFFFFFF);
-  static const _black = Color(0xFF000000);
+  static const _white = AppColors.paper;
+  static const _black = AppColors.black;
 
   @override
   void paint(Canvas canvas, Size size) {

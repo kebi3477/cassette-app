@@ -94,6 +94,21 @@ abstract final class AppShadows {
     BoxShadow(color: Color(0x1F000000), offset: Offset(0, 2), blurRadius: 3),
   ];
 
+  /// 책꽂이 보기 64×44 소포 `0 2px 4px rgba(0,0,0,.18)`
+  static const bigParcel = [
+    BoxShadow(color: Color(0x2E000000), offset: Offset(0, 2), blurRadius: 4),
+  ];
+
+  /// 선반 판 `0 5px 8px -5px rgba(0,0,0,.3)`
+  static const plank = [
+    BoxShadow(
+      color: Color(0x4D000000),
+      offset: Offset(0, 5),
+      blurRadius: 8,
+      spreadRadius: -5,
+    ),
+  ];
+
   /// 받는 사람 메모 `0 1px 2px rgba(0,0,0,.15)`
   static const memo = [
     BoxShadow(color: Color(0x26000000), offset: Offset(0, 1), blurRadius: 2),

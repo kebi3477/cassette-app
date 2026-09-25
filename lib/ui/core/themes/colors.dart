@@ -66,6 +66,22 @@ abstract final class AppColors {
   static const flapBottom = Color(0xFFBB8E52);
   static const flapTape = Color(0xFFE6D9C0);
 
+  // 서랍 책꽂이 보기 (vShelf isShelf, emptyOn)
+  static const shelfBoardTop = Color(0xFFFBF9F5);
+  static const shelfBoardBottom = Color(0xFFF2EDE3);
+  static const shelfPlank = Color(0xFFDDD3C2);
+  static const shelfDash = Color(0xFFCFC6B5);
+
+  /// 스켈레톤 옅은 막대 (`#F4F4F2`)
+  static const skeletonLight = Color(0xFFF4F4F2);
+
+  // 소포 뜯기 오른쪽 반 (vParcel)
+  static const kraftRightLight = Color(0xFFC9A066);
+  static const kraftRightDark = Color(0xFFB98B4F);
+
+  /// 그림자·반투명 막의 바탕 (rgba(0,0,0,α)는 `black.withValues(alpha: α)`)
+  static const black = Color(0xFF000000);
+
   /// 가리는 흰 막 (`rgba(255,255,255,.55)`) — 0개인 테이프
   static const lockVeil = Color(0x8CFFFFFF);
 }
