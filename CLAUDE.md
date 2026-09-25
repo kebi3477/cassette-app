@@ -59,6 +59,10 @@ testing/                     # 가짜 repository·service (프로토타입 초�
 - 녹음 흐름은 phase enum 하나로 관리한다: `idle → rec → confirm → pick → label → sending → sent`
 - 반복 모드 "순서대로 / 전체 반복 / 한 개 반복"은 `LoopMode.off / all / one`에 대응한다
 
+## 설정
+
+카카오·Apple 로그인, Firebase 푸시, 유니버설 링크 도메인(`ios/Flutter/Env.xcconfig`, dart-define), AdMob·IAP, `FAIL_MODE` 등 실행 설정은 `docs/SETUP.md`에 있다. Firebase 설정 파일(`GoogleService-Info.plist`, `google-services.json`, `firebase_options.dart`)은 커밋하지 않는다.
+
 ## 명령어
 
 ```bash
