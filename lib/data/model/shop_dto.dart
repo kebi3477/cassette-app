@@ -153,7 +153,7 @@ class IapRequest {
     required this.verificationData,
   });
 
-  /// `app_store` · `google_play`
+  /// `app_store` · `play` (서버 `IAP_STORES`)
   final String store;
   final String productId;
 

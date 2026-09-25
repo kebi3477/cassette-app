@@ -51,7 +51,7 @@ class StoreIapService implements IapService {
   Completer<IapOutcome>? _waiting;
   String? _waitingFor;
 
-  static String get _store => Platform.isIOS ? 'app_store' : 'google_play';
+  static String get _store => IapReceipt.storeFor(isIOS: Platform.isIOS);
 
   @override
   Future<IapOutcome> buy(String productId) async {

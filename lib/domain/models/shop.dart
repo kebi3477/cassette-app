@@ -97,10 +97,19 @@ class IapReceipt {
     required this.verificationData,
   });
 
+  /// App Store — 서버 `IAP_STORES`의 `app_store`
+  static const appStore = 'app_store';
+
+  /// Google Play — 서버 `IAP_STORES`의 `play`
+  static const playStore = 'play';
+
   /// 스토어 없이 흉내 낸 결제 — 서버에는 `POST /dev/credits {charge}`로 보낸다.
   static const localStore = 'local';
 
-  /// `app_store` · `google_play` · [localStore]
+  /// 기기에 맞는 `store` 값
+  static String storeFor({required bool isIOS}) => isIOS ? appStore : playStore;
+
+  /// [appStore] · [playStore] · [localStore]
   final String store;
   final String productId;
   final String transactionId;

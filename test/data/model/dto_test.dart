@@ -6,6 +6,7 @@ import 'package:cassette_app/data/model/recording_dto.dart';
 import 'package:cassette_app/data/model/shelf_dto.dart';
 import 'package:cassette_app/data/model/shop_dto.dart';
 import 'package:cassette_app/domain/models/recording.dart';
+import 'package:cassette_app/domain/models/shop.dart';
 import 'package:cassette_app/domain/models/sent_tape.dart';
 import 'package:cassette_app/domain/models/tape_tag.dart';
 import 'package:cassette_app/domain/models/tape_type.dart';
@@ -181,5 +182,18 @@ void main() {
       'type': 'charge',
       'productId': 'credits_100',
     });
+  });
+
+  test('IAP store 값: iOS app_store, Android play (서버 IAP_STORES)', () {
+    expect(IapReceipt.storeFor(isIOS: true), 'app_store');
+    expect(IapReceipt.storeFor(isIOS: false), 'play');
+    expect(
+      IapRequest(
+        store: IapReceipt.storeFor(isIOS: false),
+        productId: 'credits_100',
+        verificationData: 'token',
+      ).toJson()['store'],
+      'play',
+    );
   });
 }
