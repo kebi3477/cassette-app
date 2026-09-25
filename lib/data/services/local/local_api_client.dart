@@ -5,6 +5,7 @@ import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
 import '../../model/page_dto.dart';
 import '../../model/recording_dto.dart';
+import '../../model/shop_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/wallet_dto.dart';
 import '../api/api_client.dart';
@@ -95,6 +96,13 @@ class LocalApiClient implements ApiClient {
     return _me();
   }
 
+  /// 회원 탈퇴 — 메모리 서버는 프로토타입 초기 상태로 되돌린다.
+  @override
+  Future<void> deleteMe() async {
+    await _wait();
+    _s.reset();
+  }
+
   // ── friends ───────────────────────────────────────
   /// 정렬: 즐겨찾기 먼저 → lastAt 최근 순(없으면 뒤)
   @override
@@ -146,6 +154,70 @@ class LocalApiClient implements ApiClient {
           .where((x) => x.sender.userId == userId && !x.opened)
           .length,
     );
+  }
+
+  @override
+  Future<void> deleteFriend(String userId) async {
+    await _wait();
+    _friend(userId);
+    _s.friends = _s.friends.where((f) => f.userId != userId).toList();
+  }
+
+  /// 친구가 아니어도(링크로 받은 사람) 차단할 수 있다.
+  @override
+  Future<BlockedUserDto> blockUser(String userId) async {
+    await _wait();
+    if (userId == LocalStore.meId) {
+      _fail(400, ApiErrorCode.cannotBlockSelf, '나는 차단할 수 없어요');
+    }
+    final existing = _s.blocked.where((b) => b.userId == userId).firstOrNull;
+    if (existing != null) {
+      return BlockedUserDto(
+        userId: existing.userId,
+        name: existing.name,
+        blockedAt: existing.at,
+      );
+    }
+    final friend = _s.friends.where((f) => f.userId == userId).firstOrNull;
+    final name = friend?.name ?? _senderName(userId);
+    if (name == null) _fail(404, ApiErrorCode.userNotFound, '찾을 수 없는 사용자예요');
+    final b = LocalBlock(
+      userId: userId,
+      name: name,
+      at: _s.now(),
+      friend: friend,
+    );
+    _s.blocked = [b, ..._s.blocked];
+    _s.friends = _s.friends.where((f) => f.userId != userId).toList();
+    return BlockedUserDto(userId: b.userId, name: b.name, blockedAt: b.at);
+  }
+
+  String? _senderName(String userId) {
+    for (final x in [..._s.unsorted, for (final g in _s.groups) ...g.items]) {
+      if (x.sender.userId == userId) return x.sender.name;
+    }
+    return null;
+  }
+
+  @override
+  Future<PageDto<BlockedUserDto>> getBlocks() async {
+    await _wait();
+    return PageDto(
+      items: [
+        for (final b in _s.blocked)
+          BlockedUserDto(userId: b.userId, name: b.name, blockedAt: b.at),
+      ],
+    );
+  }
+
+  /// 차단 전에 친구였다면 즐겨찾기·lastAt까지 그대로 돌아온다.
+  @override
+  Future<void> unblockUser(String userId) async {
+    await _wait();
+    final b = _s.blocked.where((x) => x.userId == userId).firstOrNull;
+    if (b == null) _fail(404, ApiErrorCode.blockNotFound, '차단한 친구가 아니에요');
+    _s.blocked = _s.blocked.where((x) => x.userId != userId).toList();
+    if (b.friend != null) _s.friends = [..._s.friends, b.friend!];
   }
 
   // ── recordings ────────────────────────────────────
@@ -324,6 +396,37 @@ class LocalApiClient implements ApiClient {
     return PageDto(items: List.of(_s.sent));
   }
 
+  /// 아직 아무도 받지 않은 링크만. 만료됐으면 새 링크(7일).
+  @override
+  Future<ShareLinkDto> reshareSent(String id) async {
+    await _wait();
+    final i = _s.sent.indexWhere((x) => x.id == id);
+    if (i < 0) _fail(404, ApiErrorCode.tapeNotFound, '테이프를 찾을 수 없어요');
+    final t = _s.sent[i];
+    if (t.linkName == null || t.recipient != null) {
+      _fail(409, ApiErrorCode.linkTaken, '이미 다른 분이 받은 테이프예요');
+    }
+    final now = _s.now();
+    final share = t.share != null && t.share!.expiresAt.isAfter(now)
+        ? t.share!
+        : ShareLinkDto(
+            url: 'https://cassette.app/t/${_s.nextId('link')}',
+            expiresAt: now.add(const Duration(days: 7)),
+          );
+    _s.sent = [..._s.sent]
+      ..[i] = SentTapeDto(
+        id: t.id,
+        linkName: t.linkName,
+        tapeType: t.tapeType,
+        durationMs: t.durationMs,
+        tag: t.tag,
+        sentAt: t.sentAt,
+        status: 'link_pending',
+        share: share,
+      );
+    return share;
+  }
+
   ({ShelfItemDto item, int index, LocalGroup? group}) _find(String id) {
     final i = _s.unsorted.indexWhere((x) => x.id == id);
     if (i >= 0) return (item: _s.unsorted[i], index: i, group: null);
@@ -498,6 +601,218 @@ class LocalApiClient implements ApiClient {
     int? limit,
   }) async {
     await _wait();
-    return PageDto(items: List.of(_s.ledger));
+    final start = int.tryParse(cursor ?? '') ?? 0;
+    final n = (limit ?? 30).clamp(1, 100);
+    final end = (start + n).clamp(0, _s.ledger.length);
+    return PageDto(
+      items: _s.ledger.sublist(start.clamp(0, _s.ledger.length), end),
+      nextCursor: end < _s.ledger.length ? '$end' : null,
+    );
+  }
+
+  void _addLedger(int delta, String reason, String kind) => _s.ledger = [
+    LedgerEntryDto(
+      id: _s.nextId('l'),
+      delta: delta,
+      reason: reason,
+      kind: kind,
+      createdAt: _s.now(),
+    ),
+    ..._s.ledger,
+  ];
+
+  Never _insufficient(int need) =>
+      _fail(402, ApiErrorCode.insufficientCredits, '크레딧이 부족해요', {'need': need});
+
+  @override
+  Future<GiftResultDto> sendGift({
+    required String toUserId,
+    required int amount,
+    required String idempotencyKey,
+  }) async {
+    await _wait();
+    final replay = _s.idempotency[idempotencyKey];
+    if (replay is GiftResultDto) return replay;
+    if (!const [10, 30, 50, 100].contains(amount)) {
+      _fail(
+        400,
+        ApiErrorCode.invalidGiftAmount,
+        '선물은 10, 30, 50, 100 크레딧만 할 수 있어요',
+      );
+    }
+    final f = _friend(toUserId);
+    if (_s.credits < amount) _insufficient(amount - _s.credits);
+    _s.credits -= amount;
+    _addLedger(-amount, '${f.name}님에게 선물', 'gift_sent');
+    final r = GiftResultDto(credits: _s.credits, entry: _s.ledger.first);
+    _s.idempotency[idempotencyKey] = r;
+    return r;
+  }
+
+  // ── shop · billing ────────────────────────────────
+  /// 계약서 §14 예시와 같은 상품 (= 프로토타입 `shopTapes`, `etc`, `packs`)
+  static const products = ProductsDto(
+    tapes: [
+      TapeProductDto(
+        id: 'tape3_1',
+        tapeType: 3,
+        qty: 1,
+        name: '3분 테이프',
+        price: 30,
+      ),
+      TapeProductDto(
+        id: 'tape3_5',
+        tapeType: 3,
+        qty: 5,
+        name: '3분 테이프 5개',
+        price: 120,
+      ),
+      TapeProductDto(
+        id: 'tape5_1',
+        tapeType: 5,
+        qty: 1,
+        name: '5분 테이프',
+        price: 50,
+      ),
+      TapeProductDto(
+        id: 'tape5_5',
+        tapeType: 5,
+        qty: 5,
+        name: '5분 테이프 5개',
+        price: 200,
+      ),
+    ],
+    drawer: [
+      DrawerProductDto(id: 'drawer_10', name: '서랍 넓히기', slots: 10, price: 100),
+    ],
+    creditPacks: [
+      CreditPackDto(
+        productId: 'credits_100',
+        credits: 100,
+        priceLabel: '₩1,100',
+      ),
+      CreditPackDto(
+        productId: 'credits_550',
+        credits: 550,
+        priceLabel: '₩5,500',
+      ),
+      CreditPackDto(
+        productId: 'credits_1200',
+        credits: 1200,
+        priceLabel: '₩11,000',
+      ),
+    ],
+    giftAmounts: [10, 30, 50, 100],
+  );
+
+  @override
+  Future<ProductsDto> getProducts() async {
+    await _wait();
+    return products;
+  }
+
+  @override
+  Future<PurchaseResultDto> purchase(
+    String productId, {
+    required String idempotencyKey,
+  }) async {
+    await _wait();
+    final replay = _s.idempotency[idempotencyKey];
+    if (replay is PurchaseResultDto) return replay;
+    final tape = products.tapes.where((t) => t.id == productId).firstOrNull;
+    final drawer = products.drawer.where((d) => d.id == productId).firstOrNull;
+    if (tape == null && drawer == null) {
+      _fail(404, ApiErrorCode.productNotFound, '없는 상품이에요');
+    }
+    final price = tape?.price ?? drawer!.price;
+    if (_s.credits < price) _insufficient(price - _s.credits);
+    _s.credits -= price;
+    if (tape != null) {
+      _s.owned = {
+        ..._s.owned,
+        tape.tapeType: (_s.owned[tape.tapeType] ?? 0) + tape.qty,
+      };
+      _addLedger(-price, '${tape.name} 구매', 'tape_purchase');
+    } else {
+      _s.cap += drawer!.slots;
+      _addLedger(-price, drawer.name, 'drawer_expand');
+    }
+    final me = _me();
+    final r = PurchaseResultDto(
+      credits: _s.credits,
+      tapes: me.tapes,
+      drawer: me.drawer,
+      entry: _s.ledger.first,
+    );
+    _s.idempotency[idempotencyKey] = r;
+    return r;
+  }
+
+  /// 같은 결제(verificationData)를 다시 보내면 지급 없이 `alreadyProcessed: true`.
+  /// 메모리 서버에는 스토어 키가 없으므로 실제 영수증 검증은 하지 않는다.
+  @override
+  Future<IapResultDto> verifyIap(
+    IapRequest body, {
+    required String idempotencyKey,
+  }) async {
+    await _wait();
+    final seen = 'iap:${body.verificationData}:${body.transactionId}';
+    if (_s.idempotency.containsKey(seen)) {
+      return IapResultDto(
+        credits: _s.credits,
+        granted: 0,
+        alreadyProcessed: true,
+      );
+    }
+    final pack =
+        _pack(body.productId) ??
+        _fail(400, ApiErrorCode.receiptInvalid, '결제를 확인하지 못했어요');
+    final r = _charge(pack);
+    _s.idempotency[seen] = r;
+    return r;
+  }
+
+  CreditPackDto? _pack(String? id) =>
+      products.creditPacks.where((p) => p.productId == id).firstOrNull;
+
+  IapResultDto _charge(CreditPackDto pack) {
+    _s.credits += pack.credits;
+    _addLedger(pack.credits, '크레딧 충전 · ${pack.priceLabel}', 'iap');
+    return IapResultDto(
+      credits: _s.credits,
+      granted: pack.credits,
+      entry: _s.ledger.first,
+    );
+  }
+
+  @override
+  Future<WalletDto> devCredits(DevCreditsRequest body) async {
+    await _wait();
+    switch (body.type) {
+      case 'ad':
+        if (_s.adsRemaining <= 0) {
+          _fail(429, ApiErrorCode.adLimitReached, '오늘은 다 받았어요');
+        }
+        _s.adsRemaining--;
+        _s.credits += 10;
+        _addLedger(10, '광고 보상', 'ad_reward');
+      case 'charge':
+        _charge(
+          _pack(body.productId) ??
+              _fail(404, ApiErrorCode.productNotFound, '없는 상품이에요'),
+        );
+      default:
+        _s.credits += body.amount ?? 0;
+        _addLedger(body.amount ?? 0, '개발용 지급', 'admin');
+    }
+    return getWallet();
+  }
+
+  /// SSV 콜백을 흉내 낸다 (시험용 도우미). 하루 3번이 넘으면 조용히 무시한다.
+  void grantAdReward() {
+    if (_s.adsRemaining <= 0) return;
+    _s.adsRemaining--;
+    _s.credits += 10;
+    _addLedger(10, '광고 보상', 'ad_reward');
   }
 }

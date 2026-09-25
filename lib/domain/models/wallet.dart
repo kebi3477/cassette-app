@@ -36,3 +36,11 @@ class LedgerEntry {
   /// 증감 (+/−)
   final int amount;
 }
+
+/// 크레딧 내역 한 페이지 (`GET /wallet/ledger?cursor=`)
+class LedgerPage {
+  const LedgerPage({required this.items, this.nextCursor});
+
+  final List<LedgerEntry> items;
+  final String? nextCursor;
+}

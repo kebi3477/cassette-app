@@ -1,3 +1,4 @@
+import '../../domain/models/blocked_user.dart';
 import '../../domain/models/friend.dart';
 import '../../domain/models/friend_tapes.dart';
 import '../../utils/result.dart';
@@ -30,4 +31,28 @@ class FriendRepositoryRemote extends FriendRepository {
   @override
   Future<Result<FriendTapes>> getFriendTapes(String friendId) =>
       guard(() async => (await _api.getFriendTapes(friendId)).toDomain());
+
+  Future<Result<T>> _mutate<T>(Future<T> Function() call) async {
+    final r = await guard(call);
+    if (r is Ok) notifyListeners();
+    return r;
+  }
+
+  @override
+  Future<Result<void>> remove(String friendId) =>
+      _mutate(() => _api.deleteFriend(friendId));
+
+  @override
+  Future<Result<BlockedUser>> block(String userId) =>
+      _mutate(() async => (await _api.blockUser(userId)).toDomain());
+
+  @override
+  Future<Result<List<BlockedUser>>> getBlocked() => guard(
+    () async =>
+        (await _api.getBlocks()).items.map((b) => b.toDomain()).toList(),
+  );
+
+  @override
+  Future<Result<void>> unblock(String userId) =>
+      _mutate(() => _api.unblockUser(userId));
 }

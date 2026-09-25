@@ -1,3 +1,4 @@
+import 'package:cassette_app/data/model/mappers.dart';
 import 'package:cassette_app/data/repositories/delivery_repository.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/domain/models/recipient.dart';
@@ -49,6 +50,21 @@ class FakeDeliveryRepository implements DeliveryRepository {
     return Result.ok(t);
   }
 
+  /// 프로토타입 보낸 기록(유진·엄마·민수·박과장님) 뒤에 이 가짜로 보낸 것을 앞에 붙인다.
   @override
-  Future<Result<List<SentTape>>> getSent() async => Result.ok(sent);
+  Future<Result<List<SentTape>>> getSent() async {
+    final s = store;
+    final seed = s == null
+        ? const <SentTape>[]
+        : [for (final d in s.sent) d.toDomain()];
+    return Result.ok([...sent.reversed, ...seed]);
+  }
+
+  int reshares = 0;
+
+  @override
+  Future<Result<Uri>> reshare(String sentId) async {
+    reshares++;
+    return Result.ok(Uri.parse('https://cassette.app/t/again'));
+  }
 }

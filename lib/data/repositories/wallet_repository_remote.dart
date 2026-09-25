@@ -18,8 +18,28 @@ class WalletRepositoryRemote extends WalletRepository {
   });
 
   @override
-  Future<Result<List<LedgerEntry>>> getLedger() => guard(
-    () async =>
-        (await _api.getLedger()).items.map((e) => e.toDomain()).toList(),
-  );
+  Future<Result<LedgerPage>> getLedger({String? cursor}) => guard(() async {
+    final page = await _api.getLedger(cursor: cursor);
+    return LedgerPage(
+      items: page.items.map((e) => e.toDomain()).toList(),
+      nextCursor: page.nextCursor,
+    );
+  });
+
+  @override
+  Future<Result<int>> gift({
+    required String toUserId,
+    required int amount,
+    required String idempotencyKey,
+  }) async {
+    final r = await guard(
+      () async => (await _api.sendGift(
+        toUserId: toUserId,
+        amount: amount,
+        idempotencyKey: idempotencyKey,
+      )).credits,
+    );
+    if (r is Ok) notifyListeners();
+    return r;
+  }
 }

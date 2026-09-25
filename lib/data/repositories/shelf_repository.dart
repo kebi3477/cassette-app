@@ -32,6 +32,9 @@ abstract class ShelfRepository extends ChangeNotifier {
   /// 소포 뜯기 (`POST /deliveries/{id}/open`)
   Future<Result<TapeItem>> open(String itemId);
 
+  /// 서랍 넓히기 등 다른 곳에서 바뀌었을 때 다시 불러오라고 알린다.
+  void invalidate() => notifyListeners();
+
   /// 재생 주소 (`GET /deliveries/{id}/audio`, 받는 사람만, 짧은 만료)
   Future<Result<TapeAudio>> audioUrl(String itemId);
 }

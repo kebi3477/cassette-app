@@ -8,7 +8,15 @@ abstract class WalletRepository extends ChangeNotifier {
   /// 크레딧과 보유 테이프(`GET /users/me`) + 오늘 남은 광고(`GET /wallet`)
   Future<Result<Wallet>> getWallet();
 
-  Future<Result<List<LedgerEntry>>> getLedger();
+  /// 크레딧 내역 한 페이지 (`GET /wallet/ledger?cursor=`)
+  Future<Result<LedgerPage>> getLedger({String? cursor});
+
+  /// 크레딧 선물 (`POST /wallet/gifts`). 성공하면 새 잔액.
+  Future<Result<int>> gift({
+    required String toUserId,
+    required int amount,
+    required String idempotencyKey,
+  });
 
   /// 보내기·구매 뒤 다시 불러오라고 알린다.
   void invalidate() => notifyListeners();

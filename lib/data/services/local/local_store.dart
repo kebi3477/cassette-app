@@ -31,6 +31,9 @@ class LocalStore {
   late List<ShelfItemDto> unsorted;
   late List<LocalGroup> groups;
   late List<SentTapeDto> sent;
+
+  /// 차단한 사람 (최근이 앞). 친구였다면 [LocalBlock.friend]에 즐겨찾기·lastAt을 남겨 둔다.
+  late List<LocalBlock> blocked;
   final Map<String, LocalRecording> recordings = {};
 
   /// presigned URL → 올린 파일 경로
@@ -49,6 +52,7 @@ class LocalStore {
     recordings.clear();
     uploads.clear();
     idempotency.clear();
+    blocked = [];
     name = '민경';
     credits = 120;
     cap = 12;
@@ -240,4 +244,21 @@ class LocalRecording {
   DateTime? readyAt;
   bool willFail = false;
   bool sent = false;
+}
+
+/// 차단 기록 (서버 테이블 `blocks`)
+class LocalBlock {
+  LocalBlock({
+    required this.userId,
+    required this.name,
+    required this.at,
+    this.friend,
+  });
+
+  final String userId;
+  final String name;
+  final DateTime at;
+
+  /// 차단 전 친구 관계 (해제하면 그대로 돌아온다)
+  final FriendDto? friend;
 }

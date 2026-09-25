@@ -49,4 +49,17 @@ abstract final class ApiErrorCode {
   static const groupNotFound = 'GROUP_NOT_FOUND';
   static const invalidGroupName = 'INVALID_GROUP_NAME';
   static const internalError = 'INTERNAL_ERROR';
+  static const insufficientCredits = 'INSUFFICIENT_CREDITS';
+  static const invalidGiftAmount = 'INVALID_GIFT_AMOUNT';
+  static const productNotFound = 'PRODUCT_NOT_FOUND';
+  static const adLimitReached = 'AD_LIMIT_REACHED';
+  static const receiptInvalid = 'RECEIPT_INVALID';
+  static const receiptPending = 'RECEIPT_PENDING';
+  static const receiptAlreadyUsed = 'RECEIPT_ALREADY_USED';
+  static const iapUnavailable = 'IAP_UNAVAILABLE';
+  static const giftNotAllowed = 'GIFT_NOT_ALLOWED';
+  static const linkTaken = 'LINK_TAKEN';
+  static const blockNotFound = 'BLOCK_NOT_FOUND';
+  static const cannotBlockSelf = 'CANNOT_BLOCK_SELF';
+  static const userNotFound = 'USER_NOT_FOUND';
 }

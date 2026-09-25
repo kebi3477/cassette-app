@@ -4,6 +4,7 @@ import 'package:cassette_app/data/model/mappers.dart';
 import 'package:cassette_app/data/model/me_dto.dart';
 import 'package:cassette_app/data/model/recording_dto.dart';
 import 'package:cassette_app/data/model/shelf_dto.dart';
+import 'package:cassette_app/data/model/shop_dto.dart';
 import 'package:cassette_app/domain/models/recording.dart';
 import 'package:cassette_app/domain/models/sent_tape.dart';
 import 'package:cassette_app/domain/models/tape_tag.dart';
@@ -132,6 +133,53 @@ void main() {
     expect(const MoveShelfItemRequest(groupId: null, afterId: null).toJson(), {
       'groupId': null,
       'afterId': null,
+    });
+  });
+
+  test('POST /billing/iap 응답: 같은 결제를 다시 보내면 alreadyProcessed', () {
+    final r = IapResultDto.fromJson({
+      'credits': 220,
+      'granted': 0,
+      'alreadyProcessed': true,
+    });
+    expect(r.alreadyProcessed, isTrue);
+    expect(r.entry, isNull);
+  });
+
+  test('GET /shop/products (§14)', () {
+    final c = ProductsDto.fromJson({
+      'tapes': [
+        {
+          'id': 'tape3_1',
+          'tapeType': 3,
+          'qty': 1,
+          'name': '3분 테이프',
+          'price': 30,
+        },
+      ],
+      'drawer': [
+        {'id': 'drawer_10', 'name': '서랍 넓히기', 'slots': 10, 'price': 100},
+      ],
+      'creditPacks': [
+        {
+          'productId': 'credits_100',
+          'credits': 100,
+          'priceKrw': 1100,
+          'priceLabel': '₩1,100',
+        },
+      ],
+      'giftAmounts': [10, 30, 50, 100],
+    }).toDomain();
+    expect(c.tapes.single.type, TapeType.three);
+    expect(c.drawer.single.slots, 10);
+    expect(c.packs.single.priceLabel, '₩1,100');
+  });
+
+  test('POST /dev/credits 본문', () {
+    expect(const DevCreditsRequest.ad().toJson(), {'type': 'ad'});
+    expect(const DevCreditsRequest.charge('credits_100').toJson(), {
+      'type': 'charge',
+      'productId': 'credits_100',
     });
   });
 }

@@ -63,3 +63,28 @@ class FriendTapesDto {
     'unopenedCount': unopenedCount,
   };
 }
+
+/// 계약서 §2 BlockedUser
+class BlockedUserDto {
+  const BlockedUserDto({
+    required this.userId,
+    required this.name,
+    required this.blockedAt,
+  });
+
+  final String userId;
+  final String name;
+  final DateTime blockedAt;
+
+  factory BlockedUserDto.fromJson(Json j) => BlockedUserDto(
+    userId: j['userId'] as String,
+    name: j['name'] as String,
+    blockedAt: parseDate(j['blockedAt']),
+  );
+
+  Json toJson() => {
+    'userId': userId,
+    'name': name,
+    'blockedAt': dateToJson(blockedAt),
+  };
+}

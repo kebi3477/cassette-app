@@ -11,6 +11,8 @@ class Me {
     required this.receivedCount,
     required this.sentCount,
     required this.friendCount,
+    this.providers = const [],
+    this.notificationsEnabled = true,
   });
 
   final String id;
@@ -25,6 +27,10 @@ class Me {
   final int receivedCount;
   final int sentCount;
   final int friendCount;
+
+  /// 연결된 계정 (`kakao` · `apple` · `dev`)
+  final List<String> providers;
+  final bool notificationsEnabled;
 }
 
 /// `drawer { stored, cap, full, unopenedCount }`

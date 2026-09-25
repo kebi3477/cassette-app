@@ -3,6 +3,7 @@ import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
 import '../../model/page_dto.dart';
 import '../../model/recording_dto.dart';
+import '../../model/shop_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/wallet_dto.dart';
 
@@ -18,6 +19,9 @@ abstract class ApiClient {
   /// `PATCH /users/me`
   Future<MeDto> patchMe(PatchMeRequest body);
 
+  /// `DELETE /users/me` — 회원 탈퇴
+  Future<void> deleteMe();
+
   // friends
   /// `GET /friends`
   Future<PageDto<FriendDto>> getFriends();
@@ -27,6 +31,18 @@ abstract class ApiClient {
 
   /// `GET /friends/{userId}/tapes`
   Future<FriendTapesDto> getFriendTapes(String userId);
+
+  /// `DELETE /friends/{userId}` — 목록에서 빼기
+  Future<void> deleteFriend(String userId);
+
+  /// `POST /friends/{userId}/block`
+  Future<BlockedUserDto> blockUser(String userId);
+
+  /// `GET /friends/blocks`
+  Future<PageDto<BlockedUserDto>> getBlocks();
+
+  /// `DELETE /friends/{userId}/block`
+  Future<void> unblockUser(String userId);
 
   // recordings
   /// `POST /recordings`
@@ -50,6 +66,9 @@ abstract class ApiClient {
 
   /// `GET /deliveries/sent`
   Future<PageDto<SentTapeDto>> getSent({String? cursor, int? limit});
+
+  /// `POST /deliveries/sent/{id}/share` — 링크 다시 공유하기
+  Future<ShareLinkDto> reshareSent(String id);
 
   /// `GET /deliveries/{id}`
   Future<ShelfItemDto> getDelivery(String id);
@@ -85,4 +104,31 @@ abstract class ApiClient {
 
   /// `GET /wallet/ledger`
   Future<PageDto<LedgerEntryDto>> getLedger({String? cursor, int? limit});
+
+  /// `POST /wallet/gifts` 🔑
+  Future<GiftResultDto> sendGift({
+    required String toUserId,
+    required int amount,
+    required String idempotencyKey,
+  });
+
+  // shop · billing
+  /// `GET /shop/products`
+  Future<ProductsDto> getProducts();
+
+  /// `POST /shop/purchases` 🔑
+  Future<PurchaseResultDto> purchase(
+    String productId, {
+    required String idempotencyKey,
+  });
+
+  /// `POST /billing/iap` 🔑
+  Future<IapResultDto> verifyIap(
+    IapRequest body, {
+    required String idempotencyKey,
+  });
+
+  // dev (운영 404)
+  /// `POST /dev/credits` — 스토어·AdMob 없이 광고 보상·충전을 흉내 낸다. 응답은 `GET /wallet`과 같다.
+  Future<WalletDto> devCredits(DevCreditsRequest body);
 }

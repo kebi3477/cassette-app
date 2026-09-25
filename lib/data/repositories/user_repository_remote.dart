@@ -23,4 +23,22 @@ class UserRepositoryRemote extends UserRepository {
     if (r is Ok) notifyListeners();
     return r;
   }
+
+  @override
+  Future<Result<Me>> setNotifications(bool enabled) async {
+    final r = await guard(
+      () async =>
+          (await _api.patchMe(PatchMeRequest(notificationsEnabled: enabled)))
+              .toDomain(),
+    );
+    if (r is Ok) notifyListeners();
+    return r;
+  }
+
+  @override
+  Future<Result<void>> withdraw() async {
+    final r = await guard(_api.deleteMe);
+    if (r is Ok) notifyListeners();
+    return r;
+  }
 }

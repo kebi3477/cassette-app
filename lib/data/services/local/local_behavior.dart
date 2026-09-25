@@ -7,6 +7,8 @@ enum FailMode {
   convertFail,
   sendFail,
   loadFail,
+  payFail,
+  adFail,
   offline;
 
   static FailMode parse(String value) =>
@@ -55,4 +57,6 @@ class LocalBehavior {
   bool get slowConvert => failMode == FailMode.convertSlow;
   bool get failsSend => failMode == FailMode.sendFail || offline;
   bool get failsAudio => failMode == FailMode.loadFail || offline;
+  bool get failsPay => failMode == FailMode.payFail || offline;
+  bool get failsAd => failMode == FailMode.adFail || offline;
 }

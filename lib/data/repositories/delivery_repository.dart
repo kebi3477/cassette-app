@@ -15,4 +15,7 @@ abstract class DeliveryRepository {
   });
 
   Future<Result<List<SentTape>>> getSent();
+
+  /// 링크 다시 공유하기 (`POST /deliveries/sent/{id}/share`). 만료됐으면 새 링크.
+  Future<Result<Uri>> reshare(String sentId);
 }

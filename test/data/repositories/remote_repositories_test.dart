@@ -1,14 +1,17 @@
 import 'package:cassette_app/data/model/api_error.dart';
+import 'package:cassette_app/data/model/shop_dto.dart';
 import 'package:cassette_app/data/repositories/delivery_repository_remote.dart';
 import 'package:cassette_app/data/repositories/friend_repository_remote.dart';
 import 'package:cassette_app/data/repositories/recording_repository_remote.dart';
 import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
+import 'package:cassette_app/data/repositories/shop_repository_remote.dart';
 import 'package:cassette_app/data/repositories/user_repository_remote.dart';
 import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
 import 'package:cassette_app/data/services/local/local_api_client.dart';
 import 'package:cassette_app/data/services/local/local_behavior.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/data/services/local/local_upload_service.dart';
+import 'package:cassette_app/domain/models/blocked_user.dart';
 import 'package:cassette_app/domain/models/friend.dart';
 import 'package:cassette_app/domain/models/friend_tapes.dart';
 import 'package:cassette_app/domain/models/me.dart';
@@ -16,6 +19,7 @@ import 'package:cassette_app/domain/models/recipient.dart';
 import 'package:cassette_app/domain/models/recording.dart';
 import 'package:cassette_app/domain/models/sent_tape.dart';
 import 'package:cassette_app/domain/models/shelf.dart';
+import 'package:cassette_app/domain/models/shop.dart';
 import 'package:cassette_app/domain/models/tape_audio.dart';
 import 'package:cassette_app/domain/models/tape_item.dart';
 import 'package:cassette_app/domain/models/tape_tag.dart';
@@ -252,5 +256,109 @@ void main() {
   test('FailMode.parse', () {
     expect(FailMode.parse('loadFail'), FailMode.loadFail);
     expect(FailMode.parse(''), FailMode.none);
+  });
+
+  group('상점·결제·선물·내역', () {
+    test('구매 부족이면 402 INSUFFICIENT_CREDITS + need', () async {
+      final repo = ShopRepositoryRemote(api);
+      final r = await repo.purchase('tape5_5', idempotencyKey: 'p1');
+      final e = apiError(r);
+      expect(e.status, 402);
+      expect(e.code, 'INSUFFICIENT_CREDITS');
+      expect(e.extra['need'], 80);
+    });
+
+    test('같은 거래(transactionId)는 한 번만 충전', () async {
+      final repo = ShopRepositoryRemote(api);
+      const receipt = IapReceipt(
+        store: 'app_store',
+        productId: 'credits_100',
+        transactionId: 'tx-1',
+        verificationData: 'jws',
+      );
+      expect(ok<int>(await repo.verifyIap(receipt, idempotencyKey: 'a')), 220);
+      expect(ok<int>(await repo.verifyIap(receipt, idempotencyKey: 'b')), 220);
+      expect(store.credits, 220);
+    });
+
+    test('선물 금액은 10·30·50·100만', () async {
+      final repo = WalletRepositoryRemote(api);
+      final bad = await repo.gift(
+        toUserId: 'u-mom',
+        amount: 20,
+        idempotencyKey: 'g1',
+      );
+      expect(apiError(bad).code, 'INVALID_GIFT_AMOUNT');
+      expect(
+        ok<int>(
+          await repo.gift(toUserId: 'u-mom', amount: 50, idempotencyKey: 'g2'),
+        ),
+        70,
+      );
+    });
+
+    test('크레딧 내역 커서', () async {
+      for (var i = 0; i < 40; i++) {
+        store.ledger = [...store.ledger, store.ledger.last];
+      }
+      final repo = WalletRepositoryRemote(api);
+      final p1 = ok<LedgerPage>(await repo.getLedger());
+      expect(p1.items, hasLength(30));
+      expect(p1.nextCursor, '30');
+      final p2 = ok<LedgerPage>(await repo.getLedger(cursor: p1.nextCursor));
+      expect(p2.items, hasLength(15));
+      expect(p2.nextCursor, isNull);
+    });
+
+    test('차단 목록·해제, 목록에서 빼기', () async {
+      final repo = FriendRepositoryRemote(api);
+      await repo.block('u-park');
+      expect(
+        ok<List<Friend>>(await repo.getFriends()).map((f) => f.name),
+        isNot(contains('박과장님')),
+      );
+      expect(
+        ok<List<BlockedUser>>(await repo.getBlocked()).single.name,
+        '박과장님',
+      );
+      await repo.unblock('u-park');
+      expect(ok<List<BlockedUser>>(await repo.getBlocked()), isEmpty);
+      await repo.remove('u-park');
+      expect(apiError(await repo.remove('u-park')).code, 'FRIEND_NOT_FOUND');
+    });
+
+    test('링크 다시 공유하기: 받은 뒤면 LINK_TAKEN', () async {
+      final repo = DeliveryRepositoryRemote(api);
+      expect(
+        ok<Uri>(await repo.reshare('s-1')).toString(),
+        'https://cassette.app/t/demo-yujin',
+      );
+      expect(apiError(await repo.reshare('s-2')).code, 'LINK_TAKEN');
+    });
+  });
+
+  test('가짜 결제(store: local)는 POST /dev/credits {charge}로 충전', () async {
+    final repo = ShopRepositoryRemote(api);
+    const r = IapReceipt(
+      store: IapReceipt.localStore,
+      productId: 'credits_550',
+      transactionId: 'local-1',
+      verificationData: 'local',
+    );
+    expect(ok<int>(await repo.verifyIap(r, idempotencyKey: 'x')), 670);
+    expect(store.ledger.first.reason, '크레딧 충전 · ₩5,500');
+  });
+
+  test('POST /dev/credits {ad}: 하루 3번, 넘으면 AD_LIMIT_REACHED', () async {
+    for (var i = 0; i < 3; i++) {
+      await api.devCredits(const DevCreditsRequest.ad());
+    }
+    expect(store.credits, 150);
+    await expectLater(
+      api.devCredits(const DevCreditsRequest.ad()),
+      throwsA(
+        isA<ApiException>().having((e) => e.code, 'code', 'AD_LIMIT_REACHED'),
+      ),
+    );
   });
 }

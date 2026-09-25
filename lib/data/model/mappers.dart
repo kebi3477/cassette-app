@@ -1,9 +1,11 @@
+import '../../domain/models/blocked_user.dart';
 import '../../domain/models/friend.dart';
 import '../../domain/models/friend_tapes.dart';
 import '../../domain/models/me.dart';
 import '../../domain/models/recording.dart';
 import '../../domain/models/sent_tape.dart';
 import '../../domain/models/shelf.dart';
+import '../../domain/models/shop.dart';
 import '../../domain/models/tape_audio.dart';
 import '../../domain/models/tape_item.dart';
 import '../../domain/models/tape_tag.dart';
@@ -13,6 +15,7 @@ import 'delivery_dto.dart';
 import 'friend_dto.dart';
 import 'me_dto.dart';
 import 'recording_dto.dart';
+import 'shop_dto.dart';
 import 'shelf_dto.dart';
 import 'wallet_dto.dart';
 
@@ -36,6 +39,8 @@ extension MeDtoMapper on MeDto {
     receivedCount: stats.receivedCount,
     sentCount: stats.sentCount,
     friendCount: stats.friendCount,
+    providers: providers,
+    notificationsEnabled: notificationsEnabled,
   );
 
   /// `GET /users/me`의 보유 테이프 + `GET /wallet`의 광고 횟수
@@ -143,4 +148,49 @@ extension SentTapeDtoMapper on SentTapeDto {
 extension LedgerEntryDtoMapper on LedgerEntryDto {
   LedgerEntry toDomain() =>
       LedgerEntry(date: createdAt, reason: reason, amount: delta);
+}
+
+extension BlockedUserDtoMapper on BlockedUserDto {
+  BlockedUser toDomain() =>
+      BlockedUser(id: userId, name: name, blockedAt: blockedAt);
+}
+
+extension ProductsDtoMapper on ProductsDto {
+  ShopCatalog toDomain() => ShopCatalog(
+    tapes: [
+      for (final t in tapes)
+        TapeProduct(
+          id: t.id,
+          name: t.name,
+          price: t.price,
+          type: TapeType.fromMinutes(t.tapeType),
+          qty: t.qty,
+        ),
+    ],
+    drawer: [
+      for (final d in drawer)
+        DrawerProduct(id: d.id, name: d.name, price: d.price, slots: d.slots),
+    ],
+    packs: [
+      for (final p in creditPacks)
+        CreditPack(
+          productId: p.productId,
+          credits: p.credits,
+          priceLabel: p.priceLabel,
+        ),
+    ],
+    giftAmounts: giftAmounts,
+  );
+}
+
+extension PurchaseResultDtoMapper on PurchaseResultDto {
+  PurchaseResult toDomain() => PurchaseResult(
+    credits: credits,
+    owned: {
+      for (final t in tapes)
+        if (t.qty != null) TapeType.fromMinutes(t.tapeType): t.qty!,
+    },
+    stored: drawer.stored,
+    cap: drawer.cap,
+  );
 }
