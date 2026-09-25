@@ -35,26 +35,49 @@ class FileAudioCache implements AudioCache {
   }
 
   /// id는 UUID지만, 경로를 벗어나지 않게 파일 이름에 쓸 수 있는 글자만 남긴다.
-  static String fileName(String deliveryId) =>
-      '${deliveryId.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_')}.audio';
+  static String baseName(String deliveryId) =>
+      deliveryId.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
 
-  Future<File> _file(String id) async =>
-      File('${(await _dir()).path}/${fileName(id)}');
+  /// iOS 재생기(AVPlayer)는 파일 확장자로 형식을 알아내므로 Content-Type에 맞춘다.
+  static String extensionFor(String? contentType) {
+    final t = (contentType ?? '').split(';').first.trim().toLowerCase();
+    return switch (t) {
+      'audio/wav' || 'audio/x-wav' || 'audio/wave' || 'audio/vnd.wave' => 'wav',
+      'audio/mpeg' || 'audio/mp3' => 'mp3',
+      'audio/aac' || 'audio/x-aac' => 'aac',
+      _ => 'm4a', // audio/mp4 · audio/m4a · audio/x-m4a (녹음 형식)
+    };
+  }
+
+  Future<List<File>> _files(String id) async {
+    final prefix = '${baseName(id)}.';
+    final d = await _dir();
+    return [
+      await for (final e in d.list())
+        if (e is File &&
+            e.uri.pathSegments.last.startsWith(prefix) &&
+            !e.path.endsWith('.part'))
+          e,
+    ];
+  }
 
   @override
   Future<File?> find(String deliveryId) async {
-    final f = await _file(deliveryId);
-    return await f.exists() && await f.length() > 0 ? f : null;
+    for (final f in await _files(deliveryId)) {
+      if (await f.length() > 0) return f;
+    }
+    return null;
   }
 
   @override
   Future<File> save(String deliveryId, String url) async {
-    final f = await _file(deliveryId);
+    final d = await _dir();
     // 다 받은 뒤에 이름을 바꿔, 끊긴 파일이 캐시로 남지 않게 한다.
-    final part = File('${f.path}.part');
+    final part = File('${d.path}/${baseName(deliveryId)}.part');
     try {
-      await _dio.download(url, part.path);
-      return await part.rename(f.path);
+      final r = await _dio.download(url, part.path);
+      final ext = extensionFor(r.headers.value(Headers.contentTypeHeader));
+      return await part.rename('${d.path}/${baseName(deliveryId)}.$ext');
     } catch (_) {
       if (await part.exists()) await part.delete();
       rethrow;
@@ -63,8 +86,9 @@ class FileAudioCache implements AudioCache {
 
   @override
   Future<void> remove(String deliveryId) async {
-    final f = await _file(deliveryId);
-    if (await f.exists()) await f.delete();
+    for (final f in await _files(deliveryId)) {
+      await f.delete();
+    }
   }
 
   @override

@@ -39,9 +39,19 @@ class LoginViewModel extends ChangeNotifier {
       call(),
       Future<void>.delayed(connectingTime),
     ]);
-    _busy = null;
-    notifyListeners();
     final r = results.first! as SignInResult;
     if (r is SignInFailed) _toast.show(r.message);
+    // 로그인에 성공하면 관문이 다음 화면으로 넘기면서 이 ViewModel을 버린다.
+    if (_disposed) return;
+    _busy = null;
+    notifyListeners();
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

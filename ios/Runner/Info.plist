@@ -24,6 +24,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- 개발 서버(http://localhost, 같은 와이파이의 맥 IP)에 붙을 때만. 인터넷 주소는 https만 -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>테이프에 목소리를 녹음하려면 마이크가 필요해요.</string>
 	<key>CFBundleURLTypes</key>
