@@ -1,0 +1,4 @@
+tags:
+  # 실제 서버에 붙는 시험. API_BASE_URL이 없으면 건너뛴다 (기본 `flutter test`).
+  # flutter test --tags server --dart-define=API_BASE_URL=http://localhost:3000/api
+  server:
