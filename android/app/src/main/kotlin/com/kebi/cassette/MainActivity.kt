@@ -1,4 +1,4 @@
-package com.kebi3477.cassette_app
+package com.kebi.cassette
 
 import io.flutter.embedding.android.FlutterActivity
 
