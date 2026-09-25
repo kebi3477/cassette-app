@@ -65,6 +65,15 @@ xcrun devicectl list devices                                  # 기기 ID 확인
 xcrun devicectl device install app --device <기기 ID> build/ios/iphoneos/Runner.app
 ```
 
+### AdMob 테스트 기기
+
+자기 광고를 실제로 보면 무효 트래픽이 된다. 개발자 기기는 테스트 기기로 넣어 실제 광고 단위에서도 테스트 광고를 받는다.
+
+1. 기기를 맥에 연결하고 **Console.app**(콘솔)을 연다 → 왼쪽에서 기기 선택 → 스트리밍 시작 → 검색에 `testDeviceIdentifiers`
+2. 앱에서 광고를 한 번 요청한다(상점 → 광고 보고 받기). 광고가 뜨면 누르지 않는다
+3. 로그의 `testDeviceIdentifiers = @[ @"…" ]` 값을 `ADMOB_TEST_DEVICE_IDS`(쉼표 구분)로 넣어 빌드한다
+   `flutter build ios --release --dart-define=ADMOB_TEST_DEVICE_IDS=<ID>`
+
 ## Firebase (푸시)
 
 Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다.

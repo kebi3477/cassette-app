@@ -27,7 +27,18 @@ class AdMobAdService implements AdService {
   final String adUnitId;
   RewardedAd? _ad;
 
-  static Future<void> initialize() => MobileAds.instance.initialize();
+  /// 테스트 기기로 등록한 기기에는 실제 광고 단위에서도 테스트 광고가 나온다.
+  /// 자기 광고를 직접 보면 무효 트래픽이 되므로 개발자 기기는 꼭 넣는다 (Env.admobTestDeviceIds).
+  static Future<void> initialize({
+    List<String> testDeviceIds = const [],
+  }) async {
+    if (testDeviceIds.isNotEmpty) {
+      await MobileAds.instance.updateRequestConfiguration(
+        RequestConfiguration(testDeviceIds: testDeviceIds),
+      );
+    }
+    await MobileAds.instance.initialize();
+  }
 
   @override
   bool get simulated => false;

@@ -26,7 +26,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // 광고 단위 ID가 있을 때만 광고 SDK를 켠다.
-  if (Env.admobRewardedId.isNotEmpty) await AdMobAdService.initialize();
+  if (Env.admobRewardedId.isNotEmpty) {
+    await AdMobAdService.initialize(testDeviceIds: Env.admobTestDeviceIds);
+  }
   // Firebase 설정 파일이 없으면 가짜 푸시로 돈다.
   final push = await FirebasePushService.create() ?? LocalPushService();
   runApp(

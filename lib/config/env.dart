@@ -16,8 +16,7 @@ abstract final class Env {
     'ADMOB_REWARDED_ID',
   );
   static const _admobRewardedIos = 'ca-app-pub-6280185901199691/7070993115';
-  static const _admobRewardedAndroid =
-      'ca-app-pub-6280185901199691/5757911441';
+  static const _admobRewardedAndroid = 'ca-app-pub-6280185901199691/5757911441';
 
   static String get admobRewardedId {
     if (_admobRewardedIdOverride.isNotEmpty) return _admobRewardedIdOverride;
@@ -26,6 +25,18 @@ abstract final class Env {
         ? _admobRewardedIos
         : _admobRewardedAndroid;
   }
+
+  /// AdMob 테스트 기기 ID (쉼표로 구분). 개발자 기기에서 실제 광고 대신 테스트 광고를 받는다.
+  /// 기기 ID는 광고를 한 번 요청하면 SDK가 로그에 찍는다 (docs/SETUP.md).
+  static const _admobTestDeviceIds = String.fromEnvironment(
+    'ADMOB_TEST_DEVICE_IDS',
+  );
+
+  static List<String> get admobTestDeviceIds => _admobTestDeviceIds
+      .split(',')
+      .map((s) => s.trim())
+      .where((s) => s.isNotEmpty)
+      .toList();
 
   /// true면 App Store / Google Play 결제를 쓴다. 아니면 가짜 결제(1.4초 뒤 성공, 개발 전용
   /// `POST /dev/credits`). release 빌드는 실제 결제가 기본값이다.
