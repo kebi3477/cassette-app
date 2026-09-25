@@ -38,6 +38,10 @@ class DeliveryRepositoryRemote implements DeliveryRepository {
   });
 
   @override
+  Future<Result<SentTape>> getSentOne(String id) =>
+      guard(() async => (await _api.getSentTape(id)).toDomain());
+
+  @override
   Future<Result<Uri>> reshare(String sentId) =>
       guard(() async => Uri.parse((await _api.reshareSent(sentId)).url));
 }

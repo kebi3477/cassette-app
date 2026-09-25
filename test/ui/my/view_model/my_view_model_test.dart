@@ -1,3 +1,4 @@
+import 'package:cassette_app/data/repositories/auth_repository.dart';
 import 'package:cassette_app/data/repositories/delivery_repository_remote.dart';
 import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
 import 'package:cassette_app/domain/models/sent_tape.dart';
@@ -212,7 +213,7 @@ void main() {
       setup(async);
       vm.logout();
       async.flushMicrotasks();
-      expect(h.auth.loggedIn, isFalse);
+      expect(h.auth.status, AuthStatus.signedOut);
 
       h.store.credits = 3;
       late bool done;

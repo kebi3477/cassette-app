@@ -74,6 +74,14 @@ class FakeDeliveryRepository implements DeliveryRepository {
   int reshares = 0;
 
   @override
+  Future<Result<SentTape>> getSentOne(String id) async {
+    final page = await getSent();
+    final all = (page as Ok<SentPage>).value.items;
+    final t = all.where((x) => x.id == id).firstOrNull;
+    return t == null ? Result.error(Exception('not found')) : Result.ok(t);
+  }
+
+  @override
   Future<Result<Uri>> reshare(String sentId) async {
     reshares++;
     return Result.ok(Uri.parse('https://cassette.app/t/again'));

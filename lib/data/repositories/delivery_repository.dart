@@ -17,6 +17,9 @@ abstract class DeliveryRepository {
   /// 보낸 테이프 한 페이지 (최근 순, `GET /deliveries/sent?cursor=`)
   Future<Result<SentPage>> getSent({String? cursor});
 
+  /// 보낸 테이프 하나 (`GET /deliveries/sent/{id}`) — "테이프를 받았어요" 푸시에서
+  Future<Result<SentTape>> getSentOne(String id);
+
   /// 링크 다시 공유하기 (`POST /deliveries/sent/{id}/share`). 만료됐으면 새 링크.
   Future<Result<Uri>> reshare(String sentId);
 }

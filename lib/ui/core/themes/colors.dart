@@ -92,6 +92,9 @@ abstract final class AppColors {
   /// 탈퇴 시트 요약 구분선 (`#EDEDEA`)
   static const withdrawLine = Color(0xFFEDEDEA);
 
+  /// 앱 안 푸시 배너 (`rgba(246,246,244,.98)`)
+  static const pushBanner = Color(0xFAF6F6F4);
+
   /// 그림자·반투명 막의 바탕 (rgba(0,0,0,α)는 `black.withValues(alpha: α)`)
   static const black = Color(0xFF000000);
 

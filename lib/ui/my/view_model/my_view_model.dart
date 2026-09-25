@@ -297,6 +297,12 @@ class MyViewModel extends ChangeNotifier {
 
   // ── 보낸 테이프 ────────────────────────────────────
   /// 링크 다시 공유하기 (`sdShare`) — `POST /deliveries/sent/{id}/share` 뒤 공유 시트.
+  /// 보낸 테이프 하나 — "테이프를 받았어요" 푸시를 눌렀을 때 상세를 연다.
+  Future<SentTape?> sentById(String id) async {
+    final r = await _deliveries.getSentOne(id);
+    return r is Ok<SentTape> ? r.value : null;
+  }
+
   Future<void> reshare(SentTape s) async {
     final r = await _deliveries.reshare(s.id);
     switch (r) {
@@ -334,7 +340,7 @@ class MyViewModel extends ChangeNotifier {
     switch (r) {
       case Ok():
         _toast.show('탈퇴했어요. 그동안 고마웠어요');
-        await _auth.logout();
+        await _auth.signedOutByServer();
         _friendsRepo.invalidate();
         _walletRepo.invalidate();
         return true;

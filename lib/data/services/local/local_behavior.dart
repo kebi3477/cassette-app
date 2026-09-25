@@ -9,6 +9,12 @@ enum FailMode {
   loadFail,
   payFail,
   adFail,
+  serverError,
+  forceUpdate,
+  linkTaken,
+  linkExpired,
+  linkOwn,
+  rejoinRestricted,
   offline;
 
   static FailMode parse(String value) =>
@@ -24,10 +30,12 @@ class LocalBehavior {
     this.convertFailDelay = const Duration(milliseconds: 1200),
     this.sendDelay = const Duration(milliseconds: 1200),
     this.sendFailDelay = const Duration(milliseconds: 1700),
+    this.requireAuth = false,
   });
 
   factory LocalBehavior.fromEnvironment() => LocalBehavior(
     failMode: FailMode.parse(const String.fromEnvironment('FAIL_MODE')),
+    requireAuth: true,
   );
 
   /// 시험용: 지연 없음
@@ -40,7 +48,23 @@ class LocalBehavior {
     sendFailDelay: Duration.zero,
   );
 
+  /// 시험용: 실패 흉내·인증만 바꾼 복사본
+  LocalBehavior copyWith({FailMode? failMode, bool? requireAuth}) =>
+      LocalBehavior(
+        failMode: failMode ?? this.failMode,
+        latency: latency,
+        convertDelay: convertDelay,
+        convertSlowDelay: convertSlowDelay,
+        convertFailDelay: convertFailDelay,
+        sendDelay: sendDelay,
+        sendFailDelay: sendFailDelay,
+        requireAuth: requireAuth ?? this.requireAuth,
+      );
+
   final FailMode failMode;
+
+  /// 보호된 API에 유효한 access token을 요구한다 (앱에서 켠다. 시험은 기본 끔)
+  final bool requireAuth;
 
   /// 모든 요청의 기본 응답 시간
   final Duration latency;
@@ -59,4 +83,6 @@ class LocalBehavior {
   bool get failsAudio => failMode == FailMode.loadFail || offline;
   bool get failsPay => failMode == FailMode.payFail || offline;
   bool get failsAd => failMode == FailMode.adFail || offline;
+  bool get serverDown => failMode == FailMode.serverError;
+  bool get forcesUpdate => failMode == FailMode.forceUpdate;
 }

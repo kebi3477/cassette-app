@@ -95,6 +95,7 @@ class PlayerViewModel extends ChangeNotifier {
   final List<StreamSubscription<void>> _subs = [];
 
   QueueSource? _source;
+  bool _linkChip = true;
   String _queueName = '';
   List<TapeItem> _queue = const [];
   int _index = -1;
@@ -110,6 +111,9 @@ class PlayerViewModel extends ChangeNotifier {
   bool _closed = false;
 
   QueueSource? get source => _source;
+
+  /// 링크로 받은 소포의 "○○님과 친구가 되었어요" 칩 (`viaLink`)
+  bool get showLinkChip => _linkChip && (current?.viaLink ?? false);
   List<TapeItem> get queue => _queue;
   int get index => _index;
   TapeItem? get current =>
@@ -147,8 +151,13 @@ class PlayerViewModel extends ChangeNotifier {
 
   // ── 열기 ─────────────────────────────────────────
   /// 테이프를 연다 (`openItem`). 안 뜯은 소포면 소포 화면부터.
-  Future<void> open(QueueSource source, String itemId) async {
+  Future<void> open(
+    QueueSource source,
+    String itemId, {
+    bool linkChip = true,
+  }) async {
     _source = source;
+    _linkChip = linkChip;
     switch (source) {
       case GroupSource(:final groupId):
         final r = await _shelf.getShelf();

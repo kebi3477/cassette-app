@@ -56,6 +56,7 @@ class RecordViewModel extends ChangeNotifier {
        _deliveries = deliveryRepository {
     _friendsRepo.addListener(_loadFriends);
     _walletRepo.addListener(_loadWallet);
+    _users.addListener(_loadName);
     _subs.add(_player.position.listen(_onPosition));
     _subs.add(_player.completed.listen((_) => _onPreviewEnd()));
     _subs.add(
@@ -233,6 +234,14 @@ class RecordViewModel extends ChangeNotifier {
       // 권한 확인이 안 되는 환경이면 녹음 버튼을 누를 때 다시 묻는다.
     }
     notifyListeners();
+  }
+
+  Future<void> _loadName() async {
+    final me = await _users.getMe();
+    if (me is Ok<Me>) {
+      _myName = me.value.name;
+      notifyListeners();
+    }
   }
 
   Future<void> _loadWallet() async {
@@ -763,6 +772,7 @@ class RecordViewModel extends ChangeNotifier {
     }
     _friendsRepo.removeListener(_loadFriends);
     _walletRepo.removeListener(_loadWallet);
+    _users.removeListener(_loadName);
     super.dispose();
   }
 }

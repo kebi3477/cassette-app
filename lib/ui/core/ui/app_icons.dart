@@ -20,12 +20,16 @@ class SvgIcon extends StatelessWidget {
     required this.width,
     required this.height,
     this.color,
+    this.tint,
   });
 
   final String asset;
   final double width;
   final double height;
   final Color? color;
+
+  /// 도형 전체를 이 색으로 칠한다 (심볼을 회색으로 등)
+  final Color? tint;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +38,9 @@ class SvgIcon extends StatelessWidget {
       width: width,
       height: height,
       theme: color == null ? const SvgTheme() : SvgTheme(currentColor: color!),
+      colorFilter: tint == null
+          ? null
+          : ColorFilter.mode(tint!, BlendMode.srcIn),
     );
   }
 }

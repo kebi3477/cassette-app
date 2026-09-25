@@ -1,3 +1,4 @@
+import 'package:cassette_app/data/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -125,8 +126,10 @@ void main() {
     await tester.tap(find.text('탈퇴하기'));
     await tester.pumpAndSettle();
     expect(find.text('탈퇴했어요. 그동안 고마웠어요'), findsOneWidget);
-    expect(h.auth.loggedIn, isFalse);
-    expect(find.text('1분'), findsOneWidget);
+    expect(h.auth.status, AuthStatus.signedOut);
+    // 로그인 화면으로
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('카카오로 시작하기'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
 }

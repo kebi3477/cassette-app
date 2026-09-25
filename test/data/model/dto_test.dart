@@ -1,4 +1,5 @@
 import 'package:cassette_app/data/model/api_error.dart';
+import 'package:cassette_app/data/model/auth_dto.dart';
 import 'package:cassette_app/data/model/delivery_dto.dart';
 import 'package:cassette_app/data/model/mappers.dart';
 import 'package:cassette_app/data/model/me_dto.dart';
@@ -195,5 +196,105 @@ void main() {
       ).toJson()['store'],
       'play',
     );
+  });
+
+  group('4단계 계약', () {
+    const me = {
+      'id': 'u1',
+      'name': null,
+      'credits': 10,
+      'drawer': {'stored': 0, 'cap': 12, 'full': false},
+      'tapes': [
+        {'tapeType': 1, 'qty': null},
+      ],
+      'stats': {'receivedCount': 0, 'sentCount': 0, 'friendCount': 0},
+      'providers': ['kakao'],
+      'notificationsEnabled': true,
+      'createdAt': '2026-09-01T00:00:00.000Z',
+    };
+
+    test('AuthResponse (§6) — 토큰이 맨 위에 펼쳐져 있다', () {
+      final r = AuthResponseDto.fromJson({
+        'accessToken': 'eyJ',
+        'accessTokenExpiresAt': '2026-09-25T07:34:46.490Z',
+        'refreshToken': 'ujlq',
+        'refreshTokenExpiresAt': '2026-11-24T06:34:46.490Z',
+        'isNewUser': true,
+        'suggestedName': '민경',
+        'user': me,
+      });
+      expect(r.tokens.accessToken, 'eyJ');
+      expect(r.tokens.refreshToken, 'ujlq');
+      expect(r.isNewUser, isTrue);
+      expect(r.suggestedName, '민경');
+      expect(r.user.name, isNull);
+    });
+
+    test('POST /auth/apple 본문 — authorizationCode·nonce', () {
+      expect(
+        const AppleAuthRequest(
+          identityToken: 'eyJ',
+          authorizationCode: 'c1a',
+          nonce: 'n',
+        ).toJson(),
+        {'identityToken': 'eyJ', 'authorizationCode': 'c1a', 'nonce': 'n'},
+      );
+    });
+
+    test('GET /app-version (§5) — version 없으면 null', () {
+      final v = AppVersionDto.fromJson({
+        'platform': 'ios',
+        'minVersion': '1.0.0',
+        'latestVersion': '1.2.0',
+        'storeUrl': 'https://apps.apple.com/app/id0000000000',
+        'updateRequired': null,
+        'updateAvailable': null,
+      });
+      expect(v.updateRequired, isNull);
+      expect(v.storeUrl, startsWith('https://apps.apple.com'));
+    });
+
+    test('GET /share/{token} (§12)', () {
+      final s = ShareInfoDto.fromJson({
+        'state': 'available',
+        'deliveryId': null,
+        'sender': {'userId': 'u2', 'name': '하늘'},
+        'tapeType': 1,
+        'durationMs': 34000,
+        'tag': 'thinking',
+        'sentAt': '2026-09-25T00:00:00.000Z',
+        'expiresAt': '2026-10-02T00:00:00.000Z',
+      });
+      expect(s.state, 'available');
+      expect(s.sender.name, '하늘');
+    });
+
+    test('POST /share/{token}/claim (§12) — friend는 null일 수 있다', () {
+      final c = ClaimResultDto.fromJson({
+        'item': {
+          'id': 't1',
+          'sender': {'userId': 'u2', 'name': '하늘'},
+          'tapeType': 1,
+          'durationMs': 34000,
+          'tag': null,
+          'sentAt': '2026-09-25T00:00:00.000Z',
+          'opened': false,
+          'viaLink': true,
+        },
+        'friend': null,
+      });
+      expect(c.item.viaLink, isTrue);
+      expect(c.friend, isNull);
+    });
+
+    test('REJOIN_RESTRICTED (§3) — availableAt', () {
+      final e = ApiException.fromJson(403, {
+        'code': 'REJOIN_RESTRICTED',
+        'message': '탈퇴 후 30일 동안은 다시 가입할 수 없어요',
+        'availableAt': '2026-10-25T12:00:00.000Z',
+      });
+      expect(e.code, ApiErrorCode.rejoinRestricted);
+      expect(e.extra['availableAt'], '2026-10-25T12:00:00.000Z');
+    });
   });
 }

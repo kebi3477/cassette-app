@@ -26,6 +26,7 @@ class MyScreen extends StatefulWidget {
     required this.onRecordTo,
     required this.onGift,
     required this.onSignedOut,
+    this.openSentId,
   });
 
   final MyViewModel viewModel;
@@ -39,8 +40,11 @@ class MyScreen extends StatefulWidget {
   /// 친구 ⋯ > 크레딧 선물하기
   final ValueChanged<Friend> onGift;
 
-  /// 로그아웃·탈퇴 뒤 (로그인 화면은 4단계)
+  /// 로그아웃·탈퇴 뒤 (관문이 로그인 화면으로 보낸다)
   final VoidCallback onSignedOut;
+
+  /// 열자마자 상세를 띄울 보낸 테이프 (`/my?sent=`, "테이프를 받았어요" 푸시)
+  final String? openSentId;
 
   @override
   State<MyScreen> createState() => _MyScreenState();
@@ -55,6 +59,7 @@ class _MyScreenState extends State<MyScreen> {
   void initState() {
     super.initState();
     widget.viewModel.enter();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openSent());
     // 입력칸에서 벗어나면 저장 (`onBlur={{ doneName }}`)
     _nameFocus.addListener(() {
       if (!_nameFocus.hasFocus) widget.viewModel.commitName();
@@ -64,6 +69,24 @@ class _MyScreenState extends State<MyScreen> {
       final p = _scroll.position;
       if (p.pixels > p.maxScrollExtent - 400) widget.viewModel.loadMoreSent();
     });
+  }
+
+  @override
+  void didUpdateWidget(MyScreen old) {
+    super.didUpdateWidget(old);
+    if (widget.openSentId != old.openSentId) _openSent();
+  }
+
+  Future<void> _openSent() async {
+    final id = widget.openSentId;
+    if (id == null) return;
+    final s = await widget.viewModel.sentById(id);
+    if (s == null || !mounted) return;
+    await showSentDetailSheet(
+      context,
+      sent: s,
+      onReshare: () => widget.viewModel.reshare(s),
+    );
   }
 
   @override

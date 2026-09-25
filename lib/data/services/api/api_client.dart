@@ -1,3 +1,4 @@
+import '../../model/auth_dto.dart';
 import '../../model/delivery_dto.dart';
 import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
@@ -12,6 +13,54 @@ import '../../model/wallet_dto.dart';
 /// 실패하면 [ApiException](../../model/api_error.dart)을 던진다.
 /// 지금은 메모리 구현([LocalApiClient])만 있고, 다음 단계에서 HTTP 구현을 넣는다.
 abstract class ApiClient {
+  /// 보호된 API에 붙일 `Authorization: Bearer` 값. [AuthorizedApiClient]가 채운다.
+  String? accessToken;
+
+  // 공개 (@공개)
+  /// `GET /health`
+  Future<void> health();
+
+  /// `GET /app-version?platform=&version=`
+  Future<AppVersionDto> getAppVersion({
+    required String platform,
+    String? version,
+  });
+
+  /// `POST /auth/kakao` `{ accessToken }`
+  Future<AuthResponseDto> authKakao(String kakaoAccessToken);
+
+  /// `POST /auth/apple`
+  Future<AuthResponseDto> authApple(AppleAuthRequest body);
+
+  /// `POST /auth/dev` `{ key, name? }` — 개발 전용
+  Future<AuthResponseDto> authDev({required String key, String? name});
+
+  /// `POST /auth/refresh` — refresh token은 한 번 쓰면 사라진다(회전).
+  Future<TokenPairDto> refreshTokens(String refreshToken);
+
+  /// `POST /auth/logout`
+  Future<void> logout(String refreshToken);
+
+  // notifications
+  /// `PUT /notifications/devices` `{ token, platform }`
+  Future<void> registerDevice({
+    required String token,
+    required String platform,
+  });
+
+  /// `DELETE /notifications/devices/{token}`
+  Future<void> unregisterDevice(String token);
+
+  // share
+  /// `GET /share/{token}`
+  Future<ShareInfoDto> getShare(String token);
+
+  /// `POST /share/{token}/claim` 🔑
+  Future<ClaimResultDto> claimShare(
+    String token, {
+    required String idempotencyKey,
+  });
+
   // users
   /// `GET /users/me`
   Future<MeDto> getMe();
@@ -66,6 +115,9 @@ abstract class ApiClient {
 
   /// `GET /deliveries/sent`
   Future<PageDto<SentTapeDto>> getSent({String? cursor, int? limit});
+
+  /// `GET /deliveries/sent/{id}` — 보낸 테이프 상세
+  Future<SentTapeDto> getSentTape(String id);
 
   /// `POST /deliveries/sent/{id}/share` — 링크 다시 공유하기
   Future<ShareLinkDto> reshareSent(String id);

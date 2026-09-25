@@ -26,6 +26,19 @@ class ApiException implements Exception {
   /// 예: `need`, `tapeType`, `status`, `deliveryId`, `url`
   final Json extra;
 
+  /// 요청이 서버에 닿지 않았다 (오프라인 등). HTTP 상태가 없다.
+  static const networkStatus = 0;
+
+  const ApiException.network()
+    : status = networkStatus,
+      code = ApiErrorCode.networkError,
+      message = '인터넷에 연결되어 있지 않아요',
+      extra = const {};
+
+  bool get isNetwork => status == networkStatus;
+  bool get isServerError => status >= 500;
+  bool get isUnauthorized => status == 401;
+
   @override
   String toString() => 'ApiException($status $code: $message)';
 }
@@ -49,6 +62,15 @@ abstract final class ApiErrorCode {
   static const groupNotFound = 'GROUP_NOT_FOUND';
   static const invalidGroupName = 'INVALID_GROUP_NAME';
   static const internalError = 'INTERNAL_ERROR';
+  static const networkError = 'NETWORK_ERROR';
+  static const unauthorized = 'UNAUTHORIZED';
+  static const invalidRefreshToken = 'INVALID_REFRESH_TOKEN';
+  static const socialTokenInvalid = 'SOCIAL_TOKEN_INVALID';
+  static const invalidName = 'INVALID_NAME';
+  static const linkNotFound = 'LINK_NOT_FOUND';
+  static const linkExpired = 'LINK_EXPIRED';
+  static const linkOwn = 'LINK_OWN';
+  static const rejoinRestricted = 'REJOIN_RESTRICTED';
   static const insufficientCredits = 'INSUFFICIENT_CREDITS';
   static const invalidGiftAmount = 'INVALID_GIFT_AMOUNT';
   static const productNotFound = 'PRODUCT_NOT_FOUND';

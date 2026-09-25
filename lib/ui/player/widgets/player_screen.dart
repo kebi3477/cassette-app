@@ -102,7 +102,7 @@ class _ParcelView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (item.viaLink) ...[
+            if (vm.showLinkChip) ...[
               FadeUp(
                 duration: const Duration(milliseconds: 400),
                 child: Container(

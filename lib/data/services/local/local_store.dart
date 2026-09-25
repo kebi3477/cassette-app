@@ -9,9 +9,13 @@ import '../../model/wallet_dto.dart';
 /// 날짜는 프로토타입의 `MM.DD`에 2026년을 붙이고, 시간대와 상관없이 같은 날로 보이게
 /// UTC 정오로 둔다. 재생 길이는 프로토타입 `DUR`(1분 20s · 3분 34s · 5분 48s)과 같다.
 class LocalStore {
-  LocalStore({DateTime Function()? clock}) : now = clock ?? DateTime.now {
+  /// [newUser]면 처음 로그인이 가입이 되고 이름이 비어 있다(이름 정하기 화면).
+  LocalStore({DateTime Function()? clock, this.newUser = false})
+    : now = clock ?? DateTime.now {
     reset();
   }
+
+  final bool newUser;
 
   final DateTime Function() now;
 
@@ -42,6 +46,17 @@ class LocalStore {
   /// Idempotency-Key → 첫 응답
   final Map<String, Object> idempotency = {};
 
+  // 인증 (서버 테이블 `refresh_tokens` 등)
+  bool signedUp = false;
+  final Set<String> accessTokens = {};
+  final Set<String> refreshTokens = {};
+
+  /// 등록된 FCM 기기 토큰
+  final Map<String, String> devices = {};
+
+  /// 링크 토큰 → 내가 받은 테이프 id
+  final Map<String, String> claimedLinks = {};
+
   int _uid = 100;
 
   String nextId(String prefix) => '$prefix-${_uid++}';
@@ -52,8 +67,13 @@ class LocalStore {
     recordings.clear();
     uploads.clear();
     idempotency.clear();
+    accessTokens.clear();
+    refreshTokens.clear();
+    devices.clear();
+    claimedLinks.clear();
+    signedUp = !newUser;
     blocked = [];
-    name = '민경';
+    name = newUser ? null : '민경';
     credits = 120;
     cap = 12;
     notificationsEnabled = true;

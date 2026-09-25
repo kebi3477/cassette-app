@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
+
 import '../../model/api_error.dart';
 import '../../model/json.dart';
+import '../../model/auth_dto.dart';
 import '../../model/delivery_dto.dart';
 import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
@@ -25,10 +28,259 @@ class LocalApiClient implements ApiClient {
   static String sampleAudio(int tapeType) =>
       'asset:///assets/audio/sample_${LocalStore.durationMs[tapeType]! ~/ 1000}s.m4a';
 
-  Future<void> _wait([Duration? d]) async {
+  /// 공개 API 응답 시간
+  Future<void> _waitPublic([Duration? d]) async {
     final wait = d ?? _b.latency;
     // 지연이 없으면 타이머를 만들지 않는다 (fake_async 시험에서 마이크로태스크로 끝나게).
     if (wait > Duration.zero) await Future<void>.delayed(wait);
+  }
+
+  /// 보호된 API: 응답 시간 + 서버 오류 흉내 + access token 확인
+  Future<void> _wait([Duration? d]) async {
+    await _waitPublic(d);
+    if (_b.serverDown) {
+      _fail(500, ApiErrorCode.internalError, '잠시 문제가 생겼어요. 다시 시도해 주세요');
+    }
+    if (_b.requireAuth && !_s.accessTokens.contains(accessToken)) {
+      _fail(401, ApiErrorCode.unauthorized, '다시 로그인해 주세요');
+    }
+  }
+
+  @override
+  String? accessToken;
+
+  // ── 공개 ──────────────────────────────────────────
+  @override
+  Future<void> health() async {
+    await _waitPublic();
+    if (_b.serverDown) {
+      _fail(500, ApiErrorCode.internalError, '잠시 문제가 생겼어요. 다시 시도해 주세요');
+    }
+  }
+
+  /// 최소 버전 1.0.0. `FAIL_MODE=forceUpdate`면 업데이트가 필요하다고 답한다.
+  @override
+  Future<AppVersionDto> getAppVersion({
+    required String platform,
+    String? version,
+  }) async {
+    await _waitPublic();
+    final force = _b.forcesUpdate;
+    return AppVersionDto(
+      platform: platform,
+      minVersion: force ? '99.0.0' : '1.0.0',
+      latestVersion: force ? '99.0.0' : '1.0.0',
+      storeUrl: platform == 'ios'
+          ? 'https://apps.apple.com/app/id0000000000'
+          : 'https://play.google.com/store/apps/details?id=com.kebi.cassette',
+      updateRequired: version == null ? null : force,
+      updateAvailable: version == null ? null : force,
+    );
+  }
+
+  int _tokenN = 0;
+
+  TokenPairDto _issue() {
+    final n = _tokenN++;
+    final access = 'local-access-$n';
+    final refresh = 'local-refresh-$n';
+    _s.accessTokens.add(access);
+    _s.refreshTokens.add(refresh);
+    final now = _s.now();
+    return TokenPairDto(
+      accessToken: access,
+      accessTokenExpiresAt: now.add(const Duration(hours: 1)),
+      refreshToken: refresh,
+      refreshTokenExpiresAt: now.add(const Duration(days: 60)),
+    );
+  }
+
+  AuthResponseDto _signIn({
+    String? suggestedName,
+    String? devName,
+    bool social = true,
+  }) {
+    final isNew = !_s.signedUp;
+    // 탈퇴 후 30일 동안은 같은 계정으로 다시 가입할 수 없다 (`FAIL_MODE=rejoinRestricted`)
+    if (social && _b.failMode == FailMode.rejoinRestricted) {
+      _fail(403, ApiErrorCode.rejoinRestricted, '탈퇴 후 30일 동안은 다시 가입할 수 없어요', {
+        'availableAt': _s
+            .now()
+            .add(const Duration(days: 30))
+            .toUtc()
+            .toIso8601String(),
+      });
+    }
+    _s.signedUp = true;
+    if (isNew && devName != null) _s.name = devName;
+    if (isNew) {
+      _s.ledger = [
+        LedgerEntryDto(
+          id: _s.nextId('l'),
+          delta: 10,
+          reason: '가입 선물',
+          kind: 'signup_gift',
+          createdAt: _s.now(),
+        ),
+        ..._s.ledger,
+      ];
+    }
+    return AuthResponseDto(
+      tokens: _issue(),
+      isNewUser: isNew,
+      suggestedName: suggestedName,
+      user: _me(),
+    );
+  }
+
+  /// 카카오 토큰은 확인하지 않는다 (메모리 서버). 닉네임 대신 '민경'을 제안한다.
+  @override
+  Future<AuthResponseDto> authKakao(String kakaoAccessToken) async {
+    await _waitPublic();
+    if (kakaoAccessToken.isEmpty) {
+      _fail(401, ApiErrorCode.socialTokenInvalid, '로그인하지 못했어요. 다시 시도해 주세요');
+    }
+    return _signIn(suggestedName: '민경');
+  }
+
+  @override
+  Future<AuthResponseDto> authApple(AppleAuthRequest body) async {
+    await _waitPublic();
+    if (body.identityToken.isEmpty) {
+      _fail(401, ApiErrorCode.socialTokenInvalid, '로그인하지 못했어요. 다시 시도해 주세요');
+    }
+    return _signIn();
+  }
+
+  @override
+  Future<AuthResponseDto> authDev({required String key, String? name}) async {
+    await _waitPublic();
+    return _signIn(devName: name, suggestedName: name, social: false);
+  }
+
+  @override
+  Future<TokenPairDto> refreshTokens(String refreshToken) async {
+    await _waitPublic();
+    if (!_s.refreshTokens.remove(refreshToken)) {
+      _fail(401, ApiErrorCode.invalidRefreshToken, '다시 로그인해 주세요');
+    }
+    return _issue();
+  }
+
+  @override
+  Future<void> logout(String refreshToken) async {
+    await _waitPublic();
+    _s.refreshTokens.remove(refreshToken);
+  }
+
+  /// 시험용: 이미 로그인한 기기처럼 토큰을 발급한다.
+  @visibleForTesting
+  TokenPairDto issueTokensForTest() => _issue();
+
+  /// 시험용: access token을 모두 만료시킨다 (다음 요청이 401).
+  void expireAccessTokens() => _s.accessTokens.clear();
+
+  // ── notifications ─────────────────────────────────
+  @override
+  Future<void> registerDevice({
+    required String token,
+    required String platform,
+  }) async {
+    await _wait();
+    _s.devices[token] = platform;
+  }
+
+  @override
+  Future<void> unregisterDevice(String token) async {
+    await _wait();
+    _s.devices.remove(token);
+  }
+
+  // ── share ─────────────────────────────────────────
+  /// 링크를 보낸 새 친구 (메모리 서버의 모든 받을 수 있는 링크)
+  static const linkSender = UserRefDto(userId: 'u-yujin2', name: '유진');
+
+  void _checkLink(String token) {
+    switch (_b.failMode) {
+      case FailMode.linkTaken:
+        _fail(409, ApiErrorCode.linkTaken, '이미 다른 분이 받은 테이프예요');
+      case FailMode.linkExpired:
+        _fail(410, ApiErrorCode.linkExpired, '링크가 만료됐어요');
+      case FailMode.linkOwn:
+        _linkOwn(_s.sent.firstWhere((x) => x.share != null));
+      default:
+    }
+    for (final t in _s.sent) {
+      final url = t.share?.url;
+      if (url != null && url.endsWith('/t/$token')) _linkOwn(t);
+    }
+  }
+
+  Never _linkOwn(SentTapeDto t) => _fail(
+    409,
+    ApiErrorCode.linkOwn,
+    '내가 보낸 테이프예요',
+    {'deliveryId': t.id, 'url': t.share?.url},
+  );
+
+  @override
+  Future<ShareInfoDto> getShare(String token) async {
+    await _wait();
+    _checkLink(token);
+    final claimed = _s.claimedLinks[token];
+    final now = _s.now();
+    return ShareInfoDto(
+      state: claimed == null ? 'available' : 'claimed',
+      deliveryId: claimed,
+      sender: linkSender,
+      tapeType: 1,
+      durationMs: LocalStore.durationMs[1]!,
+      sentAt: now.subtract(const Duration(hours: 2)),
+      expiresAt: now.add(const Duration(days: 7)),
+    );
+  }
+
+  /// 받으면 "분류 안 함" 맨 위에 들어가고 서로 친구가 된다. 이미 받았으면 같은 결과.
+  @override
+  Future<ClaimResultDto> claimShare(
+    String token, {
+    required String idempotencyKey,
+  }) async {
+    await _wait();
+    _checkLink(token);
+    final existing = _s.claimedLinks[token];
+    if (existing != null) {
+      return ClaimResultDto(
+        item: _find(existing).item,
+        friend: _s.friends
+            .where((f) => f.userId == linkSender.userId)
+            .firstOrNull,
+      );
+    }
+    final now = _s.now();
+    final item = ShelfItemDto(
+      id: _s.nextId('t'),
+      sender: linkSender,
+      tapeType: 1,
+      durationMs: LocalStore.durationMs[1]!,
+      tag: null,
+      sentAt: now,
+      opened: false,
+      viaLink: true,
+    );
+    _s.unsorted = [item, ..._s.unsorted];
+    _s.claimedLinks[token] = item.id;
+    final friend = FriendDto(
+      userId: linkSender.userId!,
+      name: linkSender.name,
+      starred: false,
+      lastAt: now,
+    );
+    _s.friends = [
+      friend,
+      ..._s.friends.where((f) => f.userId != friend.userId),
+    ];
+    return ClaimResultDto(item: item, friend: friend);
   }
 
   Never _fail(
@@ -101,6 +353,9 @@ class LocalApiClient implements ApiClient {
   Future<void> deleteMe() async {
     await _wait();
     _s.reset();
+    // 같은 계정으로 다시 로그인하면 새로 가입한다 (이름 정하기부터).
+    _s.signedUp = false;
+    _s.name = null;
   }
 
   // ── friends ───────────────────────────────────────
@@ -326,7 +581,8 @@ class LocalApiClient implements ApiClient {
     }
     if (_b.failsSend) {
       await _wait(_b.sendFailDelay);
-      _fail(500, ApiErrorCode.internalError, '잠시 문제가 생겼어요. 다시 시도해 주세요');
+      // 보내기 실패는 네트워크 끊김으로 흉내 낸다 (디자인 `sendFailOn`).
+      throw const ApiException.network();
     }
     await _wait(_b.sendDelay);
     final r = _rec(body.recordingId);
@@ -407,6 +663,14 @@ class LocalApiClient implements ApiClient {
   }
 
   /// 아직 아무도 받지 않은 링크만. 만료됐으면 새 링크(7일).
+  @override
+  Future<SentTapeDto> getSentTape(String id) async {
+    await _wait();
+    final t = _s.sent.where((x) => x.id == id).firstOrNull;
+    if (t == null) _fail(404, ApiErrorCode.tapeNotFound, '테이프를 찾을 수 없어요');
+    return t;
+  }
+
   @override
   Future<ShareLinkDto> reshareSent(String id) async {
     await _wait();
