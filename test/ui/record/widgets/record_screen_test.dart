@@ -1,0 +1,269 @@
+import 'package:cassette_app/domain/models/tape_type.dart';
+import 'package:cassette_app/ui/core/ui/tab_bar.dart';
+import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
+import 'package:cassette_app/ui/record/widgets/record_button.dart';
+import 'package:cassette_app/ui/record/widgets/tape_carousel.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../../../testing/app.dart';
+import '../../../../testing/fakes/repositories/fake_delivery_repository.dart';
+import '../../../../testing/fakes/repositories/fake_recording_repository.dart';
+import '../../../../testing/fakes/services/fake_recorder_service.dart';
+import '../../../../testing/fonts.dart';
+import '../../../../testing/record_harness.dart';
+
+void main() {
+  setUpAll(loadAppFonts);
+
+  Future<RecordHarness> pumpApp(
+    WidgetTester tester, [
+    RecordHarness? harness,
+  ]) async {
+    useDesignScreen(tester);
+    final h = harness ?? RecordHarness();
+    await tester.pumpWidget(testApp(h));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    return h;
+  }
+
+  Future<void> tapRecord(WidgetTester tester) async {
+    await tester.tap(find.byType(RecordButton));
+    await tester.pump();
+    await tester.pump();
+  }
+
+  /// 녹음 → 멈춤 → 변환 끝까지
+  Future<void> recordAndConvert(WidgetTester tester, RecordHarness h) async {
+    await tapRecord(tester);
+    await tester.pump(const Duration(seconds: 3));
+    await tapRecord(tester);
+    await tester.pump(const Duration(seconds: 2));
+  }
+
+  testWidgets('대기 화면: 개수 알약, 길이 표시, 탭바 4칸', (tester) async {
+    final h = await pumpApp(tester);
+    expect(find.text('2개'), findsOneWidget);
+    expect(find.text('0개'), findsOneWidget);
+    for (final t in ['1분', '3분', '5분']) {
+      expect(find.text(t), findsOneWidget);
+    }
+    for (final t in ['녹음', '서랍', '상점', '마이']) {
+      expect(find.text(t), findsOneWidget);
+    }
+    expect(find.byType(AppTabBar), findsOneWidget);
+    expect(h.vm.tape, TapeType.one);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('캐러셀: 왼쪽으로 50px 넘게 밀면 3분, 1분에서 오른쪽은 그대로', (tester) async {
+    final h = await pumpApp(tester);
+    await tester.drag(find.byType(TapeCarousel), const Offset(120, 0));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(h.vm.tape, TapeType.one);
+
+    await tester.drag(find.byType(TapeCarousel), const Offset(-40, 0));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(h.vm.tape, TapeType.one);
+
+    await tester.drag(find.byType(TapeCarousel), const Offset(-120, 0));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(h.vm.tape, TapeType.three);
+
+    await tester.drag(find.byType(TapeCarousel), const Offset(-120, 0));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(h.vm.tape, TapeType.five);
+    expect(h.vm.curLocked, isTrue);
+  });
+
+  testWidgets('0개인 테이프에서 녹음 버튼을 누르면 상점으로 간다', (tester) async {
+    final h = await pumpApp(tester);
+    h.vm.selectTape(TapeType.five);
+    await tester.pump();
+    await tapRecord(tester);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('상점'), findsNWidgets(2));
+    expect(h.vm.phase, RecordPhase.idle);
+  });
+
+  testWidgets('기존 친구에게 보내는 흐름 전체 (탭바는 확인부터 숨김)', (tester) async {
+    final h = await pumpApp(tester);
+    await tapRecord(tester);
+    expect(find.text('0:00'), findsOneWidget);
+    expect(find.text('/ 1:00'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+    expect(find.text('0:03'), findsOneWidget);
+
+    await tapRecord(tester);
+    expect(h.vm.phase, RecordPhase.confirm);
+    expect(find.byType(AppTabBar), findsNothing);
+    await tester.pump(const Duration(seconds: 2));
+    expect(h.vm.playing, isTrue);
+    expect(find.text('보낸 사람'), findsOneWidget);
+    expect(find.text('민경'), findsOneWidget);
+
+    await tester.tap(find.text('누구에게 보낼까요?'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('누구에게\n보낼까요?'), findsOneWidget);
+    expect(find.text('즐겨찾기 · 09.24'), findsOneWidget);
+    expect(find.text('새 친구에게 링크로 보내기'), findsOneWidget);
+
+    await tester.tap(find.text('지현'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(h.vm.phase, RecordPhase.label);
+    expect(find.text('받는 사람'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('지현'), findsOneWidget);
+
+    await tester.tap(find.text('보내기'));
+    await tester.pump();
+    expect(h.vm.phase, RecordPhase.sending);
+    await tester.pump(const Duration(milliseconds: 1000));
+    await tester.pump(const Duration(milliseconds: 1000));
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(h.vm.phase, RecordPhase.sent);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('지현님에게 보냈어요'), findsOneWidget);
+    expect(find.text('테이프는 이제 받는 사람만 들을 수 있어요'), findsOneWidget);
+
+    await tester.tap(find.text('확인'));
+    await tester.pump();
+    expect(h.vm.phase, RecordPhase.idle);
+    expect(find.byType(AppTabBar), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('새 친구: 이름 입력칸, 완료 화면의 카카오톡·문자 버튼', (tester) async {
+    final h = await pumpApp(tester);
+    await recordAndConvert(tester, h);
+    h.vm.goSend();
+    h.vm.pickNew();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(TextField), findsOneWidget);
+    expect(find.text('받는 사람 이름'), findsOneWidget);
+
+    await tester.tap(find.text('보내기'));
+    await tester.pump();
+    expect(find.text('받는 사람 이름을 적어주세요'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '유진');
+    await tester.pump();
+    await tester.tap(find.text('보내기'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('테이프를 포장했어요'), findsOneWidget);
+    expect(find.text('카카오톡으로 보내기'), findsOneWidget);
+    expect(find.text('문자로 보내기'), findsOneWidget);
+
+    await tester.tap(find.text('카카오톡으로 보내기'));
+    await tester.pump();
+    await tester.pump();
+    expect(h.vm.phase, RecordPhase.idle);
+    expect(find.text('카카오톡으로 링크를 보냈어요'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('변환이 오래 걸릴 때와 실패할 때', (tester) async {
+    final repo = FakeRecordingRepository(
+      convertDelay: const Duration(seconds: 3),
+    );
+    final h = await pumpApp(tester, RecordHarness(recordings: repo));
+    await tapRecord(tester);
+    await tester.pump(const Duration(seconds: 2));
+    await tapRecord(tester);
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(find.text('테이프 소리로 바꾸는 중이에요'), findsOneWidget);
+    expect(find.text('조금 오래 걸리고 있어요. 잠시만요'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+    expect(h.vm.convSlow, isFalse);
+
+    repo.failConvert = true;
+    h.vm.retryConvert();
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('테이프로 바꾸지 못했어요'), findsOneWidget);
+    expect(find.text('다시 시도'), findsOneWidget);
+    expect(find.text('처음부터 다시 녹음'), findsOneWidget);
+    await tester.tap(find.text('처음부터 다시 녹음'));
+    await tester.pump();
+    expect(h.vm.phase, RecordPhase.idle);
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('보내기 실패 패널과 돌아가기', (tester) async {
+    final h = await pumpApp(
+      tester,
+      RecordHarness(deliveries: FakeDeliveryRepository(fail: true)),
+    );
+    await recordAndConvert(tester, h);
+    h.vm.goSend();
+    h.vm.pickFriend(h.vm.sortedFriends.first);
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('보내기'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1800));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('보내지 못했어요'), findsOneWidget);
+    expect(find.text('다시 보내기'), findsOneWidget);
+    await tester.tap(find.text('돌아가기'));
+    await tester.pump();
+    expect(h.vm.phase, RecordPhase.confirm);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('녹음 멈춤 패널', (tester) async {
+    final h = await pumpApp(tester);
+    await tapRecord(tester);
+    await tester.pump(const Duration(seconds: 23));
+    h.vm.onAppHidden();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('앱이 잠시 닫혀서 녹음이 멈췄어요\n0:23까지 담겼어요'), findsOneWidget);
+    expect(find.text('이어서 녹음'), findsOneWidget);
+    await tester.tap(find.text('여기까지 쓰기'));
+    await tester.pump();
+    await tester.pump();
+    expect(h.vm.phase, RecordPhase.confirm);
+    h.vm.backIdle();
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('마이크 거부 카드', (tester) async {
+    final h = await pumpApp(
+      tester,
+      RecordHarness(
+        recorder: FakeRecorderService(granted: false, grantOnRequest: false),
+      ),
+    );
+    await tapRecord(tester);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(h.vm.mic, MicPermission.denied);
+    expect(find.text('마이크가 꺼져 있어요'), findsOneWidget);
+    await tester.tap(find.text('설정으로 이동'));
+    await tester.pump();
+    expect(h.settings.opened, 1);
+  });
+
+  testWidgets('작은 화면(375×667)에서도 넘치지 않는다', (tester) async {
+    tester.view.physicalSize = const Size(375, 667);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final h = RecordHarness();
+    await tester.pumpWidget(testApp(h));
+    await tester.pump(const Duration(milliseconds: 100));
+    await recordAndConvert(tester, h);
+    h.vm.goSend();
+    await tester.pump(const Duration(milliseconds: 400));
+    h.vm.pickNew();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.takeException(), isNull);
+    h.vm.backPick();
+    h.vm.backConfirm();
+    h.vm.backIdle();
+    await tester.pump(const Duration(seconds: 2));
+  });
+}
