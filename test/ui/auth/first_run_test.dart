@@ -71,7 +71,11 @@ void main() {
     expect(find.text('소포로 포장해서 보내요'), findsOneWidget);
     await tester.tap(find.text('다음'));
     await step(tester);
-    expect(find.text('받은 테이프는 서랍에 모아요'), findsOneWidget);
+    expect(find.text('소중한 목소리를\n추억별로 모아 보세요'), findsOneWidget);
+    expect(find.text('사람, 순간, 주제별로 칸을 만들어 오래 간직할 수 있어요'), findsOneWidget);
+    for (final n in ['2026 생일', '우리의 여행', '엄마 목소리', '힘들 때 듣기']) {
+      expect(find.text(n), findsOneWidget);
+    }
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('시작하기'));
     await step(tester);

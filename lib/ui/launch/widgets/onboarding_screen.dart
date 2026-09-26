@@ -17,11 +17,11 @@ class OnboardingScreen extends StatefulWidget {
 
   final AppFlow flow;
 
-  /// logic.js `onb` — 설명의 줄바꿈은 화면에서 한 줄로 이어 붙인다(`split('\n').join(' ')`).
+  /// logic.js `onb` — 제목은 줄바꿈을 살리고(`pre-line`), 설명의 줄바꿈은 한 줄로 이어 붙인다(`split('\n').join(' ')`).
   static const pages = [
     ('목소리를 테이프에 담아요', '1분, 3분, 5분. 길이를 골라 하고 싶은 말을 녹음해요'),
     ('소포로 포장해서 보내요', '받는 사람만 뜯어서 들을 수 있어요'),
-    ('받은 테이프는 서랍에 모아요', '칸을 만들어 정리하고 이어서 들어요'),
+    ('소중한 목소리를\n추억별로 모아 보세요', '사람, 순간, 주제별로 칸을 만들어 오래 간직할 수 있어요'),
   ];
 
   @override
@@ -81,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             spinning: true,
                           ),
                           1 => const _ShakingParcel(),
-                          _ => const _MiniShelf(),
+                          _ => const _DrawerShelves(),
                         },
                       ),
                     ),
@@ -195,102 +195,154 @@ class _ShakingParcelState extends State<_ShakingParcel>
   }
 }
 
-/// 3장: 책꽂이 선반 (280 너비, 등 6개)
-class _MiniShelf extends StatelessWidget {
-  const _MiniShelf();
+/// 3장 (v3 `onb2`): 칸 이름 4개가 붙은 책장 — 280 너비, 2열 (간격 14 · 10)
+class _DrawerShelves extends StatelessWidget {
+  const _DrawerShelves();
 
-  static const _spines = [
-    (TapePalette.one, '엄마'),
-    (TapePalette.three, '지현'),
-    (TapePalette.five, '민수'),
-    (TapePalette.three, '수아'),
-    (TapePalette.one, '하늘'),
-    (TapePalette.five, '은비'),
+  static const _shelves = [
+    (
+      '2026 생일',
+      [
+        (TapePalette.one, 54.0),
+        (TapePalette.three, 58.0),
+        (TapePalette.five, 50.0),
+        (TapePalette.one, 56.0),
+      ],
+    ),
+    (
+      '우리의 여행',
+      [
+        (TapePalette.three, 56.0),
+        (TapePalette.three, 52.0),
+        (TapePalette.five, 58.0),
+      ],
+    ),
+    (
+      '엄마 목소리',
+      [
+        (TapePalette.five, 58.0),
+        (TapePalette.one, 52.0),
+        (TapePalette.five, 55.0),
+        (TapePalette.three, 50.0),
+      ],
+    ),
+    ('힘들 때 듣기', [(TapePalette.one, 56.0), (TapePalette.three, 53.0)]),
   ];
 
   @override
   Widget build(BuildContext context) {
+    Widget row(int a) => Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _Shelf(data: _shelves[a])),
+        const SizedBox(width: 10),
+        Expanded(child: _Shelf(data: _shelves[a + 1])),
+      ],
+    );
     return SizedBox(
       width: 280,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 136,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [AppColors.shelfBoardTop, AppColors.shelfBoardBottom],
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (final (i, (p, name)) in _spines.indexed) ...[
-                  if (i > 0) const SizedBox(width: 3),
-                  _Spine(palette: p, name: name),
-                ],
-              ],
-            ),
-          ),
-          Container(
-            height: 10,
-            decoration: BoxDecoration(
-              color: AppColors.shelfPlank,
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(4),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.black.withValues(alpha: .3),
-                  offset: const Offset(0, 5),
-                  blurRadius: 8,
-                  spreadRadius: -5,
-                ),
-              ],
-            ),
-          ),
-        ],
+        children: [row(0), const SizedBox(height: 14), row(2)],
       ),
     );
   }
 }
 
-class _Spine extends StatelessWidget {
-  const _Spine({required this.palette, required this.name});
+class _Shelf extends StatelessWidget {
+  const _Shelf({required this.data});
+
+  final (String, List<(TapePalette, double)>) data;
+
+  @override
+  Widget build(BuildContext context) {
+    final (name, spines) = data;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 2),
+          child: Text(name, style: AppText.suit(700, 12.5)),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 66,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.shelfBoardTop, AppColors.shelfBoardBottom],
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (final (i, (p, h)) in spines.indexed) ...[
+                if (i > 0) const SizedBox(width: 2),
+                _SmallSpine(palette: p, height: h),
+              ],
+            ],
+          ),
+        ),
+        Container(
+          height: 6,
+          decoration: BoxDecoration(
+            color: AppColors.shelfPlank,
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(3),
+            ),
+            boxShadow: [
+              // 0 4px 6px -4px rgba(0,0,0,.3)
+              BoxShadow(
+                color: AppColors.black.withValues(alpha: .3),
+                offset: const Offset(0, 4),
+                blurRadius: 6,
+                spreadRadius: -4,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 작은 테이프 등 (18 너비, 띠 3px, 라벨 top 11 · bottom 6)
+class _SmallSpine extends StatelessWidget {
+  const _SmallSpine({required this.palette, required this.height});
 
   final TapePalette palette;
-  final String name;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 30,
-      height: 108,
+      width: 18,
+      height: height,
       decoration: BoxDecoration(
         color: palette.shell,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(3),
+          top: Radius.circular(2),
           bottom: Radius.circular(1),
         ),
       ),
       child: Stack(
         children: [
+          // inset -2px 0 0 rgba(0,0,0,.14)
           Positioned(
             right: 0,
             top: 0,
             bottom: 0,
-            width: 3,
+            width: 2,
             child: ColoredBox(color: AppColors.black.withValues(alpha: .14)),
           ),
           Positioned(
-            left: 5,
-            right: 5,
-            top: 8,
-            height: 5,
+            left: 3,
+            right: 3,
+            top: 5,
+            height: 3,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: palette.band,
@@ -299,22 +351,14 @@ class _Spine extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: 5,
-            right: 5,
-            top: 19,
-            bottom: 10,
-            child: Container(
+            left: 3,
+            right: 3,
+            top: 11,
+            bottom: 6,
+            child: DecoratedBox(
               decoration: BoxDecoration(
                 color: AppColors.labelPaper,
-                borderRadius: BorderRadius.circular(2),
-              ),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final ch in name.characters)
-                    Text(ch, style: AppText.suit(700, 11, height: 1.15)),
-                ],
+                borderRadius: BorderRadius.circular(1),
               ),
             ),
           ),
