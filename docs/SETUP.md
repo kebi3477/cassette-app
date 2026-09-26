@@ -54,6 +54,10 @@ flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 
 - 집 공유기 안에서는 `tapeletter.lab241.com`에 닿지 않는다(공유기가 되돌아오는 접속을 지원하지 않음). 실기기로 운영 서버를 시험할 때는 와이파이를 끄고 LTE로 한다.
 - 결제·광고를 실제로 쓰려면 `IAP_ENABLED=true`, `ADMOB_REWARDED_ID`를 json에 더한다.
 
+### 인앱 상품 ID
+
+크레딧 충전 상품은 소비성 상품 `tapeletter.credits_100` · `tapeletter.credits_550` · `tapeletter.credits_1200`이다. App Store Connect와 Play Console에 이 ID로 등록한다. 앱에는 고정값이 없고, 서버 `GET /shop/products`의 `creditPacks[].productId`를 그대로 스토어에 조회·결제한다(`StoreIapService`). 가짜 서버(`LocalApiClient`)도 같은 ID를 쓴다.
+
 ### 실기기에 release 빌드 설치
 
 케이블을 뽑아도 돌아가게 release로 설치한다. `flutter install`은 쓰지 않는다. 설치가 실패하면 dart-define 없이 다시 빌드해서 앞서 만든 빌드를 덮어쓴다.

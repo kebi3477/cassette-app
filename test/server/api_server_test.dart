@@ -356,7 +356,7 @@ void main() {
     expect(ad.credits, 100);
     expect(ad.ads.remainingToday, 2);
     final charge = await a.api.devCredits(
-      const DevCreditsRequest.charge('credits_100'),
+      const DevCreditsRequest.charge('tapeletter.credits_100'),
     );
     expect(charge.credits, 200);
 

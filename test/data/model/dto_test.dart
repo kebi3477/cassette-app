@@ -165,7 +165,7 @@ void main() {
       ],
       'creditPacks': [
         {
-          'productId': 'credits_100',
+          'productId': 'tapeletter.credits_100',
           'credits': 100,
           'priceKrw': 1100,
           'priceLabel': '₩1,100',
@@ -180,9 +180,9 @@ void main() {
 
   test('POST /dev/credits 본문', () {
     expect(const DevCreditsRequest.ad().toJson(), {'type': 'ad'});
-    expect(const DevCreditsRequest.charge('credits_100').toJson(), {
+    expect(const DevCreditsRequest.charge('tapeletter.credits_100').toJson(), {
       'type': 'charge',
-      'productId': 'credits_100',
+      'productId': 'tapeletter.credits_100',
     });
   });
 
@@ -192,7 +192,7 @@ void main() {
     expect(
       IapRequest(
         store: IapReceipt.storeFor(isIOS: false),
-        productId: 'credits_100',
+        productId: 'tapeletter.credits_100',
         verificationData: 'token',
       ).toJson()['store'],
       'play',

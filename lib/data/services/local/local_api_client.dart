@@ -962,17 +962,17 @@ class LocalApiClient implements ApiClient {
     ],
     creditPacks: [
       CreditPackDto(
-        productId: 'credits_100',
+        productId: 'tapeletter.credits_100',
         credits: 100,
         priceLabel: '₩1,100',
       ),
       CreditPackDto(
-        productId: 'credits_550',
+        productId: 'tapeletter.credits_550',
         credits: 550,
         priceLabel: '₩5,500',
       ),
       CreditPackDto(
-        productId: 'credits_1200',
+        productId: 'tapeletter.credits_1200',
         credits: 1200,
         priceLabel: '₩11,000',
       ),

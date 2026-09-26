@@ -272,7 +272,7 @@ void main() {
       final repo = ShopRepositoryRemote(api);
       const receipt = IapReceipt(
         store: 'app_store',
-        productId: 'credits_100',
+        productId: 'tapeletter.credits_100',
         transactionId: 'tx-1',
         verificationData: 'jws',
       );
@@ -341,7 +341,7 @@ void main() {
     final repo = ShopRepositoryRemote(api);
     const r = IapReceipt(
       store: IapReceipt.localStore,
-      productId: 'credits_550',
+      productId: 'tapeletter.credits_550',
       transactionId: 'local-1',
       verificationData: 'local',
     );
