@@ -57,7 +57,7 @@ class FakeRecordingRepository implements RecordingRepository {
     return Result.ok(
       Recording(
         id: recordingId,
-        type: TapeType.one,
+        type: TapeType.s15,
         duration: const Duration(seconds: 12),
         status: RecordingStatus.ready,
         previewUrl: 'https://example.com/$recordingId.m4a',

@@ -16,8 +16,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('엄마'), findsOneWidget);
     expect(find.text('받은 테이프 3개'), findsOneWidget);
-    expect(find.text('5분 · 2026 생일'), findsOneWidget);
-    expect(find.text('3분 · 엄마 목소리'), findsOneWidget);
+    expect(find.text('3분 · 2026 생일'), findsOneWidget);
+    expect(find.text('1분 · 엄마 목소리'), findsOneWidget);
     expect(find.text('모두 재생'), findsOneWidget);
     expect(tester.takeException(), isNull);
 

@@ -1,22 +1,26 @@
-/// 테이프 종류 — logic.js `T`의 키(1·3·5)와 같다.
+/// 테이프 종류 — API `tapeType` 코드는 길이(초)다: `15` · `60` · `180`.
+/// 디자인 `T` 표의 옛 1·3·5분 자리를 그대로 옮겼다 (15초 = 옛 1분 모양, 1분 = 옛 3분, 3분 = 옛 5분).
 enum TapeType {
-  one(1),
-  three(3),
-  five(5);
+  s15(15, '15초'),
+  m1(60, '1분'),
+  m3(180, '3분');
 
-  const TapeType(this.minutes);
+  const TapeType(this.code, this.label);
 
-  /// 테이프 길이(분). API에서도 이 숫자로 주고받는다.
-  final int minutes;
+  /// API 코드이자 녹음 한도(초)
+  final int code;
+
+  /// 화면 표기 (`15초`)
+  final String label;
 
   /// 녹음 한도(초)
-  int get seconds => minutes * 60;
+  int get seconds => code;
 
   Duration get maxDuration => Duration(seconds: seconds);
 
-  /// 1분 테이프는 무제한 무료이고 보유 수를 세지 않는다.
-  bool get isUnlimited => this == TapeType.one;
+  /// 15초 테이프는 무제한 무료이고 보유 수를 세지 않는다.
+  bool get isUnlimited => this == TapeType.s15;
 
-  static TapeType fromMinutes(int minutes) =>
-      values.firstWhere((t) => t.minutes == minutes);
+  static TapeType fromCode(int code) =>
+      values.firstWhere((t) => t.code == code);
 }

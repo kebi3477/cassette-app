@@ -32,7 +32,7 @@ void main() {
 
   String g1(int i) => store.groups[0].items[i].id;
 
-  /// 칸 '2026 생일' [엄마 5분, 민수 1분, 수아 3분, 할머니 1분]의 [i]번째를 연다.
+  /// 칸 '2026 생일' [엄마 3분, 민수 15초, 수아 1분, 할머니 15초]의 [i]번째를 연다.
   void openGroup(FakeAsync async, int i) {
     vm.open(const GroupSource('g-1'), g1(i));
     async.flushMicrotasks();

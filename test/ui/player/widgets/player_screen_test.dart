@@ -60,7 +60,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1000));
     expect(find.text('2026 생일'), findsWidgets);
     expect(find.text('3/4'), findsOneWidget);
-    expect(find.text('0:48'), findsOneWidget); // 엄마 5분 = 48s
+    expect(find.text('0:48'), findsOneWidget); // 엄마 3분 = 48s
     await tester.tap(find.bySemanticsLabel('반복'));
     await tester.pump();
     expect(find.text('전체 반복'), findsWidgets);

@@ -241,8 +241,8 @@ class LocalApiClient implements ApiClient {
       state: claimed == null ? 'available' : 'claimed',
       deliveryId: claimed,
       sender: linkSender,
-      tapeType: 1,
-      durationMs: LocalStore.durationMs[1]!,
+      tapeType: 15,
+      durationMs: LocalStore.durationMs[15]!,
       sentAt: now.subtract(const Duration(hours: 2)),
       expiresAt: now.add(const Duration(days: 7)),
     );
@@ -269,8 +269,8 @@ class LocalApiClient implements ApiClient {
     final item = ShelfItemDto(
       id: _s.nextId('t'),
       sender: linkSender,
-      tapeType: 1,
-      durationMs: LocalStore.durationMs[1]!,
+      tapeType: 15,
+      durationMs: LocalStore.durationMs[15]!,
       tag: null,
       sentAt: now,
       opened: false,
@@ -319,9 +319,9 @@ class LocalApiClient implements ApiClient {
         unopenedCount: _s.unsorted.where((x) => !x.opened).length,
       ),
       tapes: [
-        const TapeStockDto(tapeType: 1, qty: null),
-        TapeStockDto(tapeType: 3, qty: _s.owned[3]),
-        TapeStockDto(tapeType: 5, qty: _s.owned[5]),
+        const TapeStockDto(tapeType: 15, qty: null),
+        TapeStockDto(tapeType: 60, qty: _s.owned[60]),
+        TapeStockDto(tapeType: 180, qty: _s.owned[180]),
       ],
       stats: StatsDto(
         receivedCount: stored,
@@ -519,7 +519,8 @@ class LocalApiClient implements ApiClient {
     CreateRecordingRequest body,
   ) async {
     await _wait();
-    if (body.durationMs > body.tapeType * 60000 + 1000) {
+    // 종류 코드가 곧 한도(초)다
+    if (body.durationMs > body.tapeType * 1000 + 1000) {
       _fail(400, ApiErrorCode.recordingTooLong, '테이프 길이를 넘었어요');
     }
     final id = _s.nextId('r');
@@ -645,7 +646,7 @@ class LocalApiClient implements ApiClient {
         _fail(403, ApiErrorCode.notFriend, '친구에게만 보낼 수 있어요');
       }
     }
-    if (r.tapeType != 1) {
+    if (r.tapeType != 15) {
       final n = _s.owned[r.tapeType] ?? 0;
       if (n <= 0) {
         _fail(409, ApiErrorCode.noTapeLeft, '테이프가 없어요. 상점에서 채워 주세요', {
@@ -967,31 +968,31 @@ class LocalApiClient implements ApiClient {
   static const products = ProductsDto(
     tapes: [
       TapeProductDto(
-        id: 'tape3_1',
-        tapeType: 3,
+        id: 'tape60_1',
+        tapeType: 60,
         qty: 1,
-        name: '3분 테이프',
+        name: '1분 테이프',
         price: 30,
       ),
       TapeProductDto(
-        id: 'tape3_5',
-        tapeType: 3,
+        id: 'tape60_5',
+        tapeType: 60,
         qty: 5,
-        name: '3분 테이프 5개',
+        name: '1분 테이프 5개',
         price: 120,
       ),
       TapeProductDto(
-        id: 'tape5_1',
-        tapeType: 5,
+        id: 'tape180_1',
+        tapeType: 180,
         qty: 1,
-        name: '5분 테이프',
+        name: '3분 테이프',
         price: 50,
       ),
       TapeProductDto(
-        id: 'tape5_5',
-        tapeType: 5,
+        id: 'tape180_5',
+        tapeType: 180,
         qty: 5,
-        name: '5분 테이프 5개',
+        name: '3분 테이프 5개',
         price: 200,
       ),
     ],

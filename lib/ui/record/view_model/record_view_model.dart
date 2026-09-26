@@ -108,7 +108,7 @@ class RecordViewModel extends ChangeNotifier {
 
   // ── 상태 ───────────────────────────────────────────
   RecordPhase _phase = RecordPhase.idle;
-  TapeType _tape = TapeType.one;
+  TapeType _tape = TapeType.s15;
   double _sec = 0;
   double _recorded = 0;
   double _pos = 0;
@@ -793,7 +793,7 @@ class RecordViewModel extends ChangeNotifier {
     _recording = null;
     _idemKey = null;
     _idemFor = null;
-    if (curLocked) _tape = TapeType.one;
+    if (curLocked) _tape = TapeType.s15;
     notifyListeners();
   }
 

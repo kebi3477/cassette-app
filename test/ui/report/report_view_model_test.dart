@@ -56,7 +56,7 @@ void main() {
   test('테이프 신고: 사유 전에는 못 누른다 → 보내는 중… → 신고하고 차단', () {
     fakeAsync((async) {
       h = RecordHarness();
-      final id = h.store.unsorted.first.id; // 지현 3분
+      final id = h.store.unsorted.first.id; // 지현 1분
       final vm = make(
         async,
         TapeReport(

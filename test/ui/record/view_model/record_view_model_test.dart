@@ -27,8 +27,8 @@ void main() {
         h.vm.load();
         async.flushMicrotasks();
         expect(h.vm.wallet.credits, 120);
-        expect(h.vm.wallet.ownedOf(TapeType.three), 2);
-        expect(h.vm.wallet.ownedOf(TapeType.five), 0);
+        expect(h.vm.wallet.ownedOf(TapeType.m1), 2);
+        expect(h.vm.wallet.ownedOf(TapeType.m3), 0);
         // 계약서 정렬: 즐겨찾기 → lastAt 최근 순
         expect(h.vm.sortedFriends.map((f) => f.name), [
           '지현',
@@ -45,16 +45,16 @@ void main() {
   });
 
   group('캐러셀', () {
-    test('0개인 5분 테이프는 잠기고 녹음이 시작되지 않는다', () {
+    test('0개인 3분 테이프는 잠기고 녹음이 시작되지 않는다', () {
       fakeAsync((async) {
         final h = RecordHarness();
         h.vm.load();
         async.flushMicrotasks();
-        expect(h.vm.isLocked(TapeType.one), isFalse);
-        expect(h.vm.isLocked(TapeType.three), isFalse);
-        expect(h.vm.isLocked(TapeType.five), isTrue);
+        expect(h.vm.isLocked(TapeType.s15), isFalse);
+        expect(h.vm.isLocked(TapeType.m1), isFalse);
+        expect(h.vm.isLocked(TapeType.m3), isTrue);
 
-        h.vm.selectTape(TapeType.five);
+        h.vm.selectTape(TapeType.m3);
         expect(h.vm.curLocked, isTrue);
         h.vm.startRec();
         async.flushMicrotasks();
@@ -70,8 +70,8 @@ void main() {
         async.flushMicrotasks();
         h.vm.startRec();
         async.flushMicrotasks();
-        h.vm.selectTape(TapeType.three);
-        expect(h.vm.tape, TapeType.one);
+        h.vm.selectTape(TapeType.m1);
+        expect(h.vm.tape, TapeType.s15);
       });
     });
   });
@@ -86,22 +86,22 @@ void main() {
         async.flushMicrotasks();
         expect(h.vm.phase, RecordPhase.rec);
         expect(h.vm.hidesTabs, isFalse);
-        async.elapse(const Duration(seconds: 12));
-        expect(h.vm.sec, 12);
+        async.elapse(const Duration(seconds: 3));
+        expect(h.vm.sec, 3);
         expect(h.vm.progress, closeTo(.2, 1e-9));
       });
     });
 
-    test('1분에 닿으면 자동으로 멈추고 확인 화면으로 간다', () {
+    test('15초에 닿으면 자동으로 멈추고 확인 화면으로 간다', () {
       fakeAsync((async) {
         final h = RecordHarness();
         h.vm.load();
         async.flushMicrotasks();
         h.vm.startRec();
         async.flushMicrotasks();
-        async.elapse(const Duration(seconds: 60));
+        async.elapse(const Duration(seconds: 15));
         expect(h.vm.phase, RecordPhase.confirm);
-        expect(h.vm.sec, 60);
+        expect(h.vm.sec, 15);
         expect(h.recorder.calls, contains('stop'));
         expect(h.vm.hidesTabs, isTrue);
       });
@@ -242,14 +242,14 @@ void main() {
         final h = RecordHarness();
         h.vm.load();
         async.flushMicrotasks();
-        h.vm.selectTape(TapeType.three);
+        h.vm.selectTape(TapeType.m1);
         record(async, h, 8);
         h.vm.backIdle();
         async.elapse(const Duration(seconds: 3));
         expect(h.vm.phase, RecordPhase.idle);
         expect(h.vm.playing, isFalse);
         expect(h.vm.sec, 0);
-        expect(h.vm.wallet.ownedOf(TapeType.three), 2);
+        expect(h.vm.wallet.ownedOf(TapeType.m1), 2);
       });
     });
   });
@@ -336,13 +336,13 @@ void main() {
   });
 
   group('보내기', () {
-    test('포장 2.7초 뒤 완료, 3분 테이프 1개 차감', () {
+    test('포장 2.7초 뒤 완료, 1분 테이프 1개 차감', () {
       fakeAsync((async) {
         final h = RecordHarness();
         h.vm.load();
         async.flushMicrotasks();
-        h.vm.selectTape(TapeType.three);
-        h.deliveries.type = TapeType.three;
+        h.vm.selectTape(TapeType.m1);
+        h.deliveries.type = TapeType.m1;
         record(async, h, 8);
         async.elapse(const Duration(seconds: 2));
         h.vm.goSend();
@@ -357,23 +357,23 @@ void main() {
         expect(h.vm.phase, RecordPhase.sent);
         expect(h.vm.sentTitle, '하늘님에게 보냈어요');
         expect(h.vm.sentSub, '테이프는 이제 받는 사람만 들을 수 있어요');
-        expect(h.vm.wallet.ownedOf(TapeType.three), 1);
+        expect(h.vm.wallet.ownedOf(TapeType.m1), 1);
 
         h.vm.finish();
         expect(h.vm.phase, RecordPhase.idle);
         expect(h.vm.to, isNull);
-        expect(h.vm.tape, TapeType.three);
+        expect(h.vm.tape, TapeType.m1);
       });
     });
 
-    test('마지막 3분 테이프를 보내면 완료 후 1분으로 돌아간다', () {
+    test('마지막 1분 테이프를 보내면 완료 후 15초로 돌아간다', () {
       fakeAsync((async) {
         final h = RecordHarness();
-        h.store.owned = {3: 1, 5: 0};
-        h.deliveries.type = TapeType.three;
+        h.store.owned = {60: 1, 180: 0};
+        h.deliveries.type = TapeType.m1;
         h.vm.load();
         async.flushMicrotasks();
-        h.vm.selectTape(TapeType.three);
+        h.vm.selectTape(TapeType.m1);
         record(async, h, 8);
         async.elapse(const Duration(seconds: 2));
         h.vm.goSend();
@@ -381,9 +381,9 @@ void main() {
         h.vm.sendNow();
         async.elapse(const Duration(seconds: 3));
         expect(h.vm.phase, RecordPhase.sent);
-        expect(h.vm.wallet.ownedOf(TapeType.three), 0);
+        expect(h.vm.wallet.ownedOf(TapeType.m1), 0);
         h.vm.finish();
-        expect(h.vm.tape, TapeType.one);
+        expect(h.vm.tape, TapeType.s15);
       });
     });
 

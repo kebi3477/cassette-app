@@ -28,7 +28,7 @@ void main() {
       expect(vm.receivedCount, 10);
       expect(vm.sentCount, 4);
       expect(vm.friendCount, 6);
-      expect(vm.ownedOf(TapeType.three), 2);
+      expect(vm.ownedOf(TapeType.m1), 2);
       expect(vm.providerText, '카카오');
       expect(vm.version, '1.0.0');
       expect(vm.blockedCountText, '없음');
@@ -42,7 +42,7 @@ void main() {
       status: st,
       to: '엄마',
       date: DateTime(2026, 9, 10),
-      type: TapeType.three,
+      type: TapeType.m1,
       openedAt: opened,
     );
     expect(MyViewModel.sentStatus(s(SentStatus.linkPending)), '링크 대기');
@@ -182,7 +182,7 @@ void main() {
                 status: SentStatus.linkPending,
                 to: '유진',
                 date: DateTime(2026, 9, 22),
-                type: TapeType.one,
+                type: TapeType.s15,
                 link: true,
               )
             : vm.sent.first,

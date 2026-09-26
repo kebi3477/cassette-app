@@ -45,7 +45,7 @@ void main() {
     final me = ok<Me>(await UserRepositoryRemote(api).getMe());
     expect(me.name, '민경');
     expect(me.credits, 120);
-    expect(me.owned, {TapeType.three: 2, TapeType.five: 0});
+    expect(me.owned, {TapeType.m1: 2, TapeType.m3: 0});
     expect(me.drawer.stored, 10);
     expect(me.drawer.cap, 12);
     expect(me.drawer.unopenedCount, 2);
@@ -56,7 +56,7 @@ void main() {
   test('지갑 = /users/me 보유 + /wallet 광고', () async {
     final w = ok<Wallet>(await WalletRepositoryRemote(api).getWallet());
     expect(w.credits, 120);
-    expect(w.ownedOf(TapeType.three), 2);
+    expect(w.ownedOf(TapeType.m1), 2);
     expect(w.adsLeft, 3);
   });
 
@@ -208,7 +208,7 @@ void main() {
     }
 
     test('업로드 → complete → 폴링 ready, 미리 듣기는 올린 파일', () async {
-      final rec = await uploadReady(TapeType.one);
+      final rec = await uploadReady(TapeType.s15);
       expect(rec.status, RecordingStatus.ready);
       expect(rec.previewUrl, '/tmp/a.m4a');
     });
@@ -230,7 +230,7 @@ void main() {
       final up = ok<Recording>(
         await repo.upload(
           filePath: '/tmp/a.m4a',
-          type: TapeType.one,
+          type: TapeType.s15,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -238,8 +238,8 @@ void main() {
       expect(await repo.retry(up.id), isA<Error<Recording>>());
     });
 
-    test('3분 보내기: 차감, lastAt 갱신, 같은 키는 한 번만, tag 없음', () async {
-      final rec = await uploadReady(TapeType.three);
+    test('1분 보내기: 차감, lastAt 갱신, 같은 키는 한 번만, tag 없음', () async {
+      final rec = await uploadReady(TapeType.m1);
       final repo = DeliveryRepositoryRemote(api);
       const to = Recipient.friend(friendId: 'u-haneul', name: '하늘');
       Future<SentTape> send() async => ok<SentTape>(
@@ -249,7 +249,7 @@ void main() {
       final b = await send();
       expect(a.id, b.id);
       expect(a.status, SentStatus.unopened);
-      expect(store.owned[3], 1);
+      expect(store.owned[60], 1);
       expect(store.sent.first.tag, isNull, reason: '앱은 tag를 보내지 않는다');
       expect(
         store.friends.firstWhere((f) => f.name == '하늘').lastAt,
@@ -257,9 +257,9 @@ void main() {
       );
     });
 
-    test('5분 0개면 NO_TAPE_LEFT, 새 친구는 링크', () async {
+    test('3분 0개면 NO_TAPE_LEFT, 새 친구는 링크', () async {
       final repo = DeliveryRepositoryRemote(api);
-      final five = await uploadReady(TapeType.five);
+      final five = await uploadReady(TapeType.m3);
       final r = await repo.send(
         recordingId: five.id,
         to: const Recipient.friend(friendId: 'u-jihyun', name: '지현'),
@@ -267,7 +267,7 @@ void main() {
       );
       expect(apiError(r).code, 'NO_TAPE_LEFT');
 
-      final one = await uploadReady(TapeType.one);
+      final one = await uploadReady(TapeType.s15);
       final link = ok<SentTape>(
         await repo.send(
           recordingId: one.id,
@@ -290,7 +290,7 @@ void main() {
   group('상점·결제·선물·내역', () {
     test('구매 부족이면 402 INSUFFICIENT_CREDITS + need', () async {
       final repo = ShopRepositoryRemote(api);
-      final r = await repo.purchase('tape5_5', idempotencyKey: 'p1');
+      final r = await repo.purchase('tape180_5', idempotencyKey: 'p1');
       final e = apiError(r);
       expect(e.status, 402);
       expect(e.code, 'INSUFFICIENT_CREDITS');

@@ -24,8 +24,8 @@ void main() {
 
   testWidgets('상점: 헤더 잔액, 테이프 4종, 크레딧 받기, 팩, 서랍', (tester) async {
     await pumpShop(tester);
-    expect(find.text('120'), findsNWidgets(2)); // 잔액 + 3분 5개 가격
-    for (final t in ['3분 테이프', '3분 테이프 5개', '5분 테이프', '5분 테이프 5개']) {
+    expect(find.text('120'), findsNWidgets(2)); // 잔액 + 1분 5개 가격
+    for (final t in ['1분 테이프', '1분 테이프 5개', '3분 테이프', '3분 테이프 5개']) {
       expect(find.text(t), findsOneWidget);
     }
     expect(find.text('보유 2개'), findsNWidgets(2));
@@ -41,7 +41,7 @@ void main() {
     final card = find.text('서랍 넓히기');
     expect(
       tester.getTopLeft(card).dy,
-      lessThan(tester.getTopLeft(find.text('3분 테이프')).dy),
+      lessThan(tester.getTopLeft(find.text('1분 테이프')).dy),
     );
     expect(find.text('서랍이 거의 찼어요 · 10개 더 보관'), findsOneWidget);
     expect(find.text('10/12'), findsOneWidget);
@@ -78,7 +78,7 @@ void main() {
 
   testWidgets('구매 시트 → 구매 → 토스트, 보유 증가', (tester) async {
     final h = await pumpShop(tester);
-    await tester.tap(find.text('3분 테이프'));
+    await tester.tap(find.text('1분 테이프'));
     await tester.pumpAndSettle();
     expect(find.text('30 크레딧 · 남는 크레딧 90'), findsOneWidget);
     await tester.tap(find.text('구매'));
@@ -93,7 +93,7 @@ void main() {
   testWidgets('부족 → 충전 시트 → 팩 → 결제 중 → 원래 구매 시트', (tester) async {
     final h = await pumpShop(tester);
     h.iap.delay = const Duration(milliseconds: 1400);
-    await tester.tap(find.text('5분 테이프 5개'));
+    await tester.tap(find.text('3분 테이프 5개'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('구매'));
     await tester.pump();
@@ -107,7 +107,7 @@ void main() {
     expect(find.text('100 크레딧 · 잠시만 기다려 주세요'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 1400));
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('5분 테이프 5개'), findsWidgets);
+    expect(find.text('3분 테이프 5개'), findsWidgets);
     expect(find.text('200 크레딧 · 남는 크레딧 20'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.pump(const Duration(seconds: 2));
@@ -152,7 +152,7 @@ void main() {
 
   testWidgets('딤을 눌러 닫으면 시트 상태도 비운다', (tester) async {
     final h = await pumpShop(tester);
-    await tester.tap(find.text('3분 테이프'));
+    await tester.tap(find.text('1분 테이프'));
     await tester.pumpAndSettle();
     expect(h.shopVm.sheet, isA<BuySheet>());
     await tester.tapAt(const Offset(195, 100));
@@ -160,9 +160,9 @@ void main() {
     expect(h.shopVm.sheet, isNull);
   });
 
-  testWidgets('녹음 탭에서 온 /shop?hl=5', (tester) async {
-    final h = await pumpShop(tester, loc: '/shop?hl=5');
-    expect(h.shopVm.highlight?.minutes, 5);
+  testWidgets('녹음 탭에서 온 /shop?hl=180', (tester) async {
+    final h = await pumpShop(tester, loc: '/shop?hl=180');
+    expect(h.shopVm.highlight?.code, 180);
     await tester.pump(const Duration(seconds: 2));
   });
 }

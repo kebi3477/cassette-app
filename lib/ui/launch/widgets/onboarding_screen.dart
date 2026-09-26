@@ -20,7 +20,7 @@ class OnboardingScreen extends StatefulWidget {
 
   /// logic.js `onb` — 제목은 줄바꿈을 살리고(`pre-line`), 설명의 줄바꿈은 한 줄로 이어 붙인다(`split('\n').join(' ')`).
   static const pages = [
-    ('목소리를 테이프에 담아요', '1분, 3분, 5분. 길이를 골라 하고 싶은 말을 녹음해요'),
+    ('목소리를 테이프에 담아요', '15초, 1분, 3분. 길이를 골라 하고 싶은 말을 녹음해요'),
     ('소포로 포장해서 보내요', '받는 사람만 뜯어서 들을 수 있어요'),
     ('소중한 목소리를\n추억별로 모아 보세요', '사람, 순간, 주제별로 칸을 만들어 오래 간직할 수 있어요'),
   ];
@@ -204,30 +204,26 @@ class _DrawerShelves extends StatelessWidget {
     (
       '2026 생일',
       [
-        (TapePalette.one, 54.0),
-        (TapePalette.three, 58.0),
-        (TapePalette.five, 50.0),
-        (TapePalette.one, 56.0),
+        (TapePalette.s15, 54.0),
+        (TapePalette.m1, 58.0),
+        (TapePalette.m3, 50.0),
+        (TapePalette.s15, 56.0),
       ],
     ),
     (
       '우리의 여행',
-      [
-        (TapePalette.three, 56.0),
-        (TapePalette.three, 52.0),
-        (TapePalette.five, 58.0),
-      ],
+      [(TapePalette.m1, 56.0), (TapePalette.m1, 52.0), (TapePalette.m3, 58.0)],
     ),
     (
       '엄마 목소리',
       [
-        (TapePalette.five, 58.0),
-        (TapePalette.one, 52.0),
-        (TapePalette.five, 55.0),
-        (TapePalette.three, 50.0),
+        (TapePalette.m3, 58.0),
+        (TapePalette.s15, 52.0),
+        (TapePalette.m3, 55.0),
+        (TapePalette.m1, 50.0),
       ],
     ),
-    ('힘들 때 듣기', [(TapePalette.one, 56.0), (TapePalette.three, 53.0)]),
+    ('힘들 때 듣기', [(TapePalette.s15, 56.0), (TapePalette.m1, 53.0)]),
   ];
 
   @override

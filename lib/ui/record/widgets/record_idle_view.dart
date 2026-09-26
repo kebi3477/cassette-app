@@ -193,7 +193,7 @@ class _ToChip extends StatelessWidget {
   }
 }
 
-/// 길이 표시 `1분 3분 5분` (간격 22, `700 14px`)
+/// 길이 표시 `15초 1분 3분` (간격 22, `700 14px`)
 class _LengthRow extends StatelessWidget {
   const _LengthRow({required this.selected});
 
@@ -205,7 +205,7 @@ class _LengthRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (final t in TapeType.values) ...[
-          if (t != TapeType.one) const SizedBox(width: 22),
+          if (t != TapeType.s15) const SizedBox(width: 22),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [

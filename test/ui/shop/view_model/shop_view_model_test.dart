@@ -27,10 +27,10 @@ void main() {
     fakeAsync((async) {
       setup(async);
       expect(vm.catalog.tapes.map((t) => t.name), [
+        '1분 테이프',
+        '1분 테이프 5개',
         '3분 테이프',
         '3분 테이프 5개',
-        '5분 테이프',
-        '5분 테이프 5개',
       ]);
       expect(vm.catalog.packs.map((p) => p.priceLabel), [
         '₩1,100',
@@ -38,7 +38,7 @@ void main() {
         '₩11,000',
       ]);
       expect(vm.credits, 120);
-      expect(vm.ownedOf(TapeType.three), 2);
+      expect(vm.ownedOf(TapeType.m1), 2);
       expect(vm.adsLeft, 3);
       expect('${vm.stored}/${vm.cap}', '10/12');
     });
@@ -47,22 +47,22 @@ void main() {
   test('구매: 크레딧 차감, 보유 증가, 날아가는 테이프 0.85초, 토스트', () {
     fakeAsync((async) {
       setup(async);
-      vm.buy(tape('tape3_5'));
+      vm.buy(tape('tape60_5'));
       expect(vm.sheet, isA<BuySheet>());
       vm.confirmBuy();
       async.flushMicrotasks();
       expect(vm.sheet, isNull);
       expect(vm.credits, 0);
-      expect(vm.ownedOf(TapeType.three), 7);
-      expect(vm.flyType, TapeType.three);
+      expect(vm.ownedOf(TapeType.m1), 7);
+      expect(vm.flyType, TapeType.m1);
       expect(h.toast.message, '보유 테이프에 넣었어요');
-      expect(h.store.ledger.first.reason, '3분 테이프 5개 구매');
+      expect(h.store.ledger.first.reason, '1분 테이프 5개 구매');
       async.elapse(const Duration(milliseconds: 850));
       expect(vm.flyType, isNull);
       // 녹음 탭 알약도 다시 불러온다
       h.vm.load();
       async.flushMicrotasks();
-      expect(h.vm.wallet.ownedOf(TapeType.three), 7);
+      expect(h.vm.wallet.ownedOf(TapeType.m1), 7);
     });
   });
 
@@ -81,7 +81,7 @@ void main() {
   test('부족하면 charge(need) → 충전 → 원래 구매 시트로 돌아온다', () {
     fakeAsync((async) {
       setup(async);
-      final five = tape('tape5_5'); // 200
+      final five = tape('tape180_5'); // 200
       vm.buy(five);
       vm.confirmBuy();
       async.flushMicrotasks();
@@ -104,7 +104,7 @@ void main() {
 
       vm.confirmBuy();
       async.flushMicrotasks();
-      expect(vm.ownedOf(TapeType.five), 5);
+      expect(vm.ownedOf(TapeType.m3), 5);
       expect(vm.credits, 20);
     });
   });
@@ -124,7 +124,7 @@ void main() {
     fakeAsync((async) {
       setup(async);
       h.iap.delay = const Duration(seconds: 1);
-      vm.buy(tape('tape5_5'));
+      vm.buy(tape('tape180_5'));
       vm.confirmBuy();
       async.flushMicrotasks();
       vm.charge(vm.catalog.packs.first);
@@ -198,7 +198,7 @@ void main() {
   test('광고 ✕ → 보상 없이 닫고 충전 시트로 돌아간다', () {
     fakeAsync((async) {
       setup(async);
-      vm.buy(tape('tape5_5'));
+      vm.buy(tape('tape180_5'));
       vm.confirmBuy();
       async.flushMicrotasks();
       vm.openAd();
@@ -217,7 +217,7 @@ void main() {
   test('충전 시트에서 광고를 보면 need가 10 줄어든다', () {
     fakeAsync((async) {
       setup(async);
-      vm.buy(tape('tape5_5'));
+      vm.buy(tape('tape180_5'));
       vm.confirmBuy();
       async.flushMicrotasks();
       vm.openAd();
@@ -284,11 +284,11 @@ void main() {
   test('녹음 탭의 "+": 강조하고 1개짜리 구매 시트를 바로 연다', () {
     fakeAsync((async) {
       setup(async);
-      vm.buyTape(TapeType.five);
+      vm.buyTape(TapeType.m3);
       async.flushMicrotasks();
-      expect(vm.highlight, TapeType.five);
+      expect(vm.highlight, TapeType.m3);
       final s = vm.sheet as BuySheet;
-      expect(s.item.id, 'tape5_1');
+      expect(s.item.id, 'tape180_1');
       async.elapse(const Duration(seconds: 2));
     });
   });
@@ -299,14 +299,14 @@ void main() {
       h.store.credits = 10;
       h.wallet.invalidate();
       async.flushMicrotasks();
-      vm.buyTape(TapeType.three);
+      vm.buyTape(TapeType.m1);
       async.flushMicrotasks();
-      expect((vm.sheet as BuySheet).item.id, 'tape3_1');
+      expect((vm.sheet as BuySheet).item.id, 'tape60_1');
       vm.confirmBuy();
       async.flushMicrotasks();
       final c = vm.sheet as ChargeSheet;
       expect(c.need, 20);
-      expect((c.after as TapeProduct).id, 'tape3_1');
+      expect((c.after as TapeProduct).id, 'tape60_1');
       async.elapse(const Duration(seconds: 2));
     });
   });
@@ -314,8 +314,8 @@ void main() {
   test('녹음 탭에서 온 강조는 1.6초', () {
     fakeAsync((async) {
       setup(async);
-      vm.highlightTape(TapeType.five);
-      expect(vm.highlight, TapeType.five);
+      vm.highlightTape(TapeType.m3);
+      expect(vm.highlight, TapeType.m3);
       async.elapse(const Duration(milliseconds: 1600));
       expect(vm.highlight, isNull);
     });

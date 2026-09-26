@@ -12,7 +12,7 @@ import 'css_paint.dart';
 ///
 /// | prop | 뜻 |
 /// |---|---|
-/// | [palette] | 케이스·아래 사다리꼴·라벨 윗띠 색과 `1 MIN` 글자 |
+/// | [palette] | 케이스·아래 사다리꼴·라벨 윗띠 색과 `15 SEC` 글자 |
 /// | [title] | 라벨 첫 줄 |
 /// | [packL] / [packR] | 왼쪽·오른쪽 릴에 감긴 테이프 지름(px), 0.3초 linear로 바뀐다 |
 /// | [spinning] / [speed] | 릴 회전 여부와 한 바퀴 시간(초) |
@@ -20,7 +20,7 @@ import 'css_paint.dart';
 class TapeWidget extends StatefulWidget {
   const TapeWidget({
     super.key,
-    this.palette = TapePalette.one,
+    this.palette = TapePalette.s15,
     this.title = '',
     this.packL = 64,
     this.packR = 30,
@@ -112,7 +112,7 @@ class _TapeWidgetState extends State<TapeWidget>
               ),
             ),
           ),
-          // 라벨 윗띠: A · 1 MIN
+          // 라벨 윗띠: A · 15 SEC
           Positioned(
             left: 24,
             right: 24,

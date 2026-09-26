@@ -74,16 +74,24 @@ Matcher apiError(int status, String code) => throwsA(
       .having((e) => e.code, 'code', code),
 );
 
-/// 번들 샘플(`assets/audio/sample_20s.m4a`)을 녹음처럼 올리고 변환이 끝날 때까지 기다린다.
-Future<RecordingDto> recordSample(HttpApiClient api, {int tapeType = 1}) async {
+/// 샘플을 녹음처럼 올리고 변환이 끝날 때까지 기다린다.
+/// 15초(무료) 테이프는 10초 파일(`test/fixtures/sample_10s.m4a`), 나머지는 번들 20초 샘플.
+Future<RecordingDto> recordSample(
+  HttpApiClient api, {
+  int tapeType = 15,
+}) async {
+  final short = tapeType == 15;
   final created = await api.createRecording(
-    CreateRecordingRequest(tapeType: tapeType, durationMs: 20000),
+    CreateRecordingRequest(
+      tapeType: tapeType,
+      durationMs: short ? 10000 : 20000,
+    ),
   );
   expect(created.recording.status, 'uploading');
   expect(created.upload.method, 'PUT');
   await HttpUploadService().upload(
     created.upload,
-    'assets/audio/sample_20s.m4a',
+    short ? 'test/fixtures/sample_10s.m4a' : 'assets/audio/sample_20s.m4a',
   );
   var r = await api.completeRecording(created.recording.id);
   // 확인 화면처럼 1초 간격 폴링
@@ -120,8 +128,8 @@ void main() {
     final me = await a.api.getMe();
     expect(me.credits, 120);
     expect(me.drawer.cap, 12);
-    expect(qtyOf(me, 1), isNull, reason: '1분은 무료');
-    expect(qtyOf(me, 3), 2);
+    expect(qtyOf(me, 15), isNull, reason: '15초는 무료');
+    expect(qtyOf(me, 60), 2);
     expect(me.stats.friendCount, 6);
 
     final shelf = await a.api.getShelf();
@@ -145,7 +153,7 @@ void main() {
     final b = await login('recv', name: '지현');
     await a.api.devFriend(userId: b.id);
 
-    final rec = await recordSample(a.api, tapeType: 3);
+    final rec = await recordSample(a.api, tapeType: 60);
     final key = newIdempotencyKey();
     final body = CreateDeliveryRequest(recordingId: rec.id, recipientId: b.id);
     final first = await a.api.createDelivery(body, idempotencyKey: key);
@@ -154,7 +162,7 @@ void main() {
     expect(again.id, first.id);
     expect(first.recipient?.userId, b.id);
     expect(first.status, 'unopened');
-    expect(qtyOf(await a.api.getMe(), 3), 1);
+    expect(qtyOf(await a.api.getMe(), 60), 1);
 
     // 이미 보낸 녹음을 새 키로 보내면 거절
     await expectLater(
@@ -342,20 +350,20 @@ void main() {
     final a = await login('shop', name: '민경');
     await a.api.devSeed();
     final products = await a.api.getProducts();
-    expect(products.tapes.map((t) => t.id), contains('tape3_1'));
+    expect(products.tapes.map((t) => t.id), contains('tape60_1'));
 
     final key = newIdempotencyKey();
-    final r = await a.api.purchase('tape3_1', idempotencyKey: key);
+    final r = await a.api.purchase('tape60_1', idempotencyKey: key);
     expect(r.credits, 90);
     // 같은 키로 다시 → 한 번만
-    final again = await a.api.purchase('tape3_1', idempotencyKey: key);
+    final again = await a.api.purchase('tape60_1', idempotencyKey: key);
     expect(again.credits, 90);
-    expect(qtyOf(await a.api.getMe(), 3), 3);
+    expect(qtyOf(await a.api.getMe(), 60), 3);
 
-    // 새 계정: 가입 선물 10 크레딧 → 5분 테이프(50) 부족
+    // 새 계정: 가입 선물 10 크레딧 → 3분 테이프(50) 부족
     final poor = await login('shop-poor', name: '은비');
     await expectLater(
-      poor.api.purchase('tape5_1', idempotencyKey: newIdempotencyKey()),
+      poor.api.purchase('tape180_1', idempotencyKey: newIdempotencyKey()),
       throwsA(
         isA<ApiException>()
             .having((e) => e.status, 'status', 402)
@@ -594,13 +602,13 @@ void main() {
     );
     await expectLater(
       a.api.createRecording(
-        const CreateRecordingRequest(tapeType: 1, durationMs: 90000),
+        const CreateRecordingRequest(tapeType: 15, durationMs: 90000),
       ),
       apiError(400, ApiErrorCode.recordingTooLong),
     );
     // 저장소 서명이 틀리면 업로드 실패 (앱 코드 UPLOAD_FAILED)
     final created = await a.api.createRecording(
-      const CreateRecordingRequest(tapeType: 1, durationMs: 1000),
+      const CreateRecordingRequest(tapeType: 15, durationMs: 1000),
     );
     // 서명 한 글자를 바꾼다
     final u = Uri.parse(created.upload.url);

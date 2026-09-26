@@ -20,7 +20,7 @@ class FakeDeliveryRepository implements DeliveryRepository {
   bool fail;
 
   /// 보낸 녹음의 테이프 종류 (가짜 녹음은 종류를 모르므로 시험이 정한다)
-  TapeType type = TapeType.one;
+  TapeType type = TapeType.s15;
   final List<String> keys = [];
   final List<SentTape> sent = [];
 
@@ -39,7 +39,7 @@ class FakeDeliveryRepository implements DeliveryRepository {
     if (fail) return Result.error(Exception('offline'));
     final s = store;
     if (s != null && !type.isUnlimited) {
-      s.owned = {...s.owned, type.minutes: (s.owned[type.minutes] ?? 0) - 1};
+      s.owned = {...s.owned, type.code: (s.owned[type.code] ?? 0) - 1};
     }
     final t = SentTape(
       id: 's${sent.length + 1}',

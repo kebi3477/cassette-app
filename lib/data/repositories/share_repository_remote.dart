@@ -28,7 +28,7 @@ class ShareRepositoryRemote implements ShareRepository {
       deliveryId: s.deliveryId,
       senderName: s.sender.displayName,
       senderId: s.sender.userId,
-      type: TapeType.fromMinutes(s.tapeType),
+      type: TapeType.fromCode(s.tapeType),
       duration: Duration(milliseconds: s.durationMs),
       tag: TapeTag.fromCode(s.tag),
       sentAt: s.sentAt,

@@ -42,8 +42,8 @@ abstract final class Routes {
   /// 친구 화면 (탭바 위)
   static const friendPattern = '/friends/:userId';
 
-  /// 상점으로 가면서 [minutes] 테이프 행을 강조한다.
-  static String shopHighlight(int minutes) => '$shop?hl=$minutes';
+  /// 상점으로 가면서 [code](초) 테이프 행을 강조한다.
+  static String shopHighlight(int code) => '$shop?hl=$code';
 
   /// 서랍 배너 "넓히기 ›" → 상점 맨 위 서랍 카드가 팝 (`goShop('drawer')`)
   static String shopDrawer({int? nonce}) => Uri(
@@ -56,10 +56,10 @@ abstract final class Routes {
 
   /// 0개 테이프의 "+" → 상점에서 강조하고 1개짜리 구매 시트를 바로 연다.
   /// [nonce]는 같은 테이프를 다시 눌러도 주소가 바뀌게 한다.
-  static String shopBuy(int minutes, {int? nonce}) => Uri(
+  static String shopBuy(int code, {int? nonce}) => Uri(
     path: shop,
     queryParameters: {
-      'hl': '$minutes',
+      'hl': '$code',
       'buy': '${nonce ?? DateTime.now().millisecondsSinceEpoch}',
     },
   ).toString();

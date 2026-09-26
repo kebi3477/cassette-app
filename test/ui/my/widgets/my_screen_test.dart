@@ -37,8 +37,8 @@ void main() {
     expect(find.text('10개'), findsOneWidget);
     expect(find.text('6명'), findsOneWidget);
     expect(find.text('보유 테이프'), findsOneWidget);
-    expect(find.text('1분 무료', findRichText: true), findsOneWidget);
-    expect(find.text('5분 0개', findRichText: true), findsOneWidget);
+    expect(find.text('15초 무료', findRichText: true), findsOneWidget);
+    expect(find.text('3분 0개', findRichText: true), findsOneWidget);
     // 하위 화면 내용은 홈에 없다
     expect(find.text('회원 탈퇴'), findsNothing);
     // 아이콘 4개가 한 줄 — 좌우 18에서 시작해 372에서 끝난다
@@ -56,8 +56,8 @@ void main() {
     final h = await pumpMy(tester);
     await openPage(tester, '받은 테이프');
     expect(find.text('10개 · 서랍에 모인 목소리예요'), findsOneWidget);
-    expect(find.text('분류 안 함 · 1분 · 소포 도착'), findsWidgets);
-    expect(find.text('2026 생일 · 5분'), findsOneWidget);
+    expect(find.text('분류 안 함 · 15초 · 소포 도착'), findsWidgets);
+    expect(find.text('2026 생일 · 3분'), findsOneWidget);
     expect(find.text('‹'), findsOneWidget);
     final dates = h.myVm.received.map((x) => x.item.date).toList();
     for (var i = 1; i < dates.length; i++) {

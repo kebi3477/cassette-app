@@ -152,9 +152,9 @@ class MyViewModel extends ChangeNotifier {
     MyPage.settings => '',
   };
 
-  /// 받은 테이프 행 부제 (`x.sub`) — `칸 · 1분(· 소포 도착)`
+  /// 받은 테이프 행 부제 (`x.sub`) — `칸 · 15초(· 소포 도착)`
   static String receivedSub(ReceivedTape x) =>
-      '${x.where} · ${x.item.type.minutes}분${x.boxed ? ' · 소포 도착' : ''}';
+      '${x.where} · ${x.item.type.label}${x.boxed ? ' · 소포 도착' : ''}';
 
   /// 이름 도움말 (`nameHelp`) — 고치는 중이면 글자 수
   String get nameHelp => _editing

@@ -21,7 +21,7 @@ void main() {
     expect(vm.subtitle, '받은 테이프 3개');
     final t = vm.tapes.first;
     expect(vm.dateOf(t), '03.14');
-    expect(vm.subOf(t), '5분 · 2026 생일');
+    expect(vm.subOf(t), '3분 · 2026 생일');
     expect(vm.durOf(t), '0:48');
   });
 

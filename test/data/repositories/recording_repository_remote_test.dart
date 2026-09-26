@@ -23,7 +23,7 @@ class _PollApi implements ApiClient {
 
   static RecordingDto rec(String status) => RecordingDto(
     id: 'r1',
-    tapeType: 1,
+    tapeType: 15,
     durationMs: 20000,
     status: status,
     preview: status == 'ready'
@@ -132,7 +132,7 @@ void main() {
       RecordingRepositoryRemote(api, _Uploads())
           .upload(
             filePath: '/tmp/a.m4a',
-            type: TapeType.one,
+            type: TapeType.s15,
             duration: const Duration(seconds: 20),
           )
           .then((r) => out = r);

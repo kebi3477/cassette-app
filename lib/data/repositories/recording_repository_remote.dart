@@ -32,7 +32,7 @@ class RecordingRepositoryRemote implements RecordingRepository {
   }) => guard(() async {
     final created = await _api.createRecording(
       CreateRecordingRequest(
-        tapeType: type.minutes,
+        tapeType: type.code,
         durationMs: duration.inMilliseconds,
       ),
     );

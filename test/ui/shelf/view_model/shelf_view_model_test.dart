@@ -45,8 +45,8 @@ void main() {
       expect(vm.fullOn, isFalse);
       expect(vm.emptyOn, isFalse);
       expect(names(null), ['지현', '하늘']);
-      expect(vm.itemSub(vm.shelf.unsorted.first), '09.24 · 3분 · 소포 도착');
-      expect(vm.itemSub(vm.shelf.groups.first.items.first), '03.14 · 5분');
+      expect(vm.itemSub(vm.shelf.unsorted.first), '09.24 · 1분 · 소포 도착');
+      expect(vm.itemSub(vm.shelf.groups.first.items.first), '03.14 · 3분');
     });
   });
 

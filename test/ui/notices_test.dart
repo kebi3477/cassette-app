@@ -29,7 +29,7 @@ void main() {
 
   testWidgets('구매 확인 시트: 버튼 아래 구매 취소 안내', (tester) async {
     await pumpAt(tester, '/shop');
-    await tester.tap(find.text('3분 테이프'));
+    await tester.tap(find.text('1분 테이프'));
     await tester.pumpAndSettle();
     expect(find.text(NoticeCopy.noRefundPurchase), findsOneWidget);
     expect(
@@ -50,8 +50,8 @@ void main() {
     h.store.credits = 10;
     h.wallet.invalidate();
     await tester.pump();
-    await tester.scrollUntilVisible(find.text('5분 테이프'), -200);
-    await tester.tap(find.text('5분 테이프'));
+    await tester.scrollUntilVisible(find.text('3분 테이프'), -200);
+    await tester.tap(find.text('3분 테이프'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('구매'));
     await tester.pumpAndSettle();

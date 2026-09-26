@@ -412,7 +412,7 @@ class _PlayView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final item = vm.current;
-    final palette = TapePalette.of(item?.type ?? TapeType.one);
+    final palette = TapePalette.of(item?.type ?? TapeType.s15);
     final p = vm.progress;
     return Column(
       children: [

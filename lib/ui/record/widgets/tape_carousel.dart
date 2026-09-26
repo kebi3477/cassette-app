@@ -28,7 +28,7 @@ class TapeCarousel extends StatefulWidget {
 
   final TapeType selected;
 
-  /// 종류별 보유 수. 1분은 무제한이라 보지 않는다.
+  /// 종류별 보유 수. 15초는 무제한이라 보지 않는다.
   final int Function(TapeType) owned;
 
   /// 대기 상태에서만 밀 수 있다.

@@ -29,7 +29,7 @@ extension MeDtoMapper on MeDto {
     credits: credits,
     owned: {
       for (final t in tapes)
-        if (t.qty != null) TapeType.fromMinutes(t.tapeType): t.qty!,
+        if (t.qty != null) TapeType.fromCode(t.tapeType): t.qty!,
     },
     drawer: DrawerSummary(
       stored: drawer.stored,
@@ -70,7 +70,7 @@ extension ShelfItemDtoMapper on ShelfItemDto {
     senderName: sender.name,
     senderId: sender.userId,
     date: sentAt,
-    type: TapeType.fromMinutes(tapeType),
+    type: TapeType.fromCode(tapeType),
     duration: Duration(milliseconds: durationMs),
     tag: TapeTag.fromCode(tag),
     opened: opened,
@@ -117,7 +117,7 @@ extension AudioUrlDtoMapper on AudioUrlDto {
 extension RecordingDtoMapper on RecordingDto {
   Recording toDomain() => Recording(
     id: id,
-    type: TapeType.fromMinutes(tapeType),
+    type: TapeType.fromCode(tapeType),
     duration: Duration(milliseconds: durationMs),
     status: recordingStatus(status),
     previewUrl: preview?.url,
@@ -145,7 +145,7 @@ extension SentTapeDtoMapper on SentTapeDto {
       // recipient.nickname → recipient.name → linkName → "새 친구"
       to: recipient?.displayName ?? linkName ?? Recipient.unnamed,
       date: sentAt,
-      type: TapeType.fromMinutes(tapeType),
+      type: TapeType.fromCode(tapeType),
       link: share != null || linkName != null || status.startsWith('link_'),
       claimed: claimedAt != null || recipient != null,
       openedAt: openedAt,
@@ -172,7 +172,7 @@ extension ProductsDtoMapper on ProductsDto {
           id: t.id,
           name: t.name,
           price: t.price,
-          type: TapeType.fromMinutes(t.tapeType),
+          type: TapeType.fromCode(t.tapeType),
           qty: t.qty,
         ),
     ],
@@ -197,7 +197,7 @@ extension PurchaseResultDtoMapper on PurchaseResultDto {
     credits: credits,
     owned: {
       for (final t in tapes)
-        if (t.qty != null) TapeType.fromMinutes(t.tapeType): t.qty!,
+        if (t.qty != null) TapeType.fromCode(t.tapeType): t.qty!,
     },
     stored: drawer.stored,
     cap: drawer.cap,

@@ -609,7 +609,7 @@ class _CreditRow extends StatelessWidget {
   );
 }
 
-/// 보유 테이프 3칸 (1분 "무료", 3·5분 "N개", 0이면 레드·테이프 opacity .4)
+/// 보유 테이프 3칸 (15초 "무료", 1·3분 "N개", 0이면 레드·테이프 opacity .4)
 class _Drawer extends StatelessWidget {
   const _Drawer({required this.vm});
 

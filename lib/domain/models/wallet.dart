@@ -10,7 +10,7 @@ class Wallet {
 
   final int credits;
 
-  /// 3분·5분 테이프 보유 수. 1분은 무제한이라 넣지 않는다.
+  /// 1분·3분 테이프 보유 수. 15초는 무제한이라 넣지 않는다.
   final Map<TapeType, int> owned;
 
   /// 오늘 남은 광고 보상 횟수

@@ -7,7 +7,7 @@ import '../../model/wallet_dto.dart';
 ///
 /// 초기값은 프로토타입 `state = {…}`(source/TapeletterApp.logic.js)와 같다.
 /// 날짜는 프로토타입의 `MM.DD`에 2026년을 붙이고, 시간대와 상관없이 같은 날로 보이게
-/// UTC 정오로 둔다. 재생 길이는 프로토타입 `DUR`(1분 20s · 3분 34s · 5분 48s)과 같다.
+/// UTC 정오로 둔다. 재생 길이는 프로토타입 `DUR`(15초 20s · 1분 34s · 3분 48s, 옛 1·3·5분 자리)과 같다.
 class LocalStore {
   /// [newUser]면 처음 로그인이 가입이 되고 이름이 비어 있다(이름 정하기 화면).
   LocalStore({DateTime Function()? clock, this.newUser = false})
@@ -20,7 +20,7 @@ class LocalStore {
   final DateTime Function() now;
 
   /// 프로토타입 `DUR`과 번들 샘플 파일 길이
-  static const durationMs = {1: 20000, 3: 34000, 5: 48000};
+  static const durationMs = {15: 20000, 60: 34000, 180: 48000};
 
   static const meId = 'u-me';
 
@@ -83,11 +83,11 @@ class LocalStore {
     credits = 120;
     cap = 12;
     notificationsEnabled = true;
-    owned = {3: 2, 5: 0};
+    owned = {60: 2, 180: 0};
     adsRemaining = 3;
     ledger = [
       _ledger(9, 24, 10, '광고 보상', 'ad_reward'),
-      _ledger(9, 20, -30, '3분 테이프 구매', 'tape_purchase'),
+      _ledger(9, 20, -30, '1분 테이프 구매', 'tape_purchase'),
       _ledger(9, 18, 100, '크레딧 충전 · ₩1,100', 'iap'),
       _ledger(9, 12, 30, '지현님이 선물', 'gift_received'),
       _ledger(9, 1, 10, '가입 선물', 'signup_gift'),
@@ -121,13 +121,13 @@ class LocalStore {
       FriendDto(userId: 'u-eunbi', name: '은비', starred: false, lastAt: d(6, 3)),
     ];
     unsorted = [
-      _it('u-jihyun', '지현', 9, 24, 3, opened: false),
+      _it('u-jihyun', '지현', 9, 24, 60, opened: false),
       _it(
         'u-haneul',
         '하늘',
         9,
         23,
-        1,
+        15,
         tag: 'thinking',
         opened: false,
         viaLink: true,
@@ -135,18 +135,18 @@ class LocalStore {
     ];
     groups = [
       LocalGroup('g-1', '2026 생일', [
-        _it('u-mom', '엄마', 3, 14, 5),
-        _it('u-minsu', '민수', 3, 14, 1),
-        _it('u-sua', '수아', 3, 15, 3),
-        _it('u-grandma', '할머니', 3, 14, 1),
+        _it('u-mom', '엄마', 3, 14, 180),
+        _it('u-minsu', '민수', 3, 14, 15),
+        _it('u-sua', '수아', 3, 15, 60),
+        _it('u-grandma', '할머니', 3, 14, 15),
       ]),
       LocalGroup('g-2', '승진 축하', [
-        _it('u-park', '박과장님', 6, 2, 3, tag: 'congrats'),
-        _it('u-eunbi', '은비', 6, 3, 1, tag: 'congrats'),
+        _it('u-park', '박과장님', 6, 2, 60, tag: 'congrats'),
+        _it('u-eunbi', '은비', 6, 3, 15, tag: 'congrats'),
       ]),
       LocalGroup('g-3', '엄마 목소리', [
-        _it('u-mom', '엄마', 1, 1, 5, tag: 'thinking'),
-        _it('u-mom', '엄마', 5, 8, 3, tag: 'thinking'),
+        _it('u-mom', '엄마', 1, 1, 180, tag: 'thinking'),
+        _it('u-mom', '엄마', 5, 8, 60, tag: 'thinking'),
       ]),
     ];
     for (final g in groups) {
@@ -156,8 +156,8 @@ class LocalStore {
       SentTapeDto(
         id: 's-1',
         linkName: '유진',
-        tapeType: 1,
-        durationMs: durationMs[1]!,
+        tapeType: 15,
+        durationMs: durationMs[15]!,
         tag: 'thinking',
         sentAt: d(9, 22),
         status: 'link_pending',
@@ -169,8 +169,8 @@ class LocalStore {
       SentTapeDto(
         id: 's-2',
         recipient: const UserRefDto(userId: 'u-mom', name: '엄마'),
-        tapeType: 3,
-        durationMs: durationMs[3]!,
+        tapeType: 60,
+        durationMs: durationMs[60]!,
         tag: 'thinking',
         sentAt: d(9, 10),
         status: 'opened',
@@ -180,8 +180,8 @@ class LocalStore {
       SentTapeDto(
         id: 's-3',
         recipient: const UserRefDto(userId: 'u-minsu', name: '민수'),
-        tapeType: 1,
-        durationMs: durationMs[1]!,
+        tapeType: 15,
+        durationMs: durationMs[15]!,
         tag: 'birthday',
         sentAt: d(8, 30),
         status: 'unopened',
@@ -190,8 +190,8 @@ class LocalStore {
       SentTapeDto(
         id: 's-4',
         recipient: const UserRefDto(userId: 'u-park', name: '박과장님'),
-        tapeType: 1,
-        durationMs: durationMs[1]!,
+        tapeType: 15,
+        durationMs: durationMs[15]!,
         tag: 'congrats',
         sentAt: d(6, 1),
         status: 'opened',

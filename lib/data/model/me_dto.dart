@@ -82,7 +82,7 @@ class DrawerDto {
   };
 }
 
-/// `tapes[] { tapeType, qty }` — 1분은 `qty: null`(무제한)
+/// `tapes[] { tapeType, qty }` — 15초는 `qty: null`(무제한)
 class TapeStockDto {
   const TapeStockDto({required this.tapeType, required this.qty});
 

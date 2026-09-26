@@ -21,7 +21,7 @@ class Me {
   final String name;
   final int credits;
 
-  /// 3분·5분 보유 수. 1분은 무제한이라 넣지 않는다.
+  /// 1분·3분 보유 수. 15초는 무제한이라 넣지 않는다.
   final Map<TapeType, int> owned;
   final DrawerSummary drawer;
   final int receivedCount;

@@ -49,46 +49,46 @@ void main() {
     final h = await pumpApp(tester);
     expect(find.text('2개'), findsOneWidget);
     expect(find.text('0개'), findsOneWidget);
-    for (final t in ['1분', '3분', '5분']) {
+    for (final t in ['15초', '1분', '3분']) {
       expect(find.text(t), findsOneWidget);
     }
     for (final t in ['녹음', '서랍', '상점', '마이']) {
       expect(find.text(t), findsOneWidget);
     }
     expect(find.byType(AppTabBar), findsOneWidget);
-    expect(h.vm.tape, TapeType.one);
+    expect(h.vm.tape, TapeType.s15);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('캐러셀: 왼쪽으로 50px 넘게 밀면 3분, 1분에서 오른쪽은 그대로', (tester) async {
+  testWidgets('캐러셀: 왼쪽으로 50px 넘게 밀면 1분, 15초에서 오른쪽은 그대로', (tester) async {
     final h = await pumpApp(tester);
     await tester.drag(find.byType(TapeCarousel), const Offset(120, 0));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(h.vm.tape, TapeType.one);
+    expect(h.vm.tape, TapeType.s15);
 
     await tester.drag(find.byType(TapeCarousel), const Offset(-40, 0));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(h.vm.tape, TapeType.one);
+    expect(h.vm.tape, TapeType.s15);
 
     await tester.drag(find.byType(TapeCarousel), const Offset(-120, 0));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(h.vm.tape, TapeType.three);
+    expect(h.vm.tape, TapeType.m1);
 
     await tester.drag(find.byType(TapeCarousel), const Offset(-120, 0));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(h.vm.tape, TapeType.five);
+    expect(h.vm.tape, TapeType.m3);
     expect(h.vm.curLocked, isTrue);
   });
 
   testWidgets('0개인 테이프에서 녹음 버튼을 누르면 상점으로 간다', (tester) async {
     final h = await pumpApp(tester);
-    h.vm.selectTape(TapeType.five);
+    h.vm.selectTape(TapeType.m3);
     await tester.pump();
     await tapRecord(tester);
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('상점'), findsNWidgets(2));
     expect(h.vm.phase, RecordPhase.idle);
-    expect(h.shopVm.highlight, TapeType.five);
+    expect(h.shopVm.highlight, TapeType.m3);
     await tester.pump(const Duration(seconds: 2));
   });
 
@@ -98,16 +98,16 @@ void main() {
       await tester.drag(find.byType(TapeCarousel), const Offset(-120, 0));
       await tester.pump(const Duration(milliseconds: 400));
     }
-    expect(h.vm.tape, TapeType.five);
+    expect(h.vm.tape, TapeType.m3);
     await tester.pump(const Duration(seconds: 1)); // 캐러셀이 자리 잡을 때까지
     // 알약 자리의 누르는 칸이 받는다 (글자 자체가 아니라)
     await tester.tapAt(tester.getCenter(find.text('+')));
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(h.shopVm.highlight, TapeType.five);
-    expect((h.shopVm.sheet as BuySheet).item.id, 'tape5_1');
-    expect(find.text('5분 테이프'), findsWidgets);
+    expect(h.shopVm.highlight, TapeType.m3);
+    expect((h.shopVm.sheet as BuySheet).item.id, 'tape180_1');
+    expect(find.text('3분 테이프'), findsWidgets);
     expect(tester.takeException(), isNull);
 
     // 닫고 다시 눌러도 또 열린다
@@ -128,7 +128,7 @@ void main() {
     final h = await pumpApp(tester);
     await tapRecord(tester);
     expect(find.text('0:00'), findsOneWidget);
-    expect(find.text('/ 1:00'), findsOneWidget);
+    expect(find.text('/ 0:15'), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
     expect(find.text('0:03'), findsOneWidget);
 
@@ -258,10 +258,10 @@ void main() {
   testWidgets('녹음 멈춤 패널', (tester) async {
     final h = await pumpApp(tester);
     await tapRecord(tester);
-    await tester.pump(const Duration(seconds: 23));
+    await tester.pump(const Duration(seconds: 9));
     h.vm.onAppHidden();
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.text('앱이 잠시 닫혀서 녹음이 멈췄어요\n0:23까지 담겼어요'), findsOneWidget);
+    expect(find.text('앱이 잠시 닫혀서 녹음이 멈췄어요\n0:09까지 담겼어요'), findsOneWidget);
     expect(find.text('이어서 녹음'), findsOneWidget);
     await tester.tap(find.text('여기까지 쓰기'));
     await tester.pump();

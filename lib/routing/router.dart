@@ -76,8 +76,8 @@ GoRouter router({
               path: Routes.record,
               builder: (context, state) => RecordScreen(
                 viewModel: context.read<RecordViewModel>(),
-                onGoShop: (t) => context.go(Routes.shopHighlight(t.minutes)),
-                onBuyTape: (t) => context.go(Routes.shopBuy(t.minutes)),
+                onGoShop: (t) => context.go(Routes.shopHighlight(t.code)),
+                onBuyTape: (t) => context.go(Routes.shopBuy(t.code)),
               ),
             ),
           ],
@@ -122,7 +122,7 @@ GoRouter router({
                 final hl = int.tryParse(q['hl'] ?? '');
                 return ShopScreen(
                   viewModel: context.read<ShopViewModel>(),
-                  highlight: hl == null ? null : TapeType.fromMinutes(hl),
+                  highlight: hl == null ? null : TapeType.fromCode(hl),
                   buyRequest: q['buy'],
                   drawerRequest: q['hl'] == 'drawer' ? q['n'] ?? '' : null,
                 );

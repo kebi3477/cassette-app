@@ -23,16 +23,16 @@ void main() {
       'credits': 120,
       'drawer': {'stored': 11, 'cap': 12, 'full': false},
       'tapes': [
-        {'tapeType': 1, 'qty': null},
-        {'tapeType': 3, 'qty': 2},
-        {'tapeType': 5, 'qty': 0},
+        {'tapeType': 15, 'qty': null},
+        {'tapeType': 60, 'qty': 2},
+        {'tapeType': 180, 'qty': 0},
       ],
       'stats': {'receivedCount': 11, 'sentCount': 4, 'friendCount': 6},
       'providers': ['kakao'],
       'notificationsEnabled': true,
       'createdAt': '2026-09-01T03:00:00.000Z',
     }).toDomain();
-    expect(me.owned, {TapeType.three: 2, TapeType.five: 0});
+    expect(me.owned, {TapeType.m1: 2, TapeType.m3: 0});
     expect(me.drawer.unopenedCount, 0);
   });
 
@@ -40,7 +40,7 @@ void main() {
     final x = ShelfItemDto.fromJson({
       'id': 'd1',
       'sender': {'userId': 'u1', 'name': '지현'},
-      'tapeType': 3,
+      'tapeType': 60,
       'durationMs': 34000,
       'tag': 'birthday',
       'sentAt': '2026-09-24T09:00:00.000Z',
@@ -61,7 +61,7 @@ void main() {
       'id': 'd2',
       'recipient': null,
       'linkName': '유진',
-      'tapeType': 1,
+      'tapeType': 15,
       'durationMs': 20000,
       'tag': 'thinking',
       'sentAt': '2026-09-22T09:00:00.000Z',
@@ -82,7 +82,7 @@ void main() {
   test('Recording (§9) preview', () {
     final r = RecordingDto.fromJson({
       'id': 'r1',
-      'tapeType': 3,
+      'tapeType': 60,
       'durationMs': 95000,
       'status': 'ready',
       'preview': {'url': 'https://p', 'expiresAt': '2026-09-25T06:44:46.549Z'},
@@ -110,7 +110,7 @@ void main() {
     final x = ShelfItemDto.fromJson({
       'id': 'd1',
       'sender': {'userId': 'u1', 'name': '지현'},
-      'tapeType': 1,
+      'tapeType': 15,
       'durationMs': 20000,
       'tag': null,
       'sentAt': '2026-09-24T09:00:00.000Z',
@@ -153,10 +153,10 @@ void main() {
     final c = ProductsDto.fromJson({
       'tapes': [
         {
-          'id': 'tape3_1',
-          'tapeType': 3,
+          'id': 'tape60_1',
+          'tapeType': 60,
           'qty': 1,
-          'name': '3분 테이프',
+          'name': '1분 테이프',
           'price': 30,
         },
       ],
@@ -173,7 +173,7 @@ void main() {
       ],
       'giftAmounts': [10, 30, 50, 100],
     }).toDomain();
-    expect(c.tapes.single.type, TapeType.three);
+    expect(c.tapes.single.type, TapeType.m1);
     expect(c.drawer.single.slots, 10);
     expect(c.packs.single.priceLabel, '₩1,100');
   });
@@ -206,7 +206,7 @@ void main() {
       'credits': 10,
       'drawer': {'stored': 0, 'cap': 12, 'full': false},
       'tapes': [
-        {'tapeType': 1, 'qty': null},
+        {'tapeType': 15, 'qty': null},
       ],
       'stats': {'receivedCount': 0, 'sentCount': 0, 'friendCount': 0},
       'providers': ['kakao'],
@@ -260,7 +260,7 @@ void main() {
         'state': 'available',
         'deliveryId': null,
         'sender': {'userId': 'u2', 'name': '하늘'},
-        'tapeType': 1,
+        'tapeType': 15,
         'durationMs': 34000,
         'tag': 'thinking',
         'sentAt': '2026-09-25T00:00:00.000Z',
@@ -275,7 +275,7 @@ void main() {
         'item': {
           'id': 't1',
           'sender': {'userId': 'u2', 'name': '하늘'},
-          'tapeType': 1,
+          'tapeType': 15,
           'durationMs': 34000,
           'tag': null,
           'sentAt': '2026-09-25T00:00:00.000Z',
@@ -329,7 +329,7 @@ void main() {
       final item = ShelfItemDto.fromJson({
         'id': 't1',
         'sender': {'userId': 'u2', 'name': '지현', 'nickname': '우리 지현'},
-        'tapeType': 3,
+        'tapeType': 60,
         'durationMs': 34000,
         'tag': null,
         'sentAt': '2026-09-24T09:00:00.000Z',
@@ -344,7 +344,7 @@ void main() {
         'id': 's1',
         'recipient': {'userId': 'u4', 'name': '엄마', 'nickname': '우리 엄마'},
         'linkName': null,
-        'tapeType': 3,
+        'tapeType': 60,
         'durationMs': 95000,
         'tag': null,
         'sentAt': '2026-09-24T09:00:00.000Z',
@@ -381,7 +381,7 @@ void main() {
             'id': 's1',
             'recipient': recipient,
             'linkName': linkName,
-            'tapeType': 1,
+            'tapeType': 15,
             'durationMs': 20000,
             'tag': null,
             'sentAt': '2026-09-24T09:00:00.000Z',
