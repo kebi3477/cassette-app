@@ -9,7 +9,7 @@ import '../../core/themes/text_styles.dart';
 import '../../core/ui/animations.dart';
 import '../../core/ui/buttons.dart';
 import '../view_model/record_view_model.dart';
-import 'record_button.dart';
+import 'record_deck.dart';
 import 'tape_carousel.dart';
 
 /// 녹음 · 대기/녹음 중/멈춤 — 템플릿 `vIdle` 블록.
@@ -248,18 +248,39 @@ class _Bottom extends StatelessWidget {
     if (vm.mic == MicPermission.denied) {
       return MicDeniedCard(onOpenSettings: vm.openSettings);
     }
-    return RecordButton(
-      recording: vm.phase == RecordPhase.rec,
-      locked: vm.curLocked,
-      onTap: () {
-        if (vm.phase == RecordPhase.rec) {
-          vm.stopRec();
-        } else if (vm.curLocked) {
-          onGoShop(vm.tape);
-        } else {
-          vm.startRec();
-        }
-      },
+    // 데크형 녹음 버튼 (`deckBtn`): 대기=REC, 녹음=STOP. 나머지 키는 비활성.
+    // 컨테이너 `height:112px; margin-top:-14px` — 위로 14 겹친다.
+    final rec = vm.phase == RecordPhase.rec;
+    return SizedBox(
+      height: RecordDeck.height - 14,
+      child: OverflowBox(
+        alignment: Alignment.bottomCenter,
+        minHeight: RecordDeck.height,
+        maxHeight: RecordDeck.height,
+        child: RecordDeck(
+          center: rec ? DeckKey.stop : DeckKey.rec,
+          recording: rec,
+          recLocked: vm.curLocked,
+          keys: {
+            DeckKey.rec: DeckKeyState(enabled: !rec, latched: rec),
+            DeckKey.stop: DeckKeyState(enabled: rec),
+          },
+          onKey: (k) {
+            switch (k) {
+              case DeckKey.rec:
+                if (vm.curLocked) {
+                  onGoShop(vm.tape);
+                } else {
+                  vm.startRec();
+                }
+              case DeckKey.stop:
+                vm.stopRec();
+              default:
+                break;
+            }
+          },
+        ),
+      ),
     );
   }
 }

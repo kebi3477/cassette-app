@@ -9,7 +9,9 @@ import '../../core/ui/buttons.dart';
 import '../../core/ui/grain_overlay.dart';
 import '../../core/ui/tape_motion.dart';
 import '../../core/ui/tape_widget.dart';
+import '../../core/ui/app_sheet.dart';
 import '../view_model/record_view_model.dart';
+import 'record_deck.dart';
 
 /// 녹음 · 확인 — 템플릿 `vConfirm` 블록.
 ///
@@ -68,8 +70,9 @@ class RecordConfirmView extends StatelessWidget {
             ],
           ),
         ),
+        // `padding: 0 24px {cBotPad}` — 데크형은 22
         Padding(
-          padding: EdgeInsets.fromLTRB(24, 0, 24, bottomSafe(context)),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 22),
           child: Column(
             children: [
               if (!vm.convFail)
@@ -88,9 +91,98 @@ class RecordConfirmView extends StatelessWidget {
             ],
           ),
         ),
+        // 녹음 확인 · 데크형 (`deckConfirm`): margin-top 12, margin-bottom 84
+        const SizedBox(height: 12),
+        _ConfirmDeck(vm: vm),
+        const SizedBox(height: 84),
       ],
     );
   }
+}
+
+/// 정지 후에도 데크가 남고 PLAY가 가운데(`deckRowX` −115).
+/// 확인=PLAY·REC·REW(pos>0)·FF(+5초)·STOP(재생 중), 변환 중=없음, EJECT는 항상 비활성.
+class _ConfirmDeck extends StatelessWidget {
+  const _ConfirmDeck({required this.vm});
+
+  final RecordViewModel vm;
+
+  @override
+  Widget build(BuildContext context) {
+    final ready = vm.previewReady;
+    return RecordDeck(
+      center: DeckKey.play,
+      playing: vm.playing,
+      recLocked: vm.curLocked,
+      keys: {
+        DeckKey.rew: DeckKeyState(enabled: ready && vm.pos > 0),
+        DeckKey.play: DeckKeyState(
+          enabled: ready,
+          latched: ready && vm.playing,
+        ),
+        DeckKey.rec: DeckKeyState(enabled: ready),
+        DeckKey.stop: DeckKeyState(enabled: ready && vm.playing),
+        DeckKey.ff: DeckKeyState(enabled: ready && vm.pos < vm.recorded),
+      },
+      onKey: (k) {
+        switch (k) {
+          case DeckKey.rew:
+            vm.rewind();
+          case DeckKey.play:
+            vm.togglePlay();
+          case DeckKey.rec:
+            // 다시 녹음 확인 (`shRedo`)
+            vm.pause();
+            showRedoSheet(context, onRedo: vm.redoRec);
+          case DeckKey.stop:
+            vm.pause();
+          case DeckKey.ff:
+            vm.fastForward();
+          case DeckKey.eject:
+            break;
+        }
+      },
+    );
+  }
+}
+
+/// 다시 녹음할까요? (`shRedo`) — "지우고 다시 녹음"은 대기로 돌아가고 녹음은 자동으로 시작하지 않는다.
+Future<void> showRedoSheet(
+  BuildContext context, {
+  required VoidCallback onRedo,
+}) {
+  return showAppSheet<void>(
+    context,
+    builder: (sheet) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('다시 녹음할까요?', style: AppText.suit(800, 20, letterSpacingEm: -.01)),
+        const SizedBox(height: 6),
+        Text(
+          '지금 녹음한 목소리는 지워져요. REC를 눌러 처음부터 다시 녹음할 수 있어요',
+          style: AppText.suit(500, 14, height: 1.55, color: AppColors.textSub),
+        ),
+        const SizedBox(height: 22),
+        AppButton(
+          label: '지우고 다시 녹음',
+          onTap: () {
+            Navigator.of(sheet).pop();
+            onRedo();
+          },
+        ),
+        const SizedBox(height: 2),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(sheet).pop(),
+          child: SizedBox(
+            height: 48,
+            child: Center(child: Text('취소', style: AppText.suit(600, 14))),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// 진행 바 + 60 재생 버튼 (너비 260, 간격 18)
@@ -139,8 +231,7 @@ class _Preview extends StatelessWidget {
               Text(formatClock(vm.recorded), style: label),
             ],
           ),
-          const SizedBox(height: 18),
-          PlayButton(playing: vm.playing, onTap: vm.togglePlay),
+          // 데크형이라 동그란 재생 버튼은 숨긴다 (`roundPlay: false`)
         ],
       ),
     );

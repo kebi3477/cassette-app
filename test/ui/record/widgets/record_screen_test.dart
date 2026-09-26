@@ -1,7 +1,7 @@
 import 'package:tapeletter_app/domain/models/tape_type.dart';
 import 'package:tapeletter_app/ui/core/ui/tab_bar.dart';
 import 'package:tapeletter_app/ui/record/view_model/record_view_model.dart';
-import 'package:tapeletter_app/ui/record/widgets/record_button.dart';
+import 'package:tapeletter_app/ui/record/widgets/record_deck.dart';
 import 'package:tapeletter_app/ui/record/widgets/tape_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
@@ -29,8 +29,10 @@ void main() {
     return h;
   }
 
+  /// 데크 가운데 키(대기 REC · 녹음 STOP)를 눌렀다 뗀다
   Future<void> tapRecord(WidgetTester tester) async {
-    await tester.tap(find.byType(RecordButton));
+    await tester.pump(const Duration(milliseconds: 500)); // 키 줄이 자리 잡게
+    await tester.tapAt(tester.getCenter(find.byType(RecordDeck)));
     await tester.pump();
     await tester.pump();
   }

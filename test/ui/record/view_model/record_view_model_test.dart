@@ -478,7 +478,10 @@ void main() {
         async.flushMicrotasks();
         expect(h.toast.message, '문자로 링크를 보냈어요');
         expect(h.vm.phase, RecordPhase.idle);
-        expect(h.share.shared.last, contains('https://tapeletter.lab241.com/t/test'));
+        expect(
+          h.share.shared.last,
+          contains('https://tapeletter.lab241.com/t/test'),
+        );
       });
     });
   });

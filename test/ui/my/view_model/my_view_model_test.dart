@@ -189,7 +189,10 @@ void main() {
       );
       async.flushMicrotasks();
       expect(h.deliveries.reshares, 1);
-      expect(h.share.shared.last, contains('https://tapeletter.lab241.com/t/again'));
+      expect(
+        h.share.shared.last,
+        contains('https://tapeletter.lab241.com/t/again'),
+      );
     });
   });
 

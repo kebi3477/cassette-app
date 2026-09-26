@@ -507,6 +507,27 @@ class RecordViewModel extends ChangeNotifier {
 
   Future<void> togglePlay() => _playing ? pause() : play();
 
+  /// 확인 화면에서 데크 키를 쓸 수 있는지 (`ready` — 변환이 끝났고 실패하지 않음)
+  bool get previewReady =>
+      _phase == RecordPhase.confirm && !_converting && !_convSlow && !_convFail;
+
+  /// REW — 처음으로 (`pos: 0`)
+  Future<void> rewind() async {
+    _pos = 0;
+    notifyListeners();
+    await _player.seek(Duration.zero);
+  }
+
+  /// FF — 5초 앞으로 (`min(recorded, pos + 5)`)
+  Future<void> fastForward() async {
+    _pos = (_pos + fastForwardSeconds).clamp(0, _recorded).toDouble();
+    notifyListeners();
+    await _player.seek(Duration(milliseconds: (_pos * 1000).round()));
+  }
+
+  /// 데크 FF가 한 번에 넘기는 초
+  static const fastForwardSeconds = 5;
+
   void _onPosition(Duration d) {
     if (!_playing) return;
     _pos = (d.inMilliseconds / 1000).clamp(0, _recorded);
