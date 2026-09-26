@@ -8,6 +8,7 @@ import '../../../data/model/api_error.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/delivery_repository.dart';
 import '../../../data/repositories/friend_repository.dart';
+import '../../../data/repositories/shelf_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/wallet_repository.dart';
 import '../../../data/services/app_info_service.dart';
@@ -17,6 +18,8 @@ import '../../../domain/models/blocked_user.dart';
 import '../../../domain/models/friend.dart';
 import '../../../domain/models/me.dart';
 import '../../../domain/models/sent_tape.dart';
+import '../../../domain/models/shelf.dart';
+import '../../../domain/models/tape_item.dart';
 import '../../../domain/models/tape_type.dart';
 import '../../../domain/models/user.dart';
 import '../../../domain/models/wallet.dart';
@@ -27,6 +30,35 @@ import '../../core/ui/toast.dart';
 /// 설정 > 정보의 문서
 enum AppDoc { terms, privacy, contact }
 
+/// 마이 하위 화면 (`myPage`) — 마이 홈 아이콘 4개 (`myMenu`)
+enum MyPage {
+  recv('받은 테이프'),
+  sent('보낸 테이프'),
+  friends('친구'),
+  settings('설정');
+
+  const MyPage(this.title);
+
+  /// `mpTitle`
+  final String title;
+
+  static MyPage? parse(String? name) =>
+      values.where((p) => p.name == name).firstOrNull;
+}
+
+/// 받은 테이프 행 (`recvList`) — 서랍의 분류 안 함 + 모든 칸
+class ReceivedTape {
+  const ReceivedTape({required this.item, required this.where});
+
+  final TapeItem item;
+
+  /// 칸 이름, 분류 안 함이면 `분류 안 함`
+  final String where;
+
+  /// 아직 안 뜯은 소포 (`boxed`, `isNew`) — 분류 안 함에만 있다
+  bool get boxed => item.groupId == null && !item.opened;
+}
+
 /// 마이 탭 ViewModel — logic.js의 마이·친구 시트·보낸 테이프·설정 부분.
 class MyViewModel extends ChangeNotifier {
   MyViewModel({
@@ -35,6 +67,7 @@ class MyViewModel extends ChangeNotifier {
     required WalletRepository walletRepository,
     required DeliveryRepository deliveryRepository,
     required AuthRepository authRepository,
+    required ShelfRepository shelfRepository,
     required this._share,
     required this._links,
     required this._appInfo,
@@ -43,8 +76,10 @@ class MyViewModel extends ChangeNotifier {
        _friendsRepo = friendRepository,
        _walletRepo = walletRepository,
        _deliveries = deliveryRepository,
-       _auth = authRepository {
+       _auth = authRepository,
+       _shelf = shelfRepository {
     _users.addListener(_loadMe);
+    _shelf.addListener(_loadReceived);
     _friendsRepo.addListener(_onFriendsChanged);
     _walletRepo.addListener(_loadWallet);
   }
@@ -56,6 +91,7 @@ class MyViewModel extends ChangeNotifier {
   final WalletRepository _walletRepo;
   final DeliveryRepository _deliveries;
   final AuthRepository _auth;
+  final ShelfRepository _shelf;
   final ShareService _share;
   final LinkService _links;
   final AppInfoService _appInfo;
@@ -68,6 +104,7 @@ class MyViewModel extends ChangeNotifier {
   String? _sentCursor;
   bool _loadingSent = false;
   List<BlockedUser> _blocked = const [];
+  List<ReceivedTape>? _received;
   String _version = '';
   bool _editing = false;
   String _draft = '';
@@ -89,6 +126,40 @@ class MyViewModel extends ChangeNotifier {
   bool get hasMoreSent => _sentCursor != null;
   List<BlockedUser> get blocked => _blocked;
   int ownedOf(TapeType t) => _wallet.ownedOf(t);
+
+  /// 받은 테이프 — 날짜 최근 순 (`recvList`)
+  List<ReceivedTape> get received => _received ?? const [];
+
+  /// 받은 테이프 수 (`recvCount`) — 서랍을 불러왔으면 그 수, 아니면 통계
+  int get receivedTotal => _received?.length ?? receivedCount;
+
+  /// 받은 테이프 아이콘의 레드 점 (`m.dot`) — 안 뜯은 소포가 있으면
+  bool get hasNewReceived => received.any((x) => x.boxed);
+
+  /// 아이콘 아래 수 (`myMenu[].n`)
+  String menuCount(MyPage p) => switch (p) {
+    MyPage.recv => '$receivedTotal개',
+    MyPage.sent => '$sentCount개',
+    MyPage.friends => '$friendCount명',
+    MyPage.settings => '',
+  };
+
+  /// 하위 화면 부제 (`mpSub`)
+  String pageSubtitle(MyPage p) => switch (p) {
+    MyPage.recv => '$receivedTotal개 · 서랍에 모인 목소리예요',
+    MyPage.sent => '$sentCount개 · 받은 사람만 들을 수 있어요',
+    MyPage.friends => '$friendCount명 · 별명은 나에게만 보여요',
+    MyPage.settings => '',
+  };
+
+  /// 받은 테이프 행 부제 (`x.sub`) — `칸 · 1분(· 소포 도착)`
+  static String receivedSub(ReceivedTape x) =>
+      '${x.where} · ${x.item.type.minutes}분${x.boxed ? ' · 소포 도착' : ''}';
+
+  /// 이름 도움말 (`nameHelp`) — 고치는 중이면 글자 수
+  String get nameHelp => _editing
+      ? '테이프에 적히는 이름이에요 · ${_draft.characters.length}/${User.maxNameLength}'
+      : '테이프에 적히는 이름이에요';
 
   /// 즐겨찾기 먼저 (`myFriends`)
   List<Friend> get friends => [
@@ -138,7 +209,28 @@ class MyViewModel extends ChangeNotifier {
       _loadSent(),
       _loadBlocked(),
       _loadVersion(),
+      _loadReceived(),
     ]);
+  }
+
+  /// 받은 테이프 — `GET /shelf`의 분류 안 함 + 모든 칸을 날짜 최근 순으로
+  Future<void> _loadReceived() async {
+    final r = await _shelf.getShelf();
+    if (r is! Ok<Shelf>) return;
+    final s = r.value;
+    final list = [
+      for (final x in s.unsorted) ReceivedTape(item: x, where: '분류 안 함'),
+      for (final g in s.groups)
+        for (final x in g.items) ReceivedTape(item: x, where: g.name),
+    ];
+    // 같은 날짜면 원래 순서 (안정 정렬)
+    final indexed = list.indexed.toList()
+      ..sort((a, b) {
+        final c = b.$2.item.date.compareTo(a.$2.item.date);
+        return c != 0 ? c : a.$1.compareTo(b.$1);
+      });
+    _received = [for (final (_, x) in indexed) x];
+    notifyListeners();
   }
 
   Future<void> _loadMe() async {
@@ -248,22 +340,35 @@ class MyViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 이름 저장. 비우면 원래 이름으로 돌아간다.
+  /// 이름 저장 (`doneName`, 저장 · Enter). 비어 있으면 알리고 고치는 중으로 남는다.
   Future<void> commitName() async {
     if (!_editing) return;
-    _editing = false;
     final next = _draft.trim();
+    if (next.isEmpty) {
+      _toast.show('이름을 적어 주세요');
+      return;
+    }
+    _editing = false;
     notifyListeners();
-    if (next.isEmpty || next == name) return;
+    if (next == name) return;
     final prev = _me;
     final r = await _users.updateName(next);
     switch (r) {
       case Ok<Me>(:final value):
         _me = value;
+        _toast.show('이름을 저장했어요');
       case Error<Me>(:final error):
         _me = prev;
         _toast.show(_message(error));
     }
+    notifyListeners();
+  }
+
+  /// 고치기 취소 (`cancelName`, 취소 · Esc) — 원래 이름으로
+  void cancelEditName() {
+    if (!_editing) return;
+    _editing = false;
+    _draft = name;
     notifyListeners();
   }
 
@@ -376,6 +481,7 @@ class MyViewModel extends ChangeNotifier {
   void dispose() {
     _skelTimer?.cancel();
     _users.removeListener(_loadMe);
+    _shelf.removeListener(_loadReceived);
     _friendsRepo.removeListener(_onFriendsChanged);
     _walletRepo.removeListener(_loadWallet);
     super.dispose();

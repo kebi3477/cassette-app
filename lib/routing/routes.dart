@@ -1,3 +1,4 @@
+import '../ui/my/view_model/my_view_model.dart';
 import '../ui/player/view_model/player_view_model.dart';
 
 abstract final class Routes {
@@ -32,6 +33,11 @@ abstract final class Routes {
 
   /// 크레딧 내역 (탭바 위)
   static const credits = '/credits';
+
+  /// 마이 하위 화면 (탭바 위, `mpOn`) — `/my/recv` · `/my/sent` · `/my/friends` · `/my/settings`
+  static const myPagePattern = '/my/:page';
+
+  static String myPage(MyPage p) => '$my/${p.name}';
 
   /// 친구 화면 (탭바 위)
   static const friendPattern = '/friends/:userId';

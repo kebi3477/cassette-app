@@ -73,8 +73,7 @@ void main() {
   });
 
   testWidgets('친구 ⋯ → 신고하기 (사람)', (tester) async {
-    final h = await pumpAt(tester, '/my');
-    await tester.scrollUntilVisible(find.text('민수'), 200);
+    final h = await pumpAt(tester, '/my/friends');
     await tester.tap(find.bySemanticsLabel('민수 더 보기'));
     await settle(tester);
     final order = ['친구 삭제', '신고하기', '차단'];
@@ -98,7 +97,7 @@ void main() {
   });
 
   testWidgets('설정 › 차단한 친구 → 신고 (차단 체크 숨김)', (tester) async {
-    final h = await pumpAt(tester, '/my');
+    final h = await pumpAt(tester, '/my/settings');
     await h.api.blockUser('u-minsu');
     h.friends.invalidate();
     await settle(tester);

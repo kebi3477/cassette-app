@@ -1,48 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../domain/models/friend.dart';
-import '../../../domain/models/sent_tape.dart';
 import '../../../domain/models/tape_type.dart';
 import '../../../domain/models/user.dart';
-import '../../../utils/format.dart';
 import '../../core/themes/colors.dart';
 import '../../core/themes/dimens.dart';
 import '../../core/themes/tape_palette.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/credit_icon.dart';
 import '../../core/ui/skeleton.dart';
-import '../../friend/widgets/alias_sheet.dart';
 import '../view_model/my_view_model.dart';
+import 'my_page_screen.dart';
 import 'my_sheets.dart';
 
-/// 마이 탭 — 템플릿 `vMy` 블록.
+/// 마이 탭 홈 — 템플릿 `vMy` 블록. 이름, 크레딧, 아이콘 4개(`myMenu`), 보유 테이프.
+/// 받은·보낸 테이프, 친구, 설정은 하위 화면([MyPageScreen])으로 간다.
 class MyScreen extends StatefulWidget {
   const MyScreen({
     super.key,
     required this.viewModel,
     required this.onOpenHistory,
     required this.onGoShop,
-    required this.onOpenFriend,
-    required this.onRecordTo,
-    required this.onGift,
-    required this.onSignedOut,
+    required this.onOpenPage,
     this.openSentId,
   });
 
   final MyViewModel viewModel;
   final VoidCallback onOpenHistory;
   final VoidCallback onGoShop;
-  final ValueChanged<Friend> onOpenFriend;
 
-  /// 친구 ⋯ > 녹음해서 보내기
-  final ValueChanged<Friend> onRecordTo;
-
-  /// 친구 ⋯ > 크레딧 선물하기
-  final ValueChanged<Friend> onGift;
-
-  /// 로그아웃·탈퇴 뒤 (관문이 로그인 화면으로 보낸다)
-  final VoidCallback onSignedOut;
+  /// 아이콘 → 하위 화면 (`myPage`)
+  final ValueChanged<MyPage> onOpenPage;
 
   /// 열자마자 상세를 띄울 보낸 테이프 (`/my?sent=`, "테이프를 받았어요" 푸시)
   final String? openSentId;
@@ -53,7 +41,6 @@ class MyScreen extends StatefulWidget {
 
 class _MyScreenState extends State<MyScreen> {
   late final TextEditingController _name = TextEditingController();
-  final ScrollController _scroll = ScrollController();
   final FocusNode _nameFocus = FocusNode();
 
   @override
@@ -61,15 +48,6 @@ class _MyScreenState extends State<MyScreen> {
     super.initState();
     widget.viewModel.enter();
     WidgetsBinding.instance.addPostFrameCallback((_) => _openSent());
-    // 입력칸에서 벗어나면 저장 (`onBlur={{ doneName }}`)
-    _nameFocus.addListener(() {
-      if (!_nameFocus.hasFocus) widget.viewModel.commitName();
-    });
-    // 보낸 테이프: 끝 가까이 오면 다음 페이지
-    _scroll.addListener(() {
-      final p = _scroll.position;
-      if (p.pixels > p.maxScrollExtent - 400) widget.viewModel.loadMoreSent();
-    });
   }
 
   @override
@@ -94,7 +72,6 @@ class _MyScreenState extends State<MyScreen> {
   void dispose() {
     _name.dispose();
     _nameFocus.dispose();
-    _scroll.dispose();
     super.dispose();
   }
 
@@ -107,6 +84,12 @@ class _MyScreenState extends State<MyScreen> {
     );
   }
 
+  /// 저장 · Enter (`doneName`) — 비어 있으면 입력칸에 남는다
+  Future<void> _done() async {
+    await widget.viewModel.commitName();
+    if (widget.viewModel.editingName && mounted) _nameFocus.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
@@ -116,127 +99,45 @@ class _MyScreenState extends State<MyScreen> {
         children: [
           Positioned.fill(
             child: SingleChildScrollView(
-              controller: _scroll,
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+              // 아이콘 줄의 margin 0 −6 때문에 18만 들이고 나머지는 6을 더 들인다.
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    height: AppSizes.header,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('마이', style: AppText.screenTitle),
-                    ),
-                  ),
-                  _nameBlock(vm),
-                  _CreditRow(credits: vm.credits, onTap: widget.onOpenHistory),
-                  const SizedBox(height: 10),
-                  _Stats(vm: vm),
-                  _SectionHeader(
-                    title: '보유 테이프',
-                    top: 20,
-                    bottom: 12,
-                    action: '상점 ›',
-                    onAction: widget.onGoShop,
-                  ),
-                  _Drawer(vm: vm),
-                  const _SectionHeader(title: '친구', top: 26, bottom: 6),
-                  for (final f in vm.friends)
-                    _FriendRow(
-                      friend: f,
-                      onTap: () => widget.onOpenFriend(f),
-                      onStar: () => vm.toggleStar(f),
-                      onMore: () => showFriendSheet(
-                        context,
-                        friend: f,
-                        onRecord: () => widget.onRecordTo(f),
-                        onGift: () => widget.onGift(f),
-                        onAlias: () => showAliasSheet(
-                          context,
-                          friend: f,
-                          onSave: (v) => vm.setNickname(f, v),
-                        ),
-                        onRemove: () => vm.removeFriend(f),
-                        onBlock: () => vm.block(f),
+                  for (final w in [
+                    SizedBox(
+                      height: AppSizes.header,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('마이', style: AppText.screenTitle),
                       ),
                     ),
-                  const _SectionHeader(title: '보낸 테이프', top: 26, bottom: 10),
-                  _SentCard(
-                    vm: vm,
-                    onTap: (s) => showSentDetailSheet(
-                      context,
-                      sent: s,
-                      onReshare: () => vm.reshare(s),
+                    _nameBlock(vm),
+                    _CreditRow(
+                      credits: vm.credits,
+                      onTap: widget.onOpenHistory,
                     ),
-                  ),
-                  const _SectionHeader(title: '설정', top: 26, bottom: 4),
-                  _SettingRow(
-                    label: '알림',
-                    onTap: vm.toggleNotifications,
-                    trailing: _Toggle(on: vm.notificationsOn),
-                  ),
-                  _SettingRow(
-                    label: '연결된 계정',
-                    trailing: _Value(vm.providerText),
-                  ),
-                  _SettingRow(
-                    label: '크레딧 내역',
-                    onTap: widget.onOpenHistory,
-                    trailing: const _Chevron(),
-                  ),
-                  _SettingRow(
-                    label: '차단한 친구',
-                    onTap: () => showBlockedSheet(context, viewModel: vm),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _Value(vm.blockedCountText),
-                        const SizedBox(width: 8),
-                        const _Chevron(),
-                      ],
+                  ])
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: w,
                     ),
-                  ),
-                  const _SectionHeader(title: '정보', top: 26, bottom: 4),
-                  _SettingRow(
-                    label: '이용약관',
-                    onTap: () => vm.openDoc(AppDoc.terms),
-                    trailing: const _Chevron(),
-                  ),
-                  _SettingRow(
-                    label: '개인정보 처리방침',
-                    onTap: () => vm.openDoc(AppDoc.privacy),
-                    trailing: const _Chevron(),
-                  ),
-                  _SettingRow(
-                    label: '문의하기',
-                    onTap: () => vm.openDoc(AppDoc.contact),
-                    trailing: const _Chevron(),
-                  ),
-                  _SettingRow(
-                    label: '앱 버전',
-                    trailing: _Value(vm.version, tabular: true),
-                  ),
-                  Container(
-                    height: 1,
-                    margin: const EdgeInsets.only(top: 14, bottom: 4),
-                    color: AppColors.line,
-                  ),
-                  _SettingRow(
-                    label: '로그아웃',
-                    onTap: () async {
-                      await vm.logout();
-                      widget.onSignedOut();
-                    },
-                  ),
-                  _SettingRow(
-                    label: '회원 탈퇴',
-                    color: AppColors.textFaint,
-                    onTap: () => showWithdrawSheet(
-                      context,
-                      viewModel: vm,
-                      onDone: widget.onSignedOut,
+                  const SizedBox(height: 16),
+                  _Menu(vm: vm, onOpen: widget.onOpenPage),
+                  for (final w in [
+                    _SectionHeader(
+                      title: '보유 테이프',
+                      top: 18,
+                      bottom: 12,
+                      action: '상점 ›',
+                      onAction: widget.onGoShop,
                     ),
-                  ),
+                    _Drawer(vm: vm),
+                  ])
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: w,
+                    ),
                 ],
               ),
             ),
@@ -254,7 +155,7 @@ class _MyScreenState extends State<MyScreen> {
     );
   }
 
-  /// 이름(800 21) + "수정", 설명 "테이프에 적히는 이름이에요"
+  /// 이름(800 21) + "수정" / 고치는 중: 입력칸 + 취소 · 저장 (40 알약), 도움말에 글자 수
   Widget _nameBlock(MyViewModel vm) {
     const underline = UnderlineInputBorder(
       borderSide: BorderSide(color: AppColors.ink, width: 2),
@@ -265,28 +166,45 @@ class _MyScreenState extends State<MyScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            height: 36,
+            height: 40,
             child: vm.editingName
-                ? TextField(
-                    controller: _name,
-                    focusNode: _nameFocus,
-                    onChanged: vm.setNameDraft,
-                    onSubmitted: (_) => _nameFocus.unfocus(),
-                    style: AppText.suit(800, 21),
-                    cursorColor: AppColors.ink,
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(
-                        User.maxNameLength,
-                        maxLengthEnforcement:
-                            MaxLengthEnforcement.truncateAfterCompositionEnds,
+                ? Row(
+                    children: [
+                      Expanded(
+                        // Esc → 취소 (`nameKey`)
+                        child: CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.escape):
+                                vm.cancelEditName,
+                          },
+                          child: TextField(
+                            controller: _name,
+                            focusNode: _nameFocus,
+                            onChanged: vm.setNameDraft,
+                            onSubmitted: (_) => _done(), // Enter
+                            style: AppText.suit(800, 21),
+                            cursorColor: AppColors.ink,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(
+                                User.maxNameLength,
+                                maxLengthEnforcement: MaxLengthEnforcement
+                                    .truncateAfterCompositionEnds,
+                              ),
+                            ],
+                            decoration: const InputDecoration(
+                              isCollapsed: true,
+                              contentPadding: EdgeInsets.symmetric(vertical: 7),
+                              enabledBorder: underline,
+                              focusedBorder: underline,
+                            ),
+                          ),
+                        ),
                       ),
+                      const SizedBox(width: 6),
+                      _Pill(label: '취소', onTap: vm.cancelEditName),
+                      const SizedBox(width: 6),
+                      _Pill(label: '저장', dark: true, onTap: _done),
                     ],
-                    decoration: const InputDecoration(
-                      isCollapsed: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 4),
-                      enabledBorder: underline,
-                      focusedBorder: underline,
-                    ),
                   )
                 : GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -308,11 +226,320 @@ class _MyScreenState extends State<MyScreen> {
                   ),
           ),
           const SizedBox(height: 2),
-          Text('테이프에 적히는 이름이에요', style: AppText.caption),
+          Text(
+            vm.nameHelp,
+            style: AppText.caption.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+/// 40 높이 알약 (`#F3F3F1` / 저장은 `#111` 흰 글자)
+class _Pill extends StatelessWidget {
+  const _Pill({required this.label, required this.onTap, this.dark = false});
+
+  final String label;
+  final VoidCallback onTap;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: dark ? AppColors.ink : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: AppText.suit(
+            700,
+            13.5,
+            color: dark ? AppColors.paper : AppColors.ink,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// 아이콘 4개 (`myMenu`) — 4열, gap 4. 좌우 margin −6은 부모가 6을 덜 들여 쓴다.
+class _Menu extends StatelessWidget {
+  const _Menu({required this.vm, required this.onOpen});
+
+  final MyViewModel vm;
+  final ValueChanged<MyPage> onOpen;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      for (final (i, p) in MyPage.values.indexed) ...[
+        if (i > 0) const SizedBox(width: 4),
+        Expanded(
+          child: _MenuTile(
+            page: p,
+            count: vm.menuCount(p),
+            dot: p == MyPage.recv && vm.hasNewReceived,
+            onTap: () => onOpen(p),
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+class _MenuTile extends StatelessWidget {
+  const _MenuTile({
+    required this.page,
+    required this.count,
+    required this.dot,
+    required this.onTap,
+  });
+
+  final MyPage page;
+  final String count;
+  final bool dot;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: page.title,
+    excludeSemantics: true,
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 10),
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSoft,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Stack(
+                children: [
+                  Center(child: _MenuIcon(page)),
+                  if (dot)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      // 8 점 + box-shadow 0 0 0 2px #F6F6F4
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: AppColors.red,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.surfaceSoft,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(page.title, style: AppText.suit(700, 13)),
+            const SizedBox(height: 2),
+            SizedBox(
+              height: 18,
+              child: Text(
+                count,
+                style: AppText.suit(
+                  600,
+                  12.5,
+                  color: AppColors.textMuted,
+                  tabularNums: true,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// 아이콘 (`i1`~`i4`) — 원본은 CSS 도형 (카세트 · 소포 · 사람 · 슬라이더)
+class _MenuIcon extends StatelessWidget {
+  const _MenuIcon(this.page);
+
+  final MyPage page;
+
+  static const _ink = AppColors.ink;
+
+  static BoxDecoration _stroke({double w = 2, BorderRadius? r, Color? fill}) =>
+      BoxDecoration(
+        color: fill,
+        border: Border.all(color: _ink, width: w),
+        borderRadius: r,
+      );
+
+  @override
+  Widget build(BuildContext context) => switch (page) {
+    // 26×18 카세트: 테두리 2 radius 3, 가운데 6×6 릴 두 개 (gap 5)
+    MyPage.recv => Container(
+      width: 26,
+      height: 18,
+      decoration: _stroke(r: BorderRadius.circular(3)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: _stroke(w: 1.5).copyWith(shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 5),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: _stroke(w: 1.5).copyWith(shape: BoxShape.circle),
+          ),
+        ],
+      ),
+    ),
+    // 24×20 소포: 몸통(top 4), 뚜껑(top 4, 높이 6, radius 3 3 0 0), 가운데 끈
+    MyPage.sent => SizedBox(
+      width: 24,
+      height: 20,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 4,
+            bottom: 0,
+            child: DecoratedBox(
+              decoration: _stroke(r: BorderRadius.circular(3)),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 4,
+            height: 6,
+            child: DecoratedBox(
+              decoration: _stroke(
+                r: const BorderRadius.vertical(top: Radius.circular(3)),
+              ),
+            ),
+          ),
+          const Positioned(
+            left: 11,
+            width: 2,
+            top: 0,
+            height: 10,
+            child: ColoredBox(color: _ink),
+          ),
+        ],
+      ),
+    ),
+    // 22×22 사람 (탭바 마이 아이콘과 같은 모양)
+    MyPage.friends => SizedBox(
+      width: 22,
+      height: 22,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 6,
+            top: 1,
+            width: 10,
+            height: 10,
+            child: DecoratedBox(
+              decoration: _stroke().copyWith(shape: BoxShape.circle),
+            ),
+          ),
+          Positioned(
+            left: 2,
+            right: 2,
+            bottom: 1,
+            height: 8,
+            child: CustomPaint(painter: _ShouldersPainter()),
+          ),
+        ],
+      ),
+    ),
+    // 22×18 슬라이더: 선 3개(top 2 · 8 · 14) + 손잡이 3개
+    MyPage.settings => SizedBox(
+      width: 22,
+      height: 18,
+      child: Stack(
+        children: [
+          for (final t in const [2.0, 8.0, 14.0])
+            Positioned(
+              left: 0,
+              right: 0,
+              top: t,
+              height: 2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: _ink,
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ),
+          for (final (l, t) in const [(4.0, 0.0), (12.0, 6.0), (6.0, 12.0)])
+            Positioned(
+              left: l,
+              top: t,
+              width: 6,
+              height: 6,
+              child: DecoratedBox(
+                decoration: _stroke(fill: AppColors.surfaceSoft)
+                    .copyWith(shape: BoxShape.circle),
+              ),
+            ),
+        ],
+      ),
+    ),
+  };
+}
+
+/// 어깨: 테두리 2, 아래 테두리 없음, radius 9 9 0 0
+class _ShouldersPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const w = 2.0;
+    final r = size.height.clamp(0, 9).toDouble();
+    final path = Path()
+      ..moveTo(w / 2, size.height)
+      ..lineTo(w / 2, r)
+      ..arcToPoint(Offset(r, w / 2), radius: Radius.circular(r - w / 2))
+      ..lineTo(size.width - r, w / 2)
+      ..arcToPoint(
+        Offset(size.width - w / 2, r),
+        radius: Radius.circular(r - w / 2),
+      )
+      ..lineTo(size.width - w / 2, size.height);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = AppColors.ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ShouldersPainter old) => false;
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -374,44 +601,11 @@ class _CreditRow extends StatelessWidget {
           Expanded(child: Text('크레딧', style: AppText.suit(600, 14.5))),
           Text('$credits', style: AppText.suit(800, 16, tabularNums: true)),
           const SizedBox(width: 10),
-          const _Chevron(),
+          const Chevron(),
         ],
       ),
     ),
   );
-}
-
-/// 통계 3칸
-class _Stats extends StatelessWidget {
-  const _Stats({required this.vm});
-
-  final MyViewModel vm;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget cell(int n, String label) => Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Column(
-          children: [
-            Text('$n', style: AppText.suit(800, 20)),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: AppText.suit(500, 12, color: AppColors.textMuted),
-            ),
-          ],
-        ),
-      ),
-    );
-    return Row(
-      children: [
-        cell(vm.receivedCount, '받은 테이프'),
-        cell(vm.sentCount, '보낸 테이프'),
-        cell(vm.friendCount, '친구'),
-      ],
-    );
-  }
 }
 
 /// 보유 테이프 3칸 (1분 "무료", 3·5분 "N개", 0이면 레드·테이프 opacity .4)
@@ -552,284 +746,6 @@ class _Trapezoid extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(_Trapezoid old) => false;
-}
-
-/// 친구 행 58: 이름, ☆, ⋯ (margin 0 −12, padding 0 4 0 12)
-class _FriendRow extends StatelessWidget {
-  const _FriendRow({
-    required this.friend,
-    required this.onTap,
-    required this.onStar,
-    required this.onMore,
-  });
-
-  final Friend friend;
-  final VoidCallback onTap;
-  final VoidCallback onStar;
-  final VoidCallback onMore;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        height: 58,
-        child: Row(
-          children: [
-            Expanded(
-              child: FriendNameLine(
-                friend: friend,
-                style: AppText.suit(700, 15),
-              ),
-            ),
-            Semantics(
-              button: true,
-              label: friend.starred ? '즐겨찾기 해제' : '즐겨찾기',
-              excludeSemantics: true,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onStar,
-                child: SizedBox.square(
-                  dimension: 40,
-                  child: Center(
-                    child: Text(
-                      friend.starred ? '★' : '☆',
-                      style: AppText.suit(
-                        400,
-                        19,
-                        height: 1,
-                        color: friend.starred
-                            ? AppColors.star
-                            : AppColors.disabled,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Semantics(
-              button: true,
-              label: '${friend.name} 더 보기',
-              excludeSemantics: true,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onMore,
-                child: SizedBox(
-                  width: 36,
-                  height: 40,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      for (var i = 0; i < 3; i++) ...[
-                        if (i > 0) const SizedBox(width: 3),
-                        Container(
-                          width: 3.5,
-                          height: 3.5,
-                          decoration: const BoxDecoration(
-                            color: AppColors.textFaint,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 보낸 테이프 카드 (`#FAFAF8` + `inset 0 0 0 1px #EFEFEC`)
-class _SentCard extends StatelessWidget {
-  const _SentCard({required this.vm, required this.onTap});
-
-  final MyViewModel vm;
-  final ValueChanged<SentTape> onTap;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-    decoration: BoxDecoration(
-      color: AppColors.sentCard,
-      borderRadius: BorderRadius.circular(AppRadius.button),
-      border: Border.all(color: AppColors.cardStroke),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final s in vm.sent)
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => onTap(s),
-            child: Container(
-              height: 48,
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.line)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: TapePalette.of(s.type).shell,
-                      borderRadius: BorderRadius.circular(2),
-                      border: Border.all(
-                        color: AppColors.black.withValues(alpha: .1),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '${s.to}에게 보냄',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.body,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${formatMonthDay(s.date)} · ${MyViewModel.sentStatus(s)}',
-                    style: AppText.suit(
-                      500,
-                      12.5,
-                      color: AppColors.textMuted,
-                      tabularNums: true,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '›',
-                    style: AppText.suit(
-                      400,
-                      18,
-                      height: 1,
-                      color: AppColors.disabled,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        SizedBox(
-          height: 36,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '보낸 테이프는 받은 사람만 들을 수 있어요',
-              style: AppText.suit(500, 12, color: AppColors.textFaint),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-/// 설정 행 52 (`600 15px`)
-class _SettingRow extends StatelessWidget {
-  const _SettingRow({
-    required this.label,
-    this.onTap,
-    this.trailing,
-    this.color = AppColors.ink,
-  });
-
-  final String label;
-  final VoidCallback? onTap;
-  final Widget? trailing;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    button: onTap != null,
-    child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        height: 52,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: AppText.suit(600, 15, color: color)),
-            ?trailing,
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-class _Value extends StatelessWidget {
-  const _Value(this.text, {this.tabular = false});
-
-  final String text;
-  final bool tabular;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: AppText.suit(
-      500,
-      13.5,
-      color: AppColors.textMuted,
-      tabularNums: tabular,
-    ),
-  );
-}
-
-class _Chevron extends StatelessWidget {
-  const _Chevron();
-
-  @override
-  Widget build(BuildContext context) => Text(
-    '›',
-    style: AppText.suit(400, 20, height: 1, color: AppColors.disabled),
-  );
-}
-
-/// 알림 토글 48×28 (켜짐 `#111`, 꺼짐 `#DADAD7`, 손잡이 22)
-class _Toggle extends StatelessWidget {
-  const _Toggle({required this.on});
-
-  final bool on;
-
-  @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: const Duration(milliseconds: 200),
-    width: 48,
-    height: 28,
-    decoration: BoxDecoration(
-      color: on ? AppColors.ink : AppColors.toggleOff,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: AnimatedAlign(
-      duration: const Duration(milliseconds: 200),
-      alignment: on ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        width: 22,
-        height: 22,
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        decoration: BoxDecoration(
-          color: AppColors.paper,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: .2),
-              offset: const Offset(0, 1),
-              blurRadius: 3,
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
 }
 
 /// 마이 스켈레톤 (`skMy`)

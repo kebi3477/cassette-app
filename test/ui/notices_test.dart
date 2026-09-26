@@ -61,8 +61,8 @@ void main() {
   });
 
   testWidgets('회원 탈퇴 시트: 요약 상자 아래 환불 안내', (tester) async {
-    await pumpAt(tester, '/my');
-    await tester.scrollUntilVisible(find.text('회원 탈퇴'), 400);
+    await pumpAt(tester, '/my/settings');
+    await tester.scrollUntilVisible(find.text('회원 탈퇴'), 200);
     await tester.tap(find.text('회원 탈퇴'));
     await tester.pumpAndSettle();
     expect(find.text(NoticeCopy.refundBeforeWithdraw), findsOneWidget);

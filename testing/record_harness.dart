@@ -96,6 +96,7 @@ class RecordHarness {
       walletRepository: wallet,
       deliveryRepository: this.deliveries,
       authRepository: auth,
+      shelfRepository: shelf,
       share: share,
       links: links,
       appInfo: FakeAppInfoService(),

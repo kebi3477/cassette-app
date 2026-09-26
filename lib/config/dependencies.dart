@@ -308,6 +308,7 @@ List<SingleChildWidget> get appViewModels => [
       walletRepository: c.read(),
       deliveryRepository: c.read(),
       authRepository: c.read(),
+      shelfRepository: c.read(),
       share: c.read(),
       links: c.read(),
       appInfo: c.read(),
