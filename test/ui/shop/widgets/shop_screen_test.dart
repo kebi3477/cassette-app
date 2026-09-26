@@ -1,4 +1,4 @@
-import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
+import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../testing/app.dart';

@@ -1,5 +1,5 @@
-import 'package:cassette_app/data/services/app_info_service.dart';
-import 'package:cassette_app/data/services/link_service.dart';
+import 'package:tapeletter_app/data/services/app_info_service.dart';
+import 'package:tapeletter_app/data/services/link_service.dart';
 
 class FakeLinkService implements LinkService {
   final List<Uri> opened = [];

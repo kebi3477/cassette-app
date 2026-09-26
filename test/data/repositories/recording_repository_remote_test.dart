@@ -1,11 +1,11 @@
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/model/recording_dto.dart';
-import 'package:cassette_app/data/repositories/recording_repository_remote.dart';
-import 'package:cassette_app/data/services/api/api_client.dart';
-import 'package:cassette_app/data/services/upload_service.dart';
-import 'package:cassette_app/domain/models/recording.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/model/recording_dto.dart';
+import 'package:tapeletter_app/data/repositories/recording_repository_remote.dart';
+import 'package:tapeletter_app/data/services/api/api_client.dart';
+import 'package:tapeletter_app/data/services/upload_service.dart';
+import 'package:tapeletter_app/domain/models/recording.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/utils/result.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -52,7 +52,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'cassette',
+                            'tapeletter',
                             style: AppText.suit(
                               800,
                               34,

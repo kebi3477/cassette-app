@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 /// 공개값(카카오 네이티브 앱 키, 링크 도메인)은 항상 기본값이 있고, 서버 주소는
 /// release 빌드에서만 운영 서버가 기본값이다(debug·테스트는 비워 두어 가짜 서버를 쓴다).
 abstract final class Env {
-  static const _prodApiBaseUrl = 'https://cassette.lab241.com/api';
+  static const _prodApiBaseUrl = 'https://tapeletter.lab241.com/api';
 
   /// AdMob 보상형 광고 단위 ID. 비어 있으면 광고를 디자인의 광고 시트로 흉내 낸다
   /// (가짜 광고는 개발 전용 `POST /dev/credits`로 보상하므로 운영 서버에서는 쓸 수 없다).
@@ -56,7 +56,7 @@ abstract final class Env {
   /// 링크 도메인 (`https://<PUBLIC_HOST>/t/{token}`).
   static const publicHost = String.fromEnvironment(
     'PUBLIC_HOST',
-    defaultValue: 'cassette.lab241.com',
+    defaultValue: 'tapeletter.lab241.com',
   );
 
   /// 실제 서버 주소 (예: `http://localhost:3000/api`). 비어 있으면 서버 없이 도는 가짜 서버를 쓴다.

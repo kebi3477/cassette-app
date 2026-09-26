@@ -254,7 +254,7 @@ class _BannerPreviewState extends State<_BannerPreview>
   }
 }
 
-/// 푸시 모양 카드 (radius 22, 아이콘 38, cassette · 지금, 제목·본문)
+/// 푸시 모양 카드 (radius 22, 아이콘 38, tapeletter · 지금, 제목·본문)
 class PushCard extends StatelessWidget {
   const PushCard({
     super.key,
@@ -303,7 +303,7 @@ class PushCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('cassette', style: AppText.suit(700, 13)),
+                    Text('tapeletter', style: AppText.suit(700, 13)),
                     Text(
                       '지금',
                       style: AppText.suit(500, 12, color: AppColors.textMuted),

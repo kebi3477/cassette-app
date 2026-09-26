@@ -1,10 +1,10 @@
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/ui/core/ui/tab_bar.dart';
-import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
-import 'package:cassette_app/ui/record/widgets/record_button.dart';
-import 'package:cassette_app/ui/record/widgets/tape_carousel.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/ui/core/ui/tab_bar.dart';
+import 'package:tapeletter_app/ui/record/view_model/record_view_model.dart';
+import 'package:tapeletter_app/ui/record/widgets/record_button.dart';
+import 'package:tapeletter_app/ui/record/widgets/tape_carousel.dart';
 import 'package:flutter/material.dart';
-import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
+import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../testing/app.dart';

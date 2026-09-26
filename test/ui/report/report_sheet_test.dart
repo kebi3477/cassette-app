@@ -1,6 +1,6 @@
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/ui/player/widgets/player_screen.dart';
-import 'package:cassette_app/ui/shelf/widgets/shelf_list_view.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/ui/player/widgets/player_screen.dart';
+import 'package:tapeletter_app/ui/shelf/widgets/shelf_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

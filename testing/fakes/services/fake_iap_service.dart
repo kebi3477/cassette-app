@@ -1,5 +1,5 @@
-import 'package:cassette_app/data/services/iap_service.dart';
-import 'package:cassette_app/domain/models/shop.dart';
+import 'package:tapeletter_app/data/services/iap_service.dart';
+import 'package:tapeletter_app/domain/models/shop.dart';
 
 /// 결제 결과를 시험마다 정한다 (기본: 바로 성공).
 class FakeIapService implements IapService {

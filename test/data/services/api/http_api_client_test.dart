@@ -1,6 +1,6 @@
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/model/me_dto.dart';
-import 'package:cassette_app/data/services/api/http_api_client.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/model/me_dto.dart';
+import 'package:tapeletter_app/data/services/api/http_api_client.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 

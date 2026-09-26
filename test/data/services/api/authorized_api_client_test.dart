@@ -1,7 +1,7 @@
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/utils/result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../testing/record_harness.dart';

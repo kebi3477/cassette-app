@@ -13,7 +13,7 @@
 ```bash
 flutter run \
   --dart-define=KAKAO_NATIVE_APP_KEY=abcd1234 \
-  --dart-define=PUBLIC_HOST=cassette.app
+  --dart-define=PUBLIC_HOST=tapeletter.lab241.com
 ```
 
 ## 네이티브 설정 (dart-define과 같은 값을 넣는다)
@@ -24,16 +24,16 @@ iOS는 Info.plist·entitlements가 dart-define을 읽지 못하므로 `ios/Flutt
 
 ```
 KAKAO_NATIVE_APP_KEY = abcd1234
-PUBLIC_HOST = cassette.app
+PUBLIC_HOST = tapeletter.lab241.com
 ```
 
 | 항목 | iOS | Android |
 |---|---|---|
 | 테이프 링크 (유니버설/앱 링크) | `Runner.entitlements`의 `applinks:$(PUBLIC_HOST)` | `AndroidManifest.xml` `autoVerify` intent-filter, host `${publicHost}` |
-| 웹 "앱에서 열기" `cassette://t/{token}` | `Info.plist` `CFBundleURLTypes`의 `cassette` | `AndroidManifest.xml` `cassette://t` intent-filter |
+| 웹 "앱에서 열기" `tapeletter://t/{token}` | `Info.plist` `CFBundleURLTypes`의 `tapeletter` | `AndroidManifest.xml` `tapeletter://t` intent-filter |
 | 카카오 로그인 리다이렉트 | `Info.plist` `kakao$(KAKAO_NATIVE_APP_KEY)` 스킴 | `AuthCodeHandlerActivity`의 `kakao${kakaoNativeAppKey}://oauth` |
 
-기본값 `cassette.example`은 자리표시자다. 실제 도메인을 쓰려면
+기본값은 운영 도메인 `tapeletter.lab241.com`이다(`env.dart`, `Env.xcconfig`, `build.gradle.kts`). 다른 도메인을 쓰려면
 
 1. 위처럼 `PUBLIC_HOST`(dart-define)와 `Env.xcconfig`의 `PUBLIC_HOST`를 같은 도메인으로 바꾼다.
 2. 서버(`cassette-api`)가 그 도메인에서 `/.well-known/apple-app-site-association`, `/.well-known/assetlinks.json`을 준다 (팀 ID·서명 인증서 SHA-256 필요).
@@ -43,15 +43,15 @@ PUBLIC_HOST = cassette.app
 
 자주 쓰는 dart-define 묶음. 비밀값은 없다(카카오 네이티브 앱 키는 앱에 들어가는 공개 키).
 
-`lib/config/env.dart`에 기본값이 있어서, **Xcode로 빌드하거나 dart-define 없이 빌드해도** 카카오 키·링크 도메인이 들어가고, release 빌드는 운영 서버(`https://cassette.lab241.com/api`)를 쓴다. debug 빌드와 테스트는 `API_BASE_URL`이 없으면 가짜 서버를 쓴다.
+`lib/config/env.dart`에 기본값이 있어서, **Xcode로 빌드하거나 dart-define 없이 빌드해도** 카카오 키·링크 도메인이 들어가고, release 빌드는 운영 서버(`https://tapeletter.lab241.com/api`)를 쓴다. debug 빌드와 테스트는 `API_BASE_URL`이 없으면 가짜 서버를 쓴다.
 
 ```bash
 flutter run --dart-define-from-file=dart_defines/local.json   # 맥의 로컬 API 서버 (시뮬레이터)
-flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 서버 https://cassette.lab241.com
+flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 서버 https://tapeletter.lab241.com
 ```
 
-- 운영 서버: API `https://cassette.lab241.com/api`, 테이프 링크 `https://cassette.lab241.com/t/{token}`. iOS `Env.xcconfig`의 `PUBLIC_HOST`도 같은 도메인이다.
-- 집 공유기 안에서는 `cassette.lab241.com`에 닿지 않는다(공유기가 되돌아오는 접속을 지원하지 않음). 실기기로 운영 서버를 시험할 때는 와이파이를 끄고 LTE로 한다.
+- 운영 서버: API `https://tapeletter.lab241.com/api`, 테이프 링크 `https://tapeletter.lab241.com/t/{token}`. iOS `Env.xcconfig`의 `PUBLIC_HOST`도 같은 도메인이다.
+- 집 공유기 안에서는 `tapeletter.lab241.com`에 닿지 않는다(공유기가 되돌아오는 접속을 지원하지 않음). 실기기로 운영 서버를 시험할 때는 와이파이를 끄고 LTE로 한다.
 - 결제·광고를 실제로 쓰려면 `IAP_ENABLED=true`, `ADMOB_REWARDED_ID`를 json에 더한다.
 
 ### 실기기에 release 빌드 설치
@@ -60,7 +60,7 @@ flutter run --dart-define-from-file=dart_defines/prod.json    # 미니PC 운영 
 
 ```bash
 flutter build ios --release --dart-define-from-file=dart_defines/prod.json
-strings build/ios/iphoneos/Runner.app/Frameworks/App.framework/App | grep -c cassette.lab241.com   # 0이면 설정이 빠진 빌드
+strings build/ios/iphoneos/Runner.app/Frameworks/App.framework/App | grep -c tapeletter.lab241.com   # 0이면 설정이 빠진 빌드
 xcrun devicectl list devices                                  # 기기 ID 확인
 xcrun devicectl device install app --device <기기 ID> build/ios/iphoneos/Runner.app
 ```
@@ -76,7 +76,9 @@ xcrun devicectl device install app --device <기기 ID> build/ios/iphoneos/Runne
 
 ## Firebase (푸시)
 
-Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다.
+Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다. 번들 ID `com.kebi.tapeletter`로 앱을 등록해 받은 파일이어야 한다.
+
+설정 파일의 번들 ID(iOS `BUNDLE_ID`, Android `package_name`)가 앱과 다르면(예: 옛 `com.kebi.cassette` 파일) 파일이 없는 것처럼 건너뛰고 빌드 로그에 경고를 남긴다. 이때 앱은 가짜 푸시로 돈다.
 
 - iOS: `ios/Runner/GoogleService-Info.plist`. Xcode에 따로 추가할 필요 없다. Runner 타깃의 "Copy GoogleService-Info.plist" 빌드 단계가 파일이 있을 때만 앱 번들에 복사한다.
 - Android: `android/app/google-services.json`. `app/build.gradle.kts`가 파일이 있을 때만 Google Services 플러그인을 적용한다.

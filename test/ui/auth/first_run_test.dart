@@ -1,11 +1,11 @@
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/data/services/social_auth_service.dart';
-import 'package:cassette_app/routing/app_flow.dart';
-import 'package:cassette_app/routing/routes.dart';
-import 'package:cassette_app/ui/launch/widgets/splash_screen.dart';
-import 'package:cassette_app/ui/record/widgets/record_screen.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/data/services/social_auth_service.dart';
+import 'package:tapeletter_app/routing/app_flow.dart';
+import 'package:tapeletter_app/routing/routes.dart';
+import 'package:tapeletter_app/ui/launch/widgets/splash_screen.dart';
+import 'package:tapeletter_app/ui/record/widgets/record_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,5 +1,5 @@
-import 'package:cassette_app/ui/core/themes/colors.dart';
-import 'package:cassette_app/ui/core/ui/notice_copy.dart';
+import 'package:tapeletter_app/ui/core/themes/colors.dart';
+import 'package:tapeletter_app/ui/core/ui/notice_copy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,17 +1,17 @@
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/model/auth_dto.dart';
-import 'package:cassette_app/data/model/delivery_dto.dart';
-import 'package:cassette_app/data/model/friend_dto.dart';
-import 'package:cassette_app/data/model/mappers.dart';
-import 'package:cassette_app/data/model/me_dto.dart';
-import 'package:cassette_app/data/model/recording_dto.dart';
-import 'package:cassette_app/data/model/shelf_dto.dart';
-import 'package:cassette_app/data/model/shop_dto.dart';
-import 'package:cassette_app/domain/models/recording.dart';
-import 'package:cassette_app/domain/models/shop.dart';
-import 'package:cassette_app/domain/models/sent_tape.dart';
-import 'package:cassette_app/domain/models/tape_tag.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/model/auth_dto.dart';
+import 'package:tapeletter_app/data/model/delivery_dto.dart';
+import 'package:tapeletter_app/data/model/friend_dto.dart';
+import 'package:tapeletter_app/data/model/mappers.dart';
+import 'package:tapeletter_app/data/model/me_dto.dart';
+import 'package:tapeletter_app/data/model/recording_dto.dart';
+import 'package:tapeletter_app/data/model/shelf_dto.dart';
+import 'package:tapeletter_app/data/model/shop_dto.dart';
+import 'package:tapeletter_app/domain/models/recording.dart';
+import 'package:tapeletter_app/domain/models/shop.dart';
+import 'package:tapeletter_app/domain/models/sent_tape.dart';
+import 'package:tapeletter_app/domain/models/tape_tag.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// 계약서(cassette-api/docs/api.md)의 예시 JSON을 그대로 읽는다.

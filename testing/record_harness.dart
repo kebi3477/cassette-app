@@ -1,28 +1,28 @@
-import 'package:cassette_app/data/repositories/app_repository.dart';
-import 'package:cassette_app/data/repositories/report_repository.dart';
-import 'package:cassette_app/data/repositories/auth_repository_remote.dart';
-import 'package:cassette_app/data/repositories/device_repository.dart';
-import 'package:cassette_app/data/repositories/share_repository_remote.dart';
-import 'package:cassette_app/data/services/api/api_status.dart';
-import 'package:cassette_app/data/services/api/authorized_api_client.dart';
-import 'package:cassette_app/data/services/api/token_store.dart';
-import 'package:cassette_app/data/services/app_prefs.dart';
-import 'package:cassette_app/data/services/local/local_device_services.dart';
-import 'package:cassette_app/data/repositories/friend_repository_remote.dart';
-import 'package:cassette_app/data/repositories/shop_repository_remote.dart';
-import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
-import 'package:cassette_app/data/repositories/user_repository_remote.dart';
-import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
-import 'package:cassette_app/data/services/local/local_ad_service.dart';
-import 'package:cassette_app/data/services/local/local_api_client.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/routing/app_flow.dart';
-import 'package:cassette_app/ui/core/ui/toast.dart';
-import 'package:cassette_app/ui/link/view_model/link_view_model.dart';
-import 'package:cassette_app/ui/my/view_model/my_view_model.dart';
-import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
-import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
+import 'package:tapeletter_app/data/repositories/app_repository.dart';
+import 'package:tapeletter_app/data/repositories/report_repository.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/device_repository.dart';
+import 'package:tapeletter_app/data/repositories/share_repository_remote.dart';
+import 'package:tapeletter_app/data/services/api/api_status.dart';
+import 'package:tapeletter_app/data/services/api/authorized_api_client.dart';
+import 'package:tapeletter_app/data/services/api/token_store.dart';
+import 'package:tapeletter_app/data/services/app_prefs.dart';
+import 'package:tapeletter_app/data/services/local/local_device_services.dart';
+import 'package:tapeletter_app/data/repositories/friend_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/shop_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/shelf_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/user_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/wallet_repository_remote.dart';
+import 'package:tapeletter_app/data/services/local/local_ad_service.dart';
+import 'package:tapeletter_app/data/services/local/local_api_client.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/routing/app_flow.dart';
+import 'package:tapeletter_app/ui/core/ui/toast.dart';
+import 'package:tapeletter_app/ui/link/view_model/link_view_model.dart';
+import 'package:tapeletter_app/ui/my/view_model/my_view_model.dart';
+import 'package:tapeletter_app/ui/record/view_model/record_view_model.dart';
+import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
 
 import 'fakes/repositories/fake_delivery_repository.dart';
 import 'fakes/repositories/fake_recording_repository.dart';
@@ -172,7 +172,7 @@ class RecordHarness {
     share: shareRepo,
     flow: flow,
     toast: toast,
-    publicHost: 'cassette.example',
+    publicHost: 'tapeletter.example',
   )..start();
   late final MyViewModel myVm;
 }

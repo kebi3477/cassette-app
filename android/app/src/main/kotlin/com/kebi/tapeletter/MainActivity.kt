@@ -1,4 +1,4 @@
-package com.kebi.cassette
+package com.kebi.tapeletter
 
 import io.flutter.embedding.android.FlutterActivity
 

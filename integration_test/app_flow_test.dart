@@ -1,8 +1,8 @@
-import 'package:cassette_app/config/env.dart';
-import 'package:cassette_app/data/services/app_prefs.dart';
-import 'package:cassette_app/data/services/api/http_api_client.dart';
-import 'package:cassette_app/main.dart' as app;
-import 'package:cassette_app/ui/core/ui/brand.dart';
+import 'package:tapeletter_app/config/env.dart';
+import 'package:tapeletter_app/data/services/app_prefs.dart';
+import 'package:tapeletter_app/data/services/api/http_api_client.dart';
+import 'package:tapeletter_app/main.dart' as app;
+import 'package:tapeletter_app/ui/core/ui/brand.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -22,7 +22,7 @@ void main() {
   // 바깥에서 `xcrun simctl io <기기> screenshot`으로 찍는다 (docs/SETUP.md).
   Future<void> shot(String name) async {
     // ignore: avoid_print
-    print('CASSETTE_SHOT ${tag}_$name');
+    print('TAPELETTER_SHOT ${tag}_$name');
     final end = DateTime.now().add(const Duration(milliseconds: 1500));
     while (DateTime.now().isBefore(end)) {
       await binding.delayed(const Duration(milliseconds: 100));

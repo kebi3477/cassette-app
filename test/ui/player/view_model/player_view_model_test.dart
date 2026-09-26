@@ -1,11 +1,11 @@
-import 'package:cassette_app/data/repositories/friend_repository_remote.dart';
-import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
-import 'package:cassette_app/data/services/local/local_api_client.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/domain/models/tape_repeat.dart';
-import 'package:cassette_app/ui/core/ui/toast.dart';
-import 'package:cassette_app/ui/player/view_model/player_view_model.dart';
+import 'package:tapeletter_app/data/repositories/friend_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/shelf_repository_remote.dart';
+import 'package:tapeletter_app/data/services/local/local_api_client.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/domain/models/tape_repeat.dart';
+import 'package:tapeletter_app/ui/core/ui/toast.dart';
+import 'package:tapeletter_app/ui/player/view_model/player_view_model.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 

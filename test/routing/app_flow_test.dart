@@ -1,8 +1,8 @@
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/routing/app_flow.dart';
-import 'package:cassette_app/routing/routes.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/routing/app_flow.dart';
+import 'package:tapeletter_app/routing/routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../testing/record_harness.dart';

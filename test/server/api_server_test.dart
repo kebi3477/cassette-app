@@ -5,21 +5,21 @@ library;
 
 import 'dart:io';
 
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/model/auth_dto.dart';
-import 'package:cassette_app/data/model/delivery_dto.dart';
-import 'package:cassette_app/data/model/me_dto.dart';
-import 'package:cassette_app/data/model/recording_dto.dart';
-import 'package:cassette_app/data/model/report_dto.dart';
-import 'package:cassette_app/data/model/shelf_dto.dart';
-import 'package:cassette_app/data/model/shop_dto.dart';
-import 'package:cassette_app/data/services/api/api_status.dart';
-import 'package:cassette_app/data/services/api/authorized_api_client.dart';
-import 'package:cassette_app/data/services/api/http_api_client.dart';
-import 'package:cassette_app/data/services/api/token_store.dart';
-import 'package:cassette_app/data/services/audio_cache.dart';
-import 'package:cassette_app/data/services/http_upload_service.dart';
-import 'package:cassette_app/utils/idempotency.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/model/auth_dto.dart';
+import 'package:tapeletter_app/data/model/delivery_dto.dart';
+import 'package:tapeletter_app/data/model/me_dto.dart';
+import 'package:tapeletter_app/data/model/recording_dto.dart';
+import 'package:tapeletter_app/data/model/report_dto.dart';
+import 'package:tapeletter_app/data/model/shelf_dto.dart';
+import 'package:tapeletter_app/data/model/shop_dto.dart';
+import 'package:tapeletter_app/data/services/api/api_status.dart';
+import 'package:tapeletter_app/data/services/api/authorized_api_client.dart';
+import 'package:tapeletter_app/data/services/api/http_api_client.dart';
+import 'package:tapeletter_app/data/services/api/token_store.dart';
+import 'package:tapeletter_app/data/services/audio_cache.dart';
+import 'package:tapeletter_app/data/services/http_upload_service.dart';
+import 'package:tapeletter_app/utils/idempotency.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,7 +1,7 @@
-import 'package:cassette_app/data/repositories/recording_repository.dart';
-import 'package:cassette_app/domain/models/recording.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/repositories/recording_repository.dart';
+import 'package:tapeletter_app/domain/models/recording.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/utils/result.dart';
 
 /// 업로드·변환 결과와 시간을 시험마다 정하는 가짜.
 class FakeRecordingRepository implements RecordingRepository {

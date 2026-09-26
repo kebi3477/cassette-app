@@ -1,35 +1,35 @@
-import 'package:cassette_app/data/repositories/app_repository.dart';
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/repositories/report_repository.dart';
-import 'package:cassette_app/data/repositories/device_repository.dart';
-import 'package:cassette_app/data/repositories/friend_repository.dart';
-import 'package:cassette_app/data/repositories/share_repository.dart';
-import 'package:cassette_app/data/services/api/api_client.dart';
-import 'package:cassette_app/data/services/api/api_status.dart';
-import 'package:cassette_app/data/services/app_info_service.dart';
-import 'package:cassette_app/data/services/app_prefs.dart';
-import 'package:cassette_app/data/services/connectivity_service.dart';
-import 'package:cassette_app/data/services/deep_link_service.dart';
-import 'package:cassette_app/data/services/link_service.dart';
-import 'package:cassette_app/data/services/push_service.dart';
-import 'package:cassette_app/data/services/recorder_service.dart';
-import 'package:cassette_app/data/services/share_service.dart';
-import 'package:cassette_app/routing/app_flow.dart';
-import 'package:cassette_app/ui/link/view_model/link_view_model.dart';
-import 'package:cassette_app/ui/push/view_model/push_view_model.dart';
-import 'package:cassette_app/ui/status/view_model/status_view_model.dart';
-import 'package:cassette_app/data/repositories/shelf_repository.dart';
-import 'package:cassette_app/data/repositories/user_repository.dart';
-import 'package:cassette_app/data/repositories/wallet_repository.dart';
-import 'package:cassette_app/data/services/audio_player_service.dart';
-import 'package:cassette_app/main.dart';
-import 'package:cassette_app/routing/routes.dart';
-import 'package:cassette_app/ui/core/ui/toast.dart';
-import 'package:cassette_app/ui/my/view_model/my_view_model.dart';
-import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
-import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
-import 'package:cassette_app/ui/shelf/view_model/shelf_view_model.dart';
-import 'package:cassette_app/ui/shell/view_model/shell_view_model.dart';
+import 'package:tapeletter_app/data/repositories/app_repository.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/repositories/report_repository.dart';
+import 'package:tapeletter_app/data/repositories/device_repository.dart';
+import 'package:tapeletter_app/data/repositories/friend_repository.dart';
+import 'package:tapeletter_app/data/repositories/share_repository.dart';
+import 'package:tapeletter_app/data/services/api/api_client.dart';
+import 'package:tapeletter_app/data/services/api/api_status.dart';
+import 'package:tapeletter_app/data/services/app_info_service.dart';
+import 'package:tapeletter_app/data/services/app_prefs.dart';
+import 'package:tapeletter_app/data/services/connectivity_service.dart';
+import 'package:tapeletter_app/data/services/deep_link_service.dart';
+import 'package:tapeletter_app/data/services/link_service.dart';
+import 'package:tapeletter_app/data/services/push_service.dart';
+import 'package:tapeletter_app/data/services/recorder_service.dart';
+import 'package:tapeletter_app/data/services/share_service.dart';
+import 'package:tapeletter_app/routing/app_flow.dart';
+import 'package:tapeletter_app/ui/link/view_model/link_view_model.dart';
+import 'package:tapeletter_app/ui/push/view_model/push_view_model.dart';
+import 'package:tapeletter_app/ui/status/view_model/status_view_model.dart';
+import 'package:tapeletter_app/data/repositories/shelf_repository.dart';
+import 'package:tapeletter_app/data/repositories/user_repository.dart';
+import 'package:tapeletter_app/data/repositories/wallet_repository.dart';
+import 'package:tapeletter_app/data/services/audio_player_service.dart';
+import 'package:tapeletter_app/main.dart';
+import 'package:tapeletter_app/routing/routes.dart';
+import 'package:tapeletter_app/ui/core/ui/toast.dart';
+import 'package:tapeletter_app/ui/my/view_model/my_view_model.dart';
+import 'package:tapeletter_app/ui/record/view_model/record_view_model.dart';
+import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
+import 'package:tapeletter_app/ui/shelf/view_model/shelf_view_model.dart';
+import 'package:tapeletter_app/ui/shell/view_model/shell_view_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -107,6 +107,6 @@ Widget testApp(RecordHarness h, {String initialLocation = Routes.record}) {
         )..start(),
       ),
     ],
-    child: CassetteApp(initialLocation: initialLocation),
+    child: TapeletterApp(initialLocation: initialLocation),
   );
 }

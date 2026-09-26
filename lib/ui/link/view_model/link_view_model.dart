@@ -43,7 +43,7 @@ class ShowLinkError extends LinkEvent {
   final String? url;
 }
 
-/// `https://<도메인>/t/{token}`(유니버설 링크·앱 링크)과 `cassette://t/{token}`(웹 페이지의 "앱에서 열기")을
+/// `https://<도메인>/t/{token}`(유니버설 링크·앱 링크)과 `tapeletter://t/{token}`(웹 페이지의 "앱에서 열기")을
 /// 받아 `GET /share/{token}`으로 연다. 받기(claim)는 소포를 뜯을 때 재생 화면이 한다.
 /// 로그인 전이면 토큰을 기기에 보관했다가 앱 본문에 들어온 뒤 처리한다.
 class LinkViewModel extends ChangeNotifier {
@@ -57,7 +57,7 @@ class LinkViewModel extends ChangeNotifier {
   });
 
   /// 커스텀 스킴 (웹 페이지의 "앱에서 열기")
-  static const scheme = 'cassette';
+  static const scheme = 'tapeletter';
 
   final DeepLinkService _deepLinks;
   final AppPrefs _prefs;
@@ -86,7 +86,7 @@ class LinkViewModel extends ChangeNotifier {
   String? tokenOf(Uri u) {
     final segs = u.pathSegments.where((s) => s.isNotEmpty).toList();
     if (u.scheme == scheme) {
-      // cassette://t/{token}
+      // tapeletter://t/{token}
       if (u.host == 't' && segs.length == 1) return segs.first;
       return null;
     }

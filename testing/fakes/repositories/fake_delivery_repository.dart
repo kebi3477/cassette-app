@@ -1,10 +1,10 @@
-import 'package:cassette_app/data/model/mappers.dart';
-import 'package:cassette_app/data/repositories/delivery_repository.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/domain/models/recipient.dart';
-import 'package:cassette_app/domain/models/sent_tape.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/model/mappers.dart';
+import 'package:tapeletter_app/data/repositories/delivery_repository.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/domain/models/recipient.dart';
+import 'package:tapeletter_app/domain/models/sent_tape.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/utils/result.dart';
 
 /// 보내기 결과와 시간을 시험마다 정하는 가짜.
 /// 성공하면 [store]의 보유 테이프를 [type]만큼 1개 쓴다(서버 규칙 흉내).
@@ -44,7 +44,7 @@ class FakeDeliveryRepository implements DeliveryRepository {
       date: DateTime(2026, 9, 25),
       type: type,
       link: to.isNew,
-      shareUrl: to.isNew ? Uri.parse('https://cassette.app/t/test') : null,
+      shareUrl: to.isNew ? Uri.parse('https://tapeletter.lab241.com/t/test') : null,
     );
     sent.add(t);
     return Result.ok(t);
@@ -84,6 +84,6 @@ class FakeDeliveryRepository implements DeliveryRepository {
   @override
   Future<Result<Uri>> reshare(String sentId) async {
     reshares++;
-    return Result.ok(Uri.parse('https://cassette.app/t/again'));
+    return Result.ok(Uri.parse('https://tapeletter.lab241.com/t/again'));
   }
 }

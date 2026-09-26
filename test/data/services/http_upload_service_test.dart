@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/model/recording_dto.dart';
-import 'package:cassette_app/data/services/http_upload_service.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/model/recording_dto.dart';
+import 'package:tapeletter_app/data/services/http_upload_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 

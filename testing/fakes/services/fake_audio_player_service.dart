@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cassette_app/data/services/audio_player_service.dart';
+import 'package:tapeletter_app/data/services/audio_player_service.dart';
 
 /// 소리 없이 재생 상태만 흉내 내는 가짜 플레이어.
 class FakeAudioPlayerService implements AudioPlayerService {

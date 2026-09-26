@@ -1,7 +1,7 @@
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/domain/models/share_link.dart';
-import 'package:cassette_app/ui/link/view_model/link_view_model.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/domain/models/share_link.dart';
+import 'package:tapeletter_app/ui/link/view_model/link_view_model.dart';
+import 'package:tapeletter_app/utils/result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../testing/record_harness.dart';
@@ -28,19 +28,19 @@ void main() {
     test('https://<PUBLIC_HOST>/t/{token}', () {
       final vm = h.linkVm;
       expect(
-        vm.tokenOf(Uri.parse('https://cassette.example/t/abc123')),
+        vm.tokenOf(Uri.parse('https://tapeletter.example/t/abc123')),
         'abc123',
       );
       expect(
-        vm.tokenOf(Uri.parse('https://cassette.example/t/abc123/')),
+        vm.tokenOf(Uri.parse('https://tapeletter.example/t/abc123/')),
         'abc123',
       );
       expect(vm.tokenOf(Uri.parse('https://other.example/t/abc123')), isNull);
       expect(
-        vm.tokenOf(Uri.parse('https://cassette.example/x/abc123')),
+        vm.tokenOf(Uri.parse('https://tapeletter.example/x/abc123')),
         isNull,
       );
-      expect(vm.tokenOf(Uri.parse('https://cassette.example/t')), isNull);
+      expect(vm.tokenOf(Uri.parse('https://tapeletter.example/t')), isNull);
     });
 
     test('카카오 로그인 복귀 주소(kakao{키}://oauth)는 건드리지 않는다', () async {
@@ -51,27 +51,27 @@ void main() {
       expect(await h.prefs.pendingLink(), isNull);
     });
 
-    test('웹의 "앱에서 열기": cassette://t/{token}', () {
+    test('웹의 "앱에서 열기": tapeletter://t/{token}', () {
       final vm = h.linkVm;
-      expect(vm.tokenOf(Uri.parse('cassette://t/abc123')), 'abc123');
-      expect(vm.tokenOf(Uri.parse('cassette://t/')), isNull);
-      expect(vm.tokenOf(Uri.parse('cassette://x/abc123')), isNull);
+      expect(vm.tokenOf(Uri.parse('tapeletter://t/abc123')), 'abc123');
+      expect(vm.tokenOf(Uri.parse('tapeletter://t/')), isNull);
+      expect(vm.tokenOf(Uri.parse('tapeletter://x/abc123')), isNull);
       expect(vm.tokenOf(Uri.parse('other://t/abc123')), isNull);
     });
   });
 
   test('열기: GET /share만 부르고 소포 화면으로 (받지는 않는다)', () async {
     final (h, events) = await setup();
-    h.deepLinks.open(Uri.parse('https://cassette.example/t/tok1'));
+    h.deepLinks.open(Uri.parse('https://tapeletter.example/t/tok1'));
     await pumpEventQueue();
     expect((events.single as OpenLinkParcel).token, 'tok1');
     expect(h.store.claimedLinks, isEmpty);
     expect(h.shareRepo.peek('tok1')?.senderName, '유진');
   });
 
-  test('cassette:// 링크도 같은 처리', () async {
+  test('tapeletter:// 링크도 같은 처리', () async {
     final (h, events) = await setup();
-    h.deepLinks.open(Uri.parse('cassette://t/tok2'));
+    h.deepLinks.open(Uri.parse('tapeletter://t/tok2'));
     await pumpEventQueue();
     expect(events.single, isA<OpenLinkParcel>());
   });
@@ -80,7 +80,7 @@ void main() {
     final (h, events) = await setup();
     final c = await h.shareRepo.claim('tok3');
     final id = (c as Ok<ClaimedTape>).value.item.id;
-    h.deepLinks.open(Uri.parse('cassette://t/tok3'));
+    h.deepLinks.open(Uri.parse('tapeletter://t/tok3'));
     await pumpEventQueue();
     final e = events.single as OpenClaimedParcel;
     expect(e.itemId, id);
@@ -94,7 +94,7 @@ void main() {
   ]) {
     test('오류: ${kind.name}', () async {
       final (h, events) = await setup(mode: mode);
-      h.deepLinks.open(Uri.parse('https://cassette.example/t/tok'));
+      h.deepLinks.open(Uri.parse('https://tapeletter.example/t/tok'));
       await pumpEventQueue();
       final e = events.single as ShowLinkError;
       expect(e.kind, kind);
@@ -104,7 +104,7 @@ void main() {
 
   test('로그인 전에 연 링크는 저장했다가 로그인 뒤에 처리한다', () async {
     final (h, events) = await setup(signedIn: false);
-    h.deepLinks.open(Uri.parse('cassette://t/later'));
+    h.deepLinks.open(Uri.parse('tapeletter://t/later'));
     await pumpEventQueue();
     expect(events, isEmpty);
     expect(await h.prefs.pendingLink(), 'later');
@@ -117,7 +117,7 @@ void main() {
 
   test('앱이 링크로 처음 열렸을 때 (initialLink)', () async {
     final h = RecordHarness(signedIn: false);
-    h.deepLinks.initial = Uri.parse('cassette://t/cold');
+    h.deepLinks.initial = Uri.parse('tapeletter://t/cold');
     final events = <LinkEvent>[];
     h.linkVm.events.listen(events.add);
     await pumpEventQueue();

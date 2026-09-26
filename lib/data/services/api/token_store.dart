@@ -18,8 +18,8 @@ abstract class TokenStore {
 }
 
 class SecureTokenStore implements TokenStore {
-  static const _access = 'cassette.accessToken';
-  static const _refresh = 'cassette.refreshToken';
+  static const _access = 'tapeletter.accessToken';
+  static const _refresh = 'tapeletter.refreshToken';
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   @override

@@ -1,4 +1,4 @@
-import 'package:cassette_app/data/services/app_settings_service.dart';
+import 'package:tapeletter_app/data/services/app_settings_service.dart';
 
 class FakeAppSettingsService implements AppSettingsService {
   int opened = 0;

@@ -162,7 +162,7 @@ class LocalStore {
         sentAt: d(9, 22),
         status: 'link_pending',
         share: ShareLinkDto(
-          url: 'https://cassette.app/t/demo-yujin',
+          url: 'https://tapeletter.lab241.com/t/demo-yujin',
           expiresAt: d(9, 29),
         ),
       ),

@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:cassette_app/data/model/shelf_dto.dart';
-import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
-import 'package:cassette_app/data/services/api/api_client.dart';
-import 'package:cassette_app/data/services/audio_cache.dart';
-import 'package:cassette_app/domain/models/tape_audio.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/model/shelf_dto.dart';
+import 'package:tapeletter_app/data/repositories/shelf_repository_remote.dart';
+import 'package:tapeletter_app/data/services/api/api_client.dart';
+import 'package:tapeletter_app/data/services/audio_cache.dart';
+import 'package:tapeletter_app/domain/models/tape_audio.dart';
+import 'package:tapeletter_app/utils/result.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 

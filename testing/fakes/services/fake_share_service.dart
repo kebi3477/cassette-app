@@ -1,4 +1,4 @@
-import 'package:cassette_app/data/services/share_service.dart';
+import 'package:tapeletter_app/data/services/share_service.dart';
 
 class FakeShareService implements ShareService {
   FakeShareService({this.result = true});

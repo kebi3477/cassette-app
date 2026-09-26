@@ -1,10 +1,10 @@
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/repositories/delivery_repository_remote.dart';
-import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
-import 'package:cassette_app/domain/models/sent_tape.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/ui/my/view_model/credit_history_view_model.dart';
-import 'package:cassette_app/ui/my/view_model/my_view_model.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/repositories/delivery_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/wallet_repository_remote.dart';
+import 'package:tapeletter_app/domain/models/sent_tape.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/ui/my/view_model/credit_history_view_model.dart';
+import 'package:tapeletter_app/ui/my/view_model/my_view_model.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -189,7 +189,7 @@ void main() {
       );
       async.flushMicrotasks();
       expect(h.deliveries.reshares, 1);
-      expect(h.share.shared.last, contains('https://cassette.app/t/again'));
+      expect(h.share.shared.last, contains('https://tapeletter.lab241.com/t/again'));
     });
   });
 
@@ -201,9 +201,9 @@ void main() {
       vm.openDoc(AppDoc.contact);
       async.flushMicrotasks();
       expect(h.links.opened.map((u) => u.toString()), [
-        'https://cassette.lab241.com/terms',
-        'https://cassette.lab241.com/privacy',
-        'https://cassette.lab241.com/privacy#officer',
+        'https://tapeletter.lab241.com/terms',
+        'https://tapeletter.lab241.com/privacy',
+        'https://tapeletter.lab241.com/privacy#officer',
       ]);
     });
   });

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/data/services/social_auth_service.dart';
-import 'package:cassette_app/routing/routes.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/data/services/social_auth_service.dart';
+import 'package:tapeletter_app/routing/routes.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 

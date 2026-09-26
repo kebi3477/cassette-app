@@ -1,31 +1,31 @@
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/model/shop_dto.dart';
-import 'package:cassette_app/data/repositories/delivery_repository_remote.dart';
-import 'package:cassette_app/data/repositories/friend_repository_remote.dart';
-import 'package:cassette_app/data/repositories/recording_repository_remote.dart';
-import 'package:cassette_app/data/repositories/shelf_repository_remote.dart';
-import 'package:cassette_app/data/repositories/shop_repository_remote.dart';
-import 'package:cassette_app/data/repositories/user_repository_remote.dart';
-import 'package:cassette_app/data/repositories/wallet_repository_remote.dart';
-import 'package:cassette_app/data/services/local/local_api_client.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/data/services/local/local_upload_service.dart';
-import 'package:cassette_app/domain/models/blocked_user.dart';
-import 'package:cassette_app/domain/models/friend.dart';
-import 'package:cassette_app/domain/models/friend_tapes.dart';
-import 'package:cassette_app/domain/models/me.dart';
-import 'package:cassette_app/domain/models/recipient.dart';
-import 'package:cassette_app/domain/models/recording.dart';
-import 'package:cassette_app/domain/models/sent_tape.dart';
-import 'package:cassette_app/domain/models/shelf.dart';
-import 'package:cassette_app/domain/models/shop.dart';
-import 'package:cassette_app/domain/models/tape_audio.dart';
-import 'package:cassette_app/domain/models/tape_item.dart';
-import 'package:cassette_app/domain/models/tape_tag.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/domain/models/wallet.dart';
-import 'package:cassette_app/utils/result.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/model/shop_dto.dart';
+import 'package:tapeletter_app/data/repositories/delivery_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/friend_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/recording_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/shelf_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/shop_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/user_repository_remote.dart';
+import 'package:tapeletter_app/data/repositories/wallet_repository_remote.dart';
+import 'package:tapeletter_app/data/services/local/local_api_client.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/data/services/local/local_upload_service.dart';
+import 'package:tapeletter_app/domain/models/blocked_user.dart';
+import 'package:tapeletter_app/domain/models/friend.dart';
+import 'package:tapeletter_app/domain/models/friend_tapes.dart';
+import 'package:tapeletter_app/domain/models/me.dart';
+import 'package:tapeletter_app/domain/models/recipient.dart';
+import 'package:tapeletter_app/domain/models/recording.dart';
+import 'package:tapeletter_app/domain/models/sent_tape.dart';
+import 'package:tapeletter_app/domain/models/shelf.dart';
+import 'package:tapeletter_app/domain/models/shop.dart';
+import 'package:tapeletter_app/domain/models/tape_audio.dart';
+import 'package:tapeletter_app/domain/models/tape_item.dart';
+import 'package:tapeletter_app/domain/models/tape_tag.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/domain/models/wallet.dart';
+import 'package:tapeletter_app/utils/result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 T ok<T>(Result<T> r) => (r as Ok<T>).value;
@@ -331,7 +331,7 @@ void main() {
       final repo = DeliveryRepositoryRemote(api);
       expect(
         ok<Uri>(await repo.reshare('s-1')).toString(),
-        'https://cassette.app/t/demo-yujin',
+        'https://tapeletter.lab241.com/t/demo-yujin',
       );
       expect(apiError(await repo.reshare('s-2')).code, 'LINK_TAKEN');
     });

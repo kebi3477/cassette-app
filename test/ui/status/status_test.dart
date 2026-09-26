@@ -1,4 +1,4 @@
-import 'package:cassette_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../testing/app.dart';

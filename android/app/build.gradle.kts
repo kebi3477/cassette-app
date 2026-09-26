@@ -7,9 +7,19 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Firebase 설정 파일은 커밋하지 않는다(.gitignore). 있을 때만 Google Services 플러그인을 적용한다. docs/SETUP.md 참고
-if (file("google-services.json").exists()) {
-    apply(plugin = "com.google.gms.google-services")
+val appId = "com.kebi.tapeletter"
+
+// Firebase 설정 파일은 커밋하지 않는다(.gitignore). 있고, 이 앱(appId)으로 받은 파일일 때만
+// Google Services 플러그인을 적용한다. 다른 번들 ID의 파일이면 건너뛴다(앱은 가짜 푸시). docs/SETUP.md 참고
+val googleServices = file("google-services.json")
+if (googleServices.exists()) {
+    val forThisApp =
+        Regex(""""package_name"\s*:\s*"${Regex.escape(appId)}"""").containsMatchIn(googleServices.readText())
+    if (forThisApp) {
+        apply(plugin = "com.google.gms.google-services")
+    } else {
+        logger.warn("warning: google-services.json이 $appId 용이 아니라 건너뜀 - 푸시는 가짜(LocalPushService)로 동작")
+    }
 }
 
 // `flutter run --dart-define=KEY=VALUE` 값을 매니페스트에 넘긴다 (카카오 키, 링크 도메인).
@@ -57,7 +67,7 @@ File(devNetworkRes, "xml/network_security_config.xml").apply {
 }
 
 android {
-    namespace = "com.kebi.cassette"
+    namespace = appId
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -68,7 +78,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.kebi.cassette"
+        applicationId = appId
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -80,7 +90,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["kakaoNativeAppKey"] = dartDefines["KAKAO_NATIVE_APP_KEY"] ?: "NONE"
-        manifestPlaceholders["publicHost"] = dartDefines["PUBLIC_HOST"] ?: "cassette.example"
+        manifestPlaceholders["publicHost"] = dartDefines["PUBLIC_HOST"] ?: "tapeletter.lab241.com"
     }
 
     sourceSets {

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cassette_app/data/services/recorder_service.dart';
+import 'package:tapeletter_app/data/services/recorder_service.dart';
 
 /// 마이크 없이 녹음 흐름을 시험하는 가짜 녹음기.
 class FakeRecorderService implements RecorderService {

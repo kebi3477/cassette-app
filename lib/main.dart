@@ -37,21 +37,21 @@ Future<void> main() async {
         ...providers(push: push),
         ...appViewModels,
       ],
-      child: const CassetteApp(),
+      child: const TapeletterApp(),
     ),
   );
 }
 
-class CassetteApp extends StatefulWidget {
-  const CassetteApp({super.key, this.initialLocation = Routes.splash});
+class TapeletterApp extends StatefulWidget {
+  const TapeletterApp({super.key, this.initialLocation = Routes.splash});
 
   final String initialLocation;
 
   @override
-  State<CassetteApp> createState() => _CassetteAppState();
+  State<TapeletterApp> createState() => _TapeletterAppState();
 }
 
-class _CassetteAppState extends State<CassetteApp> {
+class _TapeletterAppState extends State<TapeletterApp> {
   late final GoRouter _router = router(
     initialLocation: widget.initialLocation,
     flow: context.read<AppFlow>(),
@@ -119,7 +119,7 @@ class _CassetteAppState extends State<CassetteApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'cassette',
+      title: 'tapeletter',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: _router,

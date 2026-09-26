@@ -1,6 +1,6 @@
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/domain/models/report.dart';
-import 'package:cassette_app/ui/report/view_model/report_view_model.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/domain/models/report.dart';
+import 'package:tapeletter_app/ui/report/view_model/report_view_model.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 

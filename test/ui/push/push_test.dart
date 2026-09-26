@@ -1,7 +1,7 @@
-import 'package:cassette_app/data/services/push_service.dart';
-import 'package:cassette_app/ui/my/widgets/credit_history_screen.dart';
-import 'package:cassette_app/ui/player/widgets/player_screen.dart';
-import 'package:cassette_app/ui/shelf/widgets/shelf_screen.dart';
+import 'package:tapeletter_app/data/services/push_service.dart';
+import 'package:tapeletter_app/ui/my/widgets/credit_history_screen.dart';
+import 'package:tapeletter_app/ui/player/widgets/player_screen.dart';
+import 'package:tapeletter_app/ui/shelf/widgets/shelf_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../testing/app.dart';

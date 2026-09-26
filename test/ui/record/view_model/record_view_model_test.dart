@@ -1,5 +1,5 @@
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/ui/record/view_model/record_view_model.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -478,7 +478,7 @@ void main() {
         async.flushMicrotasks();
         expect(h.toast.message, '문자로 링크를 보냈어요');
         expect(h.vm.phase, RecordPhase.idle);
-        expect(h.share.shared.last, contains('https://cassette.app/t/test'));
+        expect(h.share.shared.last, contains('https://tapeletter.lab241.com/t/test'));
       });
     });
   });

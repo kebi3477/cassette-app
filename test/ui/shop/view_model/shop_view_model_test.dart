@@ -1,8 +1,8 @@
-import 'package:cassette_app/data/services/iap_service.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/domain/models/shop.dart';
-import 'package:cassette_app/domain/models/tape_type.dart';
-import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
+import 'package:tapeletter_app/data/services/iap_service.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/domain/models/shop.dart';
+import 'package:tapeletter_app/domain/models/tape_type.dart';
+import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 

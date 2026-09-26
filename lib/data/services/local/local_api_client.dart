@@ -73,7 +73,7 @@ class LocalApiClient implements ApiClient {
       latestVersion: force ? '99.0.0' : '1.0.0',
       storeUrl: platform == 'ios'
           ? 'https://apps.apple.com/app/id0000000000'
-          : 'https://play.google.com/store/apps/details?id=com.kebi.cassette',
+          : 'https://play.google.com/store/apps/details?id=com.kebi.tapeletter',
       updateRequired: version == null ? null : force,
       updateAvailable: version == null ? null : force,
     );
@@ -637,7 +637,7 @@ class LocalApiClient implements ApiClient {
       claimedAt: friend == null ? null : now,
       share: friend == null
           ? ShareLinkDto(
-              url: 'https://cassette.app/t/$id',
+              url: 'https://tapeletter.lab241.com/t/$id',
               expiresAt: now.add(const Duration(days: 7)),
             )
           : null,
@@ -691,7 +691,7 @@ class LocalApiClient implements ApiClient {
     final share = t.share != null && t.share!.expiresAt.isAfter(now)
         ? t.share!
         : ShareLinkDto(
-            url: 'https://cassette.app/t/${_s.nextId('link')}',
+            url: 'https://tapeletter.lab241.com/t/${_s.nextId('link')}',
             expiresAt: now.add(const Duration(days: 7)),
           );
     _s.sent = [..._s.sent]

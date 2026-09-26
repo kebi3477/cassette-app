@@ -53,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 duration: const Duration(milliseconds: 500),
                 delay: const Duration(milliseconds: 250),
                 child: Text(
-                  'cassette',
+                  'tapeletter',
                   style: AppText.suit(
                     800,
                     32,

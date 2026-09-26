@@ -1,10 +1,10 @@
-import 'package:cassette_app/data/model/api_error.dart';
-import 'package:cassette_app/data/repositories/auth_repository.dart';
-import 'package:cassette_app/data/repositories/auth_repository_remote.dart';
-import 'package:cassette_app/data/services/audio_cache.dart';
-import 'package:cassette_app/data/services/local/local_behavior.dart';
-import 'package:cassette_app/data/services/local/local_store.dart';
-import 'package:cassette_app/data/services/social_auth_service.dart';
+import 'package:tapeletter_app/data/model/api_error.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository_remote.dart';
+import 'package:tapeletter_app/data/services/audio_cache.dart';
+import 'package:tapeletter_app/data/services/local/local_behavior.dart';
+import 'package:tapeletter_app/data/services/local/local_store.dart';
+import 'package:tapeletter_app/data/services/social_auth_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../testing/record_harness.dart';

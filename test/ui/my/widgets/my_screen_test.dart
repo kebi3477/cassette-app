@@ -1,4 +1,4 @@
-import 'package:cassette_app/data/repositories/auth_repository.dart';
+import 'package:tapeletter_app/data/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

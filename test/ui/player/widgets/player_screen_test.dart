@@ -1,5 +1,5 @@
-import 'package:cassette_app/ui/core/ui/tab_bar.dart';
-import 'package:cassette_app/ui/shelf/widgets/shelf_list_view.dart';
+import 'package:tapeletter_app/ui/core/ui/tab_bar.dart';
+import 'package:tapeletter_app/ui/shelf/widgets/shelf_list_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../testing/app.dart';
