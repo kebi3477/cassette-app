@@ -284,13 +284,16 @@ class ShelfViewModel extends ChangeNotifier {
   // ── 칸 시트 (`saveGroup`, `deleteGroup`) ──────────────
   static const int groupNameMax = 12;
 
+  /// 시트에서 보여 줄 토스트 (`say`)
+  void toast(String message) => _toast.show(message);
+
   Future<void> addGroup(String draft) async {
     final r = await _repo.createGroup(_groupName(draft));
     switch (r) {
       case Ok<ShelfGroup>(:final value):
         _shelf = _shelf.copyWith(groups: [..._shelf.groups, value]);
         notifyListeners();
-        _toast.show('칸을 추가했어요');
+        _toast.show('‘${value.name}’ 칸을 만들었어요');
       case Error<ShelfGroup>(:final error):
         _toast.show(_message(error));
     }

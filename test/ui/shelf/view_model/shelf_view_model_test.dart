@@ -191,7 +191,7 @@ void main() {
       vm.addGroup('  ');
       async.flushMicrotasks();
       expect(vm.shelf.groups.last.name, '새 칸');
-      expect(toast.message, '칸을 추가했어요');
+      expect(toast.message, '‘새 칸’ 칸을 만들었어요');
 
       vm.renameGroup('g-1', '생일');
       async.flushMicrotasks();

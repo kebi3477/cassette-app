@@ -211,14 +211,37 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
   });
 
-  testWidgets('+ 칸 추가', (tester) async {
+  testWidgets('+ 칸 만들기: 카테고리 칩 → 예시 이름, 이름 없으면 비활성', (tester) async {
     await pumpShelf(tester);
     await tester.tap(find.bySemanticsLabel('칸 추가'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '여행');
-    await tester.tap(find.widgetWithText(GestureDetector, '칸 추가').last);
+    expect(find.text('이 칸에 어떤 목소리를 모을까요?'), findsOneWidget);
+    for (final c in ['사람', '기념일', '여행', '일상', '가족', '연인', '직접 입력']) {
+      expect(find.text(c), findsOneWidget);
+    }
+    expect(find.text('0/12'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // 이름이 없으면 눌러도 만들지 않는다
+    final before = vmOf(tester).shelf.groups.length;
+    await tester.tap(find.text('칸 만들기'));
+    await tester.pump();
+    expect(find.text('칸 이름을 적어 주세요'), findsWidgets);
+    expect(vmOf(tester).shelf.groups.length, before);
+
+    await tester.tap(find.text('여행'));
+    await tester.pump();
+    expect(find.widgetWithText(TextField, '제주 여행'), findsOneWidget);
+    expect(find.text('5/12'), findsOneWidget);
+    await tester.tap(find.text('직접 입력'));
+    await tester.pump();
+    expect(find.widgetWithText(TextField, '제주 여행'), findsNothing);
+    await tester.enterText(find.byType(TextField), '우리의 여행');
+    await tester.pump();
+    await tester.tap(find.text('칸 만들기'));
     await tester.pumpAndSettle();
-    expect(vmOf(tester).shelf.groups.last.name, '여행');
+    expect(vmOf(tester).shelf.groups.last.name, '우리의 여행');
+    expect(find.text('‘우리의 여행’ 칸을 만들었어요'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
 

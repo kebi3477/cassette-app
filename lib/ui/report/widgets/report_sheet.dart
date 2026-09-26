@@ -9,6 +9,7 @@ import '../../core/themes/dimens.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/app_sheet.dart';
 import '../../core/ui/buttons.dart';
+import '../../core/ui/choice_chip.dart';
 import '../view_model/report_view_model.dart';
 
 /// 신고 (`shReport`) — 테이프 ⋯, 친구 ⋯, 차단한 친구 "신고", 재생 화면 ⋯에서 연다.
@@ -104,9 +105,9 @@ class _Form extends StatelessWidget {
           runSpacing: 6,
           children: [
             for (final r in ReportReason.values)
-              _ReasonChip(
+              AppChoiceChip(
                 label: r.label,
-                on: vm.reason == r,
+                selected: vm.reason == r,
                 onTap: () => vm.selectReason(r),
               ),
           ],
@@ -213,51 +214,6 @@ class _FailView extends StatelessWidget {
         const SizedBox(height: 2),
         _TextButton('돌아가기', vm.back),
       ],
-    );
-  }
-}
-
-/// 사유 칩 (높이 40, 패딩 0 16, `700 14px`, 고르면 검정)
-class _ReasonChip extends StatelessWidget {
-  const _ReasonChip({
-    required this.label,
-    required this.on,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool on;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: on,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          height: AppSizes.chip,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: on ? AppColors.ink : AppColors.surface,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            widthFactor: 1,
-            child: Text(
-              label,
-              style: AppText.suit(
-                700,
-                14,
-                color: on ? AppColors.paper : AppColors.ink,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
