@@ -10,11 +10,13 @@ import 'config/env.dart';
 import 'data/services/ad_service.dart';
 import 'data/services/local/local_device_services.dart';
 import 'data/services/push_service.dart';
+import 'data/services/sound_service.dart';
 import 'routing/app_flow.dart';
 import 'routing/router.dart';
 import 'routing/routes.dart';
 import 'ui/core/themes/theme.dart';
 import 'ui/core/ui/toast.dart';
+import 'ui/core/ui/ui_sound.dart';
 import 'ui/link/view_model/link_view_model.dart';
 import 'ui/player/view_model/player_view_model.dart';
 import 'ui/push/view_model/push_view_model.dart';
@@ -31,9 +33,15 @@ Future<void> main() async {
   }
   // Firebase 설정 파일이 없으면 가짜 푸시로 돈다.
   final push = await FirebasePushService.create() ?? LocalPushService();
+  // 효과음은 미리 읽어 둔다. Android 뒤로 버튼 소리는 라우터보다 먼저 듣는다.
+  final sound = PlatformSoundService();
+  unawaited(sound.preload());
+  UiSounds.service = sound;
+  WidgetsBinding.instance.addObserver(backSound);
   runApp(
     MultiProvider(
       providers: [
+        Provider<SoundService>.value(value: sound),
         ...providers(push: push),
         ...appViewModels,
       ],
@@ -41,6 +49,9 @@ Future<void> main() async {
     ),
   );
 }
+
+/// 뒤로 가기 효과음 (iOS 밀어서 뒤로 · Android 뒤로 버튼)
+final backSound = BackSoundObserver();
 
 class TapeletterApp extends StatefulWidget {
   const TapeletterApp({super.key, this.initialLocation = Routes.splash});
@@ -55,6 +66,7 @@ class _TapeletterAppState extends State<TapeletterApp> {
   late final GoRouter _router = router(
     initialLocation: widget.initialLocation,
     flow: context.read<AppFlow>(),
+    observers: [backSound],
   );
   final List<StreamSubscription<Object?>> _subs = [];
 

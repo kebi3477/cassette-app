@@ -11,6 +11,7 @@ import '../../../data/repositories/wallet_repository.dart';
 import '../../../data/services/app_settings_service.dart';
 import '../../../data/services/audio_player_service.dart';
 import '../../../data/services/recorder_service.dart';
+import '../../../data/services/sound_service.dart';
 import '../../../data/services/share_service.dart';
 import '../../../domain/models/friend.dart';
 import '../../../domain/models/me.dart';
@@ -49,6 +50,7 @@ class RecordViewModel extends ChangeNotifier {
     required this._share,
     required this._settings,
     required this._toast,
+    this._sound = const NoSoundService(),
   }) : _users = userRepository,
        _friendsRepo = friendRepository,
        _walletRepo = walletRepository,
@@ -99,6 +101,9 @@ class RecordViewModel extends ChangeNotifier {
   final ShareService _share;
   final AppSettingsService _settings;
   final ToastController _toast;
+
+  /// 효과음 — REC 뒤 on.wav가 끝나면 녹음, STOP은 녹음을 멈춘 뒤 off.wav
+  final SoundService _sound;
   final List<StreamSubscription<void>> _subs = [];
 
   // ── 상태 ───────────────────────────────────────────
@@ -131,6 +136,10 @@ class RecordViewModel extends ChangeNotifier {
   String? _idemFor;
   bool _openedSettings = false;
   bool _starting = false;
+
+  /// REC를 눌러 on.wav가 울리는 중 (녹음은 소리가 끝난 뒤 시작한다)
+  bool _arming = false;
+  bool get arming => _arming;
   bool _convertFailedOnce = false;
 
   Timer? _tickTimer;
@@ -301,6 +310,15 @@ class RecordViewModel extends ChangeNotifier {
         }
         _mic = MicPermission.granted;
       }
+      // on.wav가 녹음에 들어가지 않도록 소리가 끝난 뒤(0.54s) 녹음을 시작한다.
+      // 데크는 그동안 STOP을 가운데로 미는 0.45s 애니메이션을 끝낸다.
+      _arming = true;
+      notifyListeners();
+      try {
+        await _sound.play(UiSound.on);
+      } finally {
+        _arming = false;
+      }
       if (resuming) {
         await _recorder.resume();
       } else {
@@ -349,6 +367,8 @@ class RecordViewModel extends ChangeNotifier {
     } catch (_) {
       path = null;
     }
+    // 녹음기를 먼저 멈추고 나서 off.wav
+    unawaited(_sound.play(UiSound.off));
     _filePath = path;
     await convert();
   }
@@ -508,6 +528,21 @@ class RecordViewModel extends ChangeNotifier {
   }
 
   Future<void> togglePlay() => _playing ? pause() : play();
+
+  /// 데크 PLAY — 재생 시작은 on.wav, 멈춤은 off.wav
+  Future<void> pressPlay() async {
+    if (_playing) return pressStop();
+    if (_converting || _convFail) return;
+    unawaited(_sound.play(UiSound.on));
+    await play();
+  }
+
+  /// 데크 STOP — 재생 중이면 멈추고 off.wav
+  Future<void> pressStop() async {
+    if (!_playing) return;
+    unawaited(_sound.play(UiSound.off));
+    await pause();
+  }
 
   /// 확인 화면에서 데크 키를 쓸 수 있는지 (`ready` — 변환이 끝났고 실패하지 않음)
   bool get previewReady =>

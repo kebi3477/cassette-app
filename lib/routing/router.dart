@@ -52,8 +52,10 @@ import 'routes.dart';
 GoRouter router({
   String initialLocation = Routes.record,
   AppFlow? flow,
+  List<NavigatorObserver>? observers,
 }) => GoRouter(
   initialLocation: initialLocation,
+  observers: observers,
   refreshListenable: flow,
   redirect: flow == null
       ? null
@@ -306,6 +308,7 @@ class _PlayerRouteState extends State<PlayerRoute> {
     shareRepository: context.read(),
     player: context.read(),
     toast: context.read(),
+    sound: context.read(),
   );
 
   @override

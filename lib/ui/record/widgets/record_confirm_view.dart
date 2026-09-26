@@ -130,13 +130,13 @@ class _ConfirmDeck extends StatelessWidget {
           case DeckKey.rew:
             vm.rewind();
           case DeckKey.play:
-            vm.togglePlay();
+            vm.pressPlay();
           case DeckKey.rec:
             // 다시 녹음 확인 (`shRedo`)
-            vm.pause();
+            vm.pressStop();
             showRedoSheet(context, onRedo: vm.redoRec);
           case DeckKey.stop:
-            vm.pause();
+            vm.pressStop();
           case DeckKey.ff:
             vm.fastForward();
           case DeckKey.eject:

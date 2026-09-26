@@ -9,6 +9,7 @@ import '../../core/ui/animations.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/css_paint.dart';
 import '../../core/ui/tappable.dart';
+import '../../../data/services/sound_service.dart';
 
 /// 링크 오류 (`leOn`) — 이미 받은 링크 / 만료된 링크 / 내가 보낸 링크.
 class LinkErrorScreen extends StatelessWidget {
@@ -77,6 +78,7 @@ class LinkErrorScreen extends StatelessWidget {
                       child: Tappable(
                         behavior: HitTestBehavior.opaque,
                         onTap: onClose,
+                        sound: UiSound.off,
                         child: SizedBox.square(
                           dimension: 44,
                           child: Center(

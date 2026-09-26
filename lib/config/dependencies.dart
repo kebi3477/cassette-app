@@ -327,6 +327,7 @@ List<SingleChildWidget> get appViewModels => [
       share: c.read(),
       settings: c.read(),
       toast: c.read(),
+      sound: c.read(),
     )..load(),
   ),
 ];

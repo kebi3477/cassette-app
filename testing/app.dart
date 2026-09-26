@@ -4,6 +4,7 @@ import 'package:tapeletter_app/data/repositories/report_repository.dart';
 import 'package:tapeletter_app/data/repositories/device_repository.dart';
 import 'package:tapeletter_app/data/repositories/friend_repository.dart';
 import 'package:tapeletter_app/data/repositories/share_repository.dart';
+import 'package:tapeletter_app/data/services/sound_service.dart';
 import 'package:tapeletter_app/data/services/api/api_client.dart';
 import 'package:tapeletter_app/data/services/api/api_status.dart';
 import 'package:tapeletter_app/data/services/app_info_service.dart';
@@ -69,6 +70,7 @@ Widget testApp(RecordHarness h, {String initialLocation = Routes.record}) {
       ChangeNotifierProvider<WalletRepository>.value(value: h.wallet),
       ChangeNotifierProvider<ShelfRepository>.value(value: h.shelf),
       Provider<AudioPlayerService>.value(value: h.player),
+      Provider<SoundService>.value(value: h.sound),
       ChangeNotifierProvider<ToastController>.value(value: h.toast),
       ChangeNotifierProvider(
         create: (c) =>

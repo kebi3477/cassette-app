@@ -18,6 +18,7 @@ import 'package:tapeletter_app/data/services/local/local_api_client.dart';
 import 'package:tapeletter_app/data/services/local/local_behavior.dart';
 import 'package:tapeletter_app/data/services/local/local_store.dart';
 import 'package:tapeletter_app/routing/app_flow.dart';
+import 'package:tapeletter_app/ui/core/ui/ui_sound.dart';
 import 'package:tapeletter_app/ui/core/ui/toast.dart';
 import 'package:tapeletter_app/ui/link/view_model/link_view_model.dart';
 import 'package:tapeletter_app/ui/my/view_model/my_view_model.dart';
@@ -31,6 +32,7 @@ import 'fakes/services/fake_audio_player_service.dart';
 import 'fakes/services/fake_iap_service.dart';
 import 'fakes/services/fake_link_service.dart';
 import 'fakes/services/fake_recorder_service.dart';
+import 'fakes/services/fake_sound_service.dart';
 import 'fakes/services/fake_share_service.dart';
 
 /// 프로토타입 초기 데이터(친구 6명, 보유 {3:2, 5:0} 등)를 계약서 모양으로 돌려주는
@@ -113,7 +115,9 @@ class RecordHarness {
       share: share,
       settings: settings,
       toast: toast,
+      sound: sound,
     );
+    UiSounds.service = sound;
   }
 
   final LocalStore store;
@@ -136,6 +140,9 @@ class RecordHarness {
   late final WalletRepositoryRemote wallet;
   late final ShelfRepositoryRemote shelf;
   final FakeRecorderService recorder;
+
+  /// 효과음 — 녹음기 호출(`recorder.calls`)과 같은 목록에 적는다.
+  late final FakeSoundService sound = FakeSoundService(log: recorder.calls);
   final FakeRecordingRepository recordings;
   late final FakeDeliveryRepository deliveries;
   final FakeAudioPlayerService player = FakeAudioPlayerService();

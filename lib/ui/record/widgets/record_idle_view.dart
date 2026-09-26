@@ -252,6 +252,8 @@ class _Bottom extends StatelessWidget {
     // 데크형 녹음 버튼 (`deckBtn`): 대기=REC, 녹음=STOP. 나머지 키는 비활성.
     // 컨테이너 `height:112px; margin-top:-14px` — 위로 14 겹친다.
     final rec = vm.phase == RecordPhase.rec;
+    // REC를 떼면 on.wav(0.54s)가 끝난 뒤 녹음이 시작된다. 그동안 데크는 먼저 STOP을 가운데로 민다.
+    final down = rec || vm.arming;
     return SizedBox(
       height: RecordDeck.height - 14,
       child: OverflowBox(
@@ -259,11 +261,11 @@ class _Bottom extends StatelessWidget {
         minHeight: RecordDeck.height,
         maxHeight: RecordDeck.height,
         child: RecordDeck(
-          center: rec ? DeckKey.stop : DeckKey.rec,
+          center: down ? DeckKey.stop : DeckKey.rec,
           recording: rec,
           recLocked: vm.curLocked,
           keys: {
-            DeckKey.rec: DeckKeyState(enabled: !rec, latched: rec),
+            DeckKey.rec: DeckKeyState(enabled: !down, latched: down),
             DeckKey.stop: DeckKeyState(enabled: rec),
           },
           onKey: (k) {
