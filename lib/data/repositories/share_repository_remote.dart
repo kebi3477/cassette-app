@@ -26,7 +26,7 @@ class ShareRepositoryRemote implements ShareRepository {
       token: token,
       claimed: s.state == 'claimed',
       deliveryId: s.deliveryId,
-      senderName: s.sender.name,
+      senderName: s.sender.displayName,
       senderId: s.sender.userId,
       type: TapeType.fromMinutes(s.tapeType),
       duration: Duration(milliseconds: s.durationMs),

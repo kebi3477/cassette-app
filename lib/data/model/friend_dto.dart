@@ -6,18 +6,25 @@ class FriendDto {
   const FriendDto({
     required this.userId,
     required this.name,
+    this.nickname,
     required this.starred,
     this.lastAt,
   });
 
   final String userId;
   final String name;
+
+  /// 내가 붙인 별명 (계약서 §2 별명). 화면에는 `nickname ?? name`.
+  final String? nickname;
   final bool starred;
   final DateTime? lastAt;
+
+  String get displayName => nickname ?? name;
 
   factory FriendDto.fromJson(Json j) => FriendDto(
     userId: j['userId'] as String,
     name: j['name'] as String,
+    nickname: j['nickname'] as String?,
     starred: j['starred'] as bool,
     lastAt: parseDateOrNull(j['lastAt']),
   );
@@ -25,6 +32,7 @@ class FriendDto {
   Json toJson() => {
     'userId': userId,
     'name': name,
+    'nickname': nickname,
     'starred': starred,
     'lastAt': lastAt == null ? null : dateToJson(lastAt!),
   };
@@ -32,6 +40,7 @@ class FriendDto {
   FriendDto copyWith({bool? starred, DateTime? lastAt}) => FriendDto(
     userId: userId,
     name: name,
+    nickname: nickname,
     starred: starred ?? this.starred,
     lastAt: lastAt ?? this.lastAt,
   );
@@ -69,22 +78,30 @@ class BlockedUserDto {
   const BlockedUserDto({
     required this.userId,
     required this.name,
+    this.nickname,
     required this.blockedAt,
   });
 
   final String userId;
   final String name;
+
+  /// 차단할 때 붙어 있던 별명
+  final String? nickname;
   final DateTime blockedAt;
+
+  String get displayName => nickname ?? name;
 
   factory BlockedUserDto.fromJson(Json j) => BlockedUserDto(
     userId: j['userId'] as String,
     name: j['name'] as String,
+    nickname: j['nickname'] as String?,
     blockedAt: parseDate(j['blockedAt']),
   );
 
   Json toJson() => {
     'userId': userId,
     'name': name,
+    'nickname': nickname,
     'blockedAt': dateToJson(blockedAt),
   };
 }

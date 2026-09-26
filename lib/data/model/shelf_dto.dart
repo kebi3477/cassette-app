@@ -82,17 +82,25 @@ class ShelfItemDto {
   );
 }
 
-/// `{ userId, name }` — 탈퇴한 사용자면 `userId: null`.
+/// `{ userId, name, nickname }` — 탈퇴한 사용자면 `userId: null`.
 class UserRefDto {
-  const UserRefDto({required this.userId, required this.name});
+  const UserRefDto({required this.userId, required this.name, this.nickname});
 
   final String? userId;
   final String name;
 
-  factory UserRefDto.fromJson(Json j) =>
-      UserRefDto(userId: j['userId'] as String?, name: j['name'] as String);
+  /// 내가 붙인 별명 (계약서 §2 별명). 화면에는 `nickname ?? name`.
+  final String? nickname;
 
-  Json toJson() => {'userId': userId, 'name': name};
+  String get displayName => nickname ?? name;
+
+  factory UserRefDto.fromJson(Json j) => UserRefDto(
+    userId: j['userId'] as String?,
+    name: j['name'] as String,
+    nickname: j['nickname'] as String?,
+  );
+
+  Json toJson() => {'userId': userId, 'name': name, 'nickname': nickname};
 }
 
 class ShelfGroupDto {

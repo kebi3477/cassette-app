@@ -1,6 +1,7 @@
 import 'package:cassette_app/data/model/api_error.dart';
 import 'package:cassette_app/data/model/auth_dto.dart';
 import 'package:cassette_app/data/model/delivery_dto.dart';
+import 'package:cassette_app/data/model/friend_dto.dart';
 import 'package:cassette_app/data/model/mappers.dart';
 import 'package:cassette_app/data/model/me_dto.dart';
 import 'package:cassette_app/data/model/recording_dto.dart';
@@ -295,6 +296,64 @@ void main() {
       });
       expect(e.code, ApiErrorCode.rejoinRestricted);
       expect(e.extra['availableAt'], '2026-10-25T12:00:00.000Z');
+    });
+  });
+
+  group('별명 (nickname)', () {
+    test('Friend·BlockedUser·ShelfItem.sender·SentTape.recipient — 화면에는 nickname ?? name', () {
+      final f = FriendDto.fromJson({
+        'userId': 'u1',
+        'name': '고동민',
+        'nickname': '동민이',
+        'starred': true,
+        'lastAt': null,
+      });
+      expect(f.toDomain().name, '동민이');
+      final plain = FriendDto.fromJson({
+        'userId': 'u2',
+        'name': '지현',
+        'starred': false,
+        'lastAt': null,
+      });
+      expect(plain.nickname, isNull);
+      expect(plain.toDomain().name, '지현');
+
+      final b = BlockedUserDto.fromJson({
+        'userId': 'u3',
+        'name': '민수',
+        'nickname': '민수형',
+        'blockedAt': '2026-09-25T06:00:00.000Z',
+      });
+      expect(b.toDomain().name, '민수형');
+
+      final item = ShelfItemDto.fromJson({
+        'id': 't1',
+        'sender': {'userId': 'u2', 'name': '지현', 'nickname': '우리 지현'},
+        'tapeType': 3,
+        'durationMs': 34000,
+        'tag': null,
+        'sentAt': '2026-09-24T09:00:00.000Z',
+        'opened': false,
+        'openedAt': null,
+        'viaLink': false,
+        'groupId': null,
+      });
+      expect(item.toDomain().from, '우리 지현');
+
+      final sent = SentTapeDto.fromJson({
+        'id': 's1',
+        'recipient': {'userId': 'u4', 'name': '엄마', 'nickname': '우리 엄마'},
+        'linkName': null,
+        'tapeType': 3,
+        'durationMs': 95000,
+        'tag': null,
+        'sentAt': '2026-09-24T09:00:00.000Z',
+        'status': 'opened',
+        'claimedAt': null,
+        'openedAt': '2026-09-24T10:00:00.000Z',
+        'share': null,
+      });
+      expect(sent.toDomain().to, '우리 엄마');
     });
   });
 }

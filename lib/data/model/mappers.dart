@@ -53,13 +53,13 @@ extension MeDtoMapper on MeDto {
 
 extension FriendDtoMapper on FriendDto {
   Friend toDomain() =>
-      Friend(id: userId, name: name, starred: starred, lastAt: lastAt);
+      Friend(id: userId, name: displayName, starred: starred, lastAt: lastAt);
 }
 
 extension ShelfItemDtoMapper on ShelfItemDto {
   TapeItem toDomain() => TapeItem(
     id: id,
-    from: sender.name,
+    from: sender.displayName,
     senderId: sender.userId,
     date: sentAt,
     type: TapeType.fromMinutes(tapeType),
@@ -134,7 +134,7 @@ extension SentTapeDtoMapper on SentTapeDto {
     return SentTape(
       id: id,
       status: s,
-      to: recipient?.name ?? linkName ?? '',
+      to: recipient?.displayName ?? linkName ?? '',
       date: sentAt,
       type: TapeType.fromMinutes(tapeType),
       link: linkName != null,
@@ -152,7 +152,7 @@ extension LedgerEntryDtoMapper on LedgerEntryDto {
 
 extension BlockedUserDtoMapper on BlockedUserDto {
   BlockedUser toDomain() =>
-      BlockedUser(id: userId, name: name, blockedAt: blockedAt);
+      BlockedUser(id: userId, name: displayName, blockedAt: blockedAt);
 }
 
 extension ProductsDtoMapper on ProductsDto {
