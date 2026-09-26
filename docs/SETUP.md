@@ -36,7 +36,7 @@ PUBLIC_HOST = tapeletter.lab241.com
 기본값은 운영 도메인 `tapeletter.lab241.com`이다(`env.dart`, `Env.xcconfig`, `build.gradle.kts`). 다른 도메인을 쓰려면
 
 1. 위처럼 `PUBLIC_HOST`(dart-define)와 `Env.xcconfig`의 `PUBLIC_HOST`를 같은 도메인으로 바꾼다.
-2. 서버(`cassette-api`)가 그 도메인에서 `/.well-known/apple-app-site-association`, `/.well-known/assetlinks.json`을 준다 (팀 ID·서명 인증서 SHA-256 필요).
+2. 서버(`tapeletter-api`)가 그 도메인에서 `/.well-known/apple-app-site-association`, `/.well-known/assetlinks.json`을 준다 (팀 ID·서명 인증서 SHA-256 필요).
 3. Apple Developer에서 App ID에 Associated Domains·Sign in with Apple·Push Notifications를 켠다.
 
 ## 실행 설정 파일 (dart_defines/)
@@ -83,7 +83,7 @@ Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는�
 - iOS: `ios/Runner/GoogleService-Info.plist`. Xcode에 따로 추가할 필요 없다. Runner 타깃의 "Copy GoogleService-Info.plist" 빌드 단계가 파일이 있을 때만 앱 번들에 복사한다.
 - Android: `android/app/google-services.json`. `app/build.gradle.kts`가 파일이 있을 때만 Google Services 플러그인을 적용한다.
 - APNs 인증 키(.p8)는 Firebase 콘솔 > 프로젝트 설정 > 클라우드 메시징에 올린다.
-- 서버 발송용 서비스 계정 키는 앱이 아니라 `cassette-api/.env`의 `FCM_SERVICE_ACCOUNT_JSON`에 넣는다.
+- 서버 발송용 서비스 계정 키는 앱이 아니라 `tapeletter-api/.env`의 `FCM_SERVICE_ACCOUNT_JSON`에 넣는다.
 
 파일이 없어도 빌드는 된다. 이때 `Firebase.initializeApp`이 실패하고 앱은 가짜 푸시(`LocalPushService`)로 돈다. 권한 요청·배너·알림 누르기는 가짜로도 시험할 수 있다.
 
@@ -91,9 +91,9 @@ Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는�
 
 `--dart-define=API_BASE_URL=`이 있으면 앱이 실제 서버(`HttpApiClient`, dio)에 붙고, 없으면 서버 없이 도는 가짜 서버(`LocalApiClient`)를 쓴다. 실제 서버일 때 토큰은 Keychain / Keystore(`flutter_secure_storage`)에 저장된다.
 
-1. 서버 실행 (`../cassette-api`, 계약서 `docs/api.md` "0. 로컬 개발 서버에 붙기")
+1. 서버 실행 (`../tapeletter-api`, 계약서 `docs/api.md` "0. 로컬 개발 서버에 붙기")
    ```bash
-   cd ../cassette-api && npm run start:dev      # Postgres·Redis가 떠 있어야 한다
+   cd ../tapeletter-api && npm run start:dev      # Postgres·Redis가 떠 있어야 한다
    ```
 2. 앱 실행
    ```bash

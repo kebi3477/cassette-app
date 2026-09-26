@@ -16,7 +16,7 @@ import '../api/api_client.dart';
 import 'local_behavior.dart';
 import 'local_store.dart';
 
-/// 계약서(`cassette-api/docs/api.md`) 모양 그대로 응답하는 메모리 서버.
+/// 계약서(`tapeletter-api/docs/api.md`) 모양 그대로 응답하는 메모리 서버.
 ///
 /// 다음 단계에서 HTTP 구현으로 바꿔 끼운다. 서버 규칙(보유 차감, 정렬, 오류 코드)도 흉내 낸다.
 class LocalApiClient implements ApiClient {

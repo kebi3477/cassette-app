@@ -23,10 +23,10 @@ import 'package:tapeletter_app/utils/idempotency.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// 실제 서버(`cassette-api`)에 HTTP로 붙어 앱의 [HttpApiClient]를 끝까지 확인한다.
+/// 실제 서버(`tapeletter-api`)에 HTTP로 붙어 앱의 [HttpApiClient]를 끝까지 확인한다.
 ///
 /// ```bash
-/// cd ../cassette-api && npm run start:dev
+/// cd ../tapeletter-api && npm run start:dev
 /// flutter test --tags server --dart-define=API_BASE_URL=http://localhost:3000/api
 /// ```
 /// `API_BASE_URL`이 없으면 건너뛴다 (기본 `flutter test`).

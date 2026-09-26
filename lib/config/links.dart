@@ -1,4 +1,4 @@
-/// 설정 > 정보의 외부 링크. 페이지는 cassette-api가 서비스한다 (GET /privacy, /terms).
+/// 설정 > 정보의 외부 링크. 페이지는 tapeletter-api가 서비스한다 (GET /privacy, /terms).
 abstract final class AppLinks {
   static final terms = Uri.parse('https://tapeletter.lab241.com/terms');
   static final privacy = Uri.parse('https://tapeletter.lab241.com/privacy');

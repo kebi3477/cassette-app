@@ -9,7 +9,7 @@ import '../../model/shop_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/wallet_dto.dart';
 
-/// 서버 API — `cassette-api/docs/api.md`의 엔드포인트와 1:1.
+/// 서버 API — `tapeletter-api/docs/api.md`의 엔드포인트와 1:1.
 ///
 /// 실패하면 [ApiException](../../model/api_error.dart)을 던진다.
 /// 구현: [HttpApiClient](실제 서버), [LocalApiClient](서버 없이 도는 메모리 가짜).

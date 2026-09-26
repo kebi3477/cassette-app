@@ -14,7 +14,7 @@ import 'package:tapeletter_app/domain/models/tape_tag.dart';
 import 'package:tapeletter_app/domain/models/tape_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// 계약서(cassette-api/docs/api.md)의 예시 JSON을 그대로 읽는다.
+/// 계약서(tapeletter-api/docs/api.md)의 예시 JSON을 그대로 읽는다.
 void main() {
   test('Me (§2) — unopenedCount가 없어도 읽는다', () {
     final me = MeDto.fromJson({

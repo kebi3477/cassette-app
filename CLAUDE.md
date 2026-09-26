@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 tapeletter 앱(옛 이름 cassette). 목소리를 1·3·5분짜리 카세트테이프에 녹음해 친구에게 소포로 보내고, 받은 테이프를 서랍에 칸별로 정리해 이어 듣는다. 테이프는 크레딧으로 사고, 크레딧은 광고 시청이나 결제로 얻는다.
 
 - Flutter, iOS·Android. 번들 ID는 iOS·Android 모두 `com.kebi.tapeletter`
-- API: `../cassette-api` (NestJS). 응답 스펙은 이 앱의 도메인 모델과 맞춘다
+- API: `../tapeletter-api` (NestJS). 응답 스펙은 이 앱의 도메인 모델과 맞춘다
 - 두 저장소에 공통으로 적용되는 아키텍처 결정은 `../ARCHITECTURE.md`에 있다 (저장소 바깥 파일)
 
 ## 디자인
@@ -69,7 +69,7 @@ testing/                     # 가짜 repository·service (프로토타입 초�
 flutter run
 flutter analyze
 flutter test
-flutter test --tags server --dart-define=API_BASE_URL=http://localhost:3000/api   # ../cassette-api 서버를 띄운 상태에서
+flutter test --tags server --dart-define=API_BASE_URL=http://localhost:3000/api   # ../tapeletter-api 서버를 띄운 상태에서
 flutter build ios --debug --no-codesign
 flutter build apk --debug
 ```

@@ -16,7 +16,7 @@ import '../../model/shop_dto.dart';
 import '../../model/wallet_dto.dart';
 import 'api_client.dart';
 
-/// 실제 서버 (`cassette-api`) — 계약서 `docs/api.md`와 1:1.
+/// 실제 서버 (`tapeletter-api`) — 계약서 `docs/api.md`와 1:1.
 ///
 /// - 기본 주소: `--dart-define=API_BASE_URL=http://localhost:3000/api`
 /// - 오류 본문 `{ code, message, …extra }` → [ApiException]
