@@ -4,6 +4,7 @@ import 'package:cassette_app/data/services/local/local_behavior.dart';
 import 'package:cassette_app/data/services/local/local_store.dart';
 import 'package:cassette_app/ui/core/ui/toast.dart';
 import 'package:cassette_app/ui/shelf/view_model/shelf_view_model.dart';
+import 'package:cassette_app/data/services/app_prefs.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,7 +13,7 @@ void main() {
   late ToastController toast;
   late ShelfViewModel vm;
 
-  ShelfViewModel make(FakeAsync async) {
+  ShelfViewModel make(FakeAsync async, {AppPrefs? prefs}) {
     store = LocalStore(clock: () => DateTime.utc(2026, 9, 25, 3));
     toast = ToastController();
     final v = ShelfViewModel(
@@ -20,6 +21,7 @@ void main() {
         LocalApiClient(store, LocalBehavior.instant),
       ),
       toast: toast,
+      prefs: prefs,
     )..load();
     async.flushMicrotasks();
     return v;
@@ -231,12 +233,19 @@ void main() {
     });
   });
 
-  test('보기 전환', () {
+  test('보기: 기본은 책장형, 바꾸면 기기에 기억', () {
     fakeAsync((async) {
-      vm = make(async);
-      expect(vm.view, ShelfView.list);
-      vm.setView(ShelfView.shelf);
+      final prefs = MemoryAppPrefs();
+      vm = make(async, prefs: prefs);
       expect(vm.view, ShelfView.shelf);
+      vm.setView(ShelfView.list);
+      async.flushMicrotasks();
+      expect(vm.view, ShelfView.list);
+      expect(prefs.shelfViewValue, 'list');
+
+      // 다음 실행: 기억한 보기를 쓴다
+      final again = make(async, prefs: prefs);
+      expect(again.view, ShelfView.list);
     });
   });
 }

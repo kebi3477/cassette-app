@@ -74,8 +74,11 @@ Widget testApp(RecordHarness h, {String initialLocation = Routes.record}) {
               ..load(),
       ),
       ChangeNotifierProvider(
-        create: (c) =>
-            ShelfViewModel(shelfRepository: h.shelf, toast: h.toast)..load(),
+        create: (c) => ShelfViewModel(
+          shelfRepository: h.shelf,
+          toast: h.toast,
+          prefs: h.prefs,
+        )..load(),
       ),
       ChangeNotifierProvider<RecordViewModel>.value(value: h.vm..load()),
       ChangeNotifierProvider<ShopViewModel>.value(value: h.shopVm..load()),

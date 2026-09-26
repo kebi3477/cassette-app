@@ -11,7 +11,8 @@ void main() {
 
   Future<RecordHarness> pumpShelf(WidgetTester tester) async {
     useDesignScreen(tester);
-    final h = RecordHarness();
+    // 목록 보기를 골라 둔 사용자 (행을 눌러 연다)
+    final h = RecordHarness()..prefs.shelfViewValue = 'list';
     await tester.pumpWidget(testApp(h, initialLocation: '/shelf'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));

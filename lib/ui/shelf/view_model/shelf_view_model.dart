@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../data/model/api_error.dart';
 import '../../../data/repositories/shelf_repository.dart';
+import '../../../data/services/app_prefs.dart';
 import '../../../domain/models/shelf.dart';
 import '../../../domain/models/tape_item.dart';
 import '../../../utils/format.dart';
@@ -38,8 +39,10 @@ class ShelfViewModel extends ChangeNotifier {
   ShelfViewModel({
     required ShelfRepository shelfRepository,
     required this._toast,
+    this._prefs,
   }) : _repo = shelfRepository {
     _repo.addListener(_onRepoChanged);
+    _restoreView();
   }
 
   /// 탭에 처음 들어갈 때 스켈레톤 `later('skel', 650)`
@@ -53,11 +56,17 @@ class ShelfViewModel extends ChangeNotifier {
   final ShelfRepository _repo;
   final ToastController _toast;
 
+  /// 사용자가 고른 보기를 기억한다
+  final AppPrefs? _prefs;
+
   Shelf _shelf = Shelf.empty;
   bool _loaded = false;
   bool _seen = false;
   bool _skeleton = false;
-  ShelfView _view = ShelfView.list;
+
+  /// 기본은 책장형. 사용자가 바꾼 적 있으면 그 보기.
+  ShelfView _view = ShelfView.shelf;
+  bool _viewChosen = false;
   String? _dragId;
   DropTarget? _drop;
   String? _landed;
@@ -135,9 +144,22 @@ class ShelfViewModel extends ChangeNotifier {
   }
 
   void setView(ShelfView v) {
+    _viewChosen = true;
     if (_view == v) return;
     _view = v;
     notifyListeners();
+    unawaited(_prefs?.setShelfView(v.name).catchError((_) {}));
+  }
+
+  Future<void> _restoreView() async {
+    try {
+      final saved = await _prefs?.shelfView();
+      final v = ShelfView.values.where((x) => x.name == saved).firstOrNull;
+      // 불러오는 사이에 사용자가 이미 바꿨으면 그대로 둔다
+      if (v == null || _viewChosen || v == _view) return;
+      _view = v;
+      notifyListeners();
+    } catch (_) {}
   }
 
   // ── 드래그 정렬 (`rowDown` / `dragMove` / `dragEnd`) ──

@@ -1,5 +1,6 @@
 import 'package:cassette_app/ui/core/ui/tab_bar.dart';
 import 'package:cassette_app/ui/shelf/view_model/shelf_view_model.dart';
+import 'package:cassette_app/ui/shelf/widgets/shelf_bookcase_view.dart';
 import 'package:cassette_app/ui/shelf/widgets/shelf_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,7 +18,8 @@ void main() {
     void Function(RecordHarness h)? setup,
   ]) async {
     useDesignScreen(tester);
-    final h = RecordHarness();
+    // 목록 보기를 골라 둔 사용자 (기본은 책장형)
+    final h = RecordHarness()..prefs.shelfViewValue = 'list';
     setup?.call(h);
     await tester.pumpWidget(testApp(h, initialLocation: '/shelf'));
     await tester.pump();
@@ -45,6 +47,22 @@ void main() {
     final tabBar = tester.widget<AppTabBar>(find.byType(AppTabBar));
     expect(tabBar.hasNew, isTrue);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('기본 보기는 책장형, 바꾸면 기억한다', (tester) async {
+    useDesignScreen(tester);
+    final h = RecordHarness();
+    await tester.pumpWidget(testApp(h, initialLocation: '/shelf'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(find.byType(ShelfBookcase), findsOneWidget);
+    expect(find.byType(ShelfRow), findsNothing);
+    expect(tester.takeException(), isNull);
+    vmOf(tester).setView(ShelfView.list);
+    await tester.pump();
+    expect(find.byType(ShelfRow), findsWidgets);
+    await tester.pump();
+    expect(h.prefs.shelfViewValue, 'list');
   });
 
   testWidgets('처음 들어가면 스켈레톤 0.65초', (tester) async {

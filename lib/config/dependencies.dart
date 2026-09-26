@@ -278,8 +278,11 @@ List<SingleChildWidget> get appViewModels => [
           ..load(),
   ),
   ChangeNotifierProvider(
-    create: (c) =>
-        ShelfViewModel(shelfRepository: c.read(), toast: c.read())..load(),
+    create: (c) => ShelfViewModel(
+      shelfRepository: c.read(),
+      toast: c.read(),
+      prefs: c.read(),
+    )..load(),
   ),
   ChangeNotifierProvider(
     create: (c) => ShopViewModel(
