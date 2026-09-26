@@ -15,6 +15,10 @@ abstract class AppPrefs {
   /// 서랍 보기 (`list` · `shelf`). 사용자가 바꾼 적 없으면 null.
   Future<String?> shelfView();
   Future<void> setShelfView(String view);
+
+  /// 책꽂이 코치마크를 봤는지 (`coachDone`) — 알겠어요 또는 첫 드래그 성공
+  Future<bool> shelfCoachDone();
+  Future<void> setShelfCoachDone();
 }
 
 class SharedAppPrefs implements AppPrefs {
@@ -22,6 +26,7 @@ class SharedAppPrefs implements AppPrefs {
   static const _perm = 'permissionsAsked';
   static const _link = 'pendingLink';
   static const _shelfView = 'shelfView';
+  static const _coach = 'shelfCoachDone';
 
   Future<SharedPreferences> get _p => SharedPreferences.getInstance();
 
@@ -52,6 +57,12 @@ class SharedAppPrefs implements AppPrefs {
   @override
   Future<void> setShelfView(String view) async =>
       (await _p).setString(_shelfView, view);
+
+  @override
+  Future<bool> shelfCoachDone() async => (await _p).getBool(_coach) ?? false;
+
+  @override
+  Future<void> setShelfCoachDone() async => (await _p).setBool(_coach, true);
 }
 
 /// 메모리 구현 (시험)
@@ -87,4 +98,12 @@ class MemoryAppPrefs implements AppPrefs {
 
   @override
   Future<void> setShelfView(String view) async => shelfViewValue = view;
+
+  bool coachDoneValue = false;
+
+  @override
+  Future<bool> shelfCoachDone() async => coachDoneValue;
+
+  @override
+  Future<void> setShelfCoachDone() async => coachDoneValue = true;
 }

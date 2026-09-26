@@ -136,6 +136,7 @@ class _ShelfScreenState extends State<ShelfScreen> {
           else
             ShelfBookcase(
               viewModel: vm,
+              drag: _drag,
               onOpen: widget.onOpen,
               onEditGroup: (g) =>
                   showGroupSheet(context, viewModel: vm, group: g),

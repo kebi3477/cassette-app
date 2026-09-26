@@ -43,6 +43,7 @@ class ShelfViewModel extends ChangeNotifier {
   }) : _repo = shelfRepository {
     _repo.addListener(_onRepoChanged);
     _restoreView();
+    _restoreCoach();
   }
 
   /// 탭에 처음 들어갈 때 스켈레톤 `later('skel', 650)`
@@ -151,6 +152,35 @@ class ShelfViewModel extends ChangeNotifier {
     unawaited(_prefs?.setShelfView(v.name).catchError((_) {}));
   }
 
+  /// 책꽂이 코치마크를 봤는지 — 기기에 저장한 값을 불러오기 전에는 보인 것으로 친다(깜빡임 방지)
+  bool _coachDone = true;
+
+  /// 책꽂이 코치마크 (`coachOn`): 처음 테이프가 있는 서랍을 책꽂이로 볼 때 한 번
+  bool get coachOn =>
+      !_coachDone &&
+      _view == ShelfView.shelf &&
+      _loaded &&
+      !emptyOn &&
+      _shelf.unsorted.isNotEmpty &&
+      !_skeleton;
+
+  /// 알겠어요 (`coachOk`) · 첫 드래그 성공
+  void dismissCoach() {
+    if (_coachDone) return;
+    _coachDone = true;
+    notifyListeners();
+    unawaited(_prefs?.setShelfCoachDone().catchError((_) {}));
+  }
+
+  Future<void> _restoreCoach() async {
+    try {
+      final done = await _prefs?.shelfCoachDone() ?? true;
+      if (done == _coachDone) return;
+      _coachDone = done;
+      notifyListeners();
+    } catch (_) {}
+  }
+
   Future<void> _restoreView() async {
     try {
       final saved = await _prefs?.shelfView();
@@ -192,6 +222,7 @@ class ShelfViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    dismissCoach();
     await moveByDrop(id, t);
   }
 

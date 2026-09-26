@@ -40,8 +40,13 @@ class ShelfDragController extends ChangeNotifier {
   TapeItem? get ghostItem => _item;
   double? get ghostY => _ghostY;
 
-  void register(Object owner, GlobalKey key, DropTarget target, bool row) =>
-      _zones[owner] = _Zone(key, target, row);
+  void register(
+    Object owner,
+    GlobalKey key,
+    DropTarget target,
+    bool row, {
+    bool col = false,
+  }) => _zones[owner] = _Zone(key, target, row, col);
 
   void unregister(Object owner) => _zones.remove(owner);
 
@@ -79,16 +84,26 @@ class ShelfDragController extends ChangeNotifier {
     viewModel.cancelDrag();
   }
 
-  /// 행 위쪽 절반이면 그 앞, 아래쪽 절반이면 그 뒤. 칸 제목·빈 칸이면 그 칸 맨 앞.
+  /// 행 위쪽 절반이면 그 앞, 아래쪽 절반이면 그 뒤. 책꽂이(`data-col`)는 왼쪽·오른쪽 절반.
+  /// 칸 제목·빈 칸이면 그 칸 맨 앞, 선반 전체(`dropEnd`)면 맨 뒤.
+  /// 겹치면 가장 안쪽(작은) 영역이 이긴다 (`elementFromPoint(...).closest('[data-drop]')`).
   DropTarget? _hit(Offset p) {
+    _Zone? best;
+    Rect? bestRect;
     for (final z in _zones.values) {
       final r = _rect(z.key);
       if (r == null || !r.contains(p)) continue;
-      var idx = z.target.index;
-      if (z.row && p.dy > r.top + r.height / 2) idx++;
-      return DropTarget(z.target.groupId, idx);
+      if (bestRect == null ||
+          r.width * r.height < bestRect.width * bestRect.height) {
+        best = z;
+        bestRect = r;
+      }
     }
-    return null;
+    if (best == null || bestRect == null) return null;
+    var idx = best.target.index;
+    if (best.row && p.dy > bestRect.top + bestRect.height / 2) idx++;
+    if (best.col && p.dx > bestRect.left + bestRect.width / 2) idx++;
+    return DropTarget(best.target.groupId, idx);
   }
 
   void _autoScroll(double y) {
@@ -114,11 +129,12 @@ class ShelfDragController extends ChangeNotifier {
 }
 
 class _Zone {
-  _Zone(this.key, this.target, this.row);
+  _Zone(this.key, this.target, this.row, this.col);
 
   final GlobalKey key;
   final DropTarget target;
   final bool row;
+  final bool col;
 }
 
 /// 템플릿의 `data-drop="gi:idx"` (+ `data-row`).
@@ -128,12 +144,16 @@ class DropZone extends StatefulWidget {
     required this.controller,
     required this.target,
     this.row = false,
+    this.col = false,
     required this.child,
   });
 
   final ShelfDragController controller;
   final DropTarget target;
   final bool row;
+
+  /// 책꽂이 가로 배치 — x 좌표로 앞·뒤 (`data-col`)
+  final bool col;
   final Widget child;
 
   @override
@@ -143,8 +163,13 @@ class DropZone extends StatefulWidget {
 class _DropZoneState extends State<DropZone> {
   final GlobalKey _key = GlobalKey();
 
-  void _register() =>
-      widget.controller.register(this, _key, widget.target, widget.row);
+  void _register() => widget.controller.register(
+    this,
+    _key,
+    widget.target,
+    widget.row,
+    col: widget.col,
+  );
 
   @override
   void initState() {
