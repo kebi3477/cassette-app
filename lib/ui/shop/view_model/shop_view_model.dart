@@ -210,6 +210,19 @@ class ShopViewModel extends ChangeNotifier {
     });
   }
 
+  int _drawerPop = 0;
+
+  /// 서랍 배너 "넓히기 ›"로 왔을 때 서랍 카드가 팝 (`hl === 'drawer'` → `pop .5s`). 바뀔 때마다 다시 튼다.
+  int get drawerPop => _drawerPop;
+
+  void highlightDrawer() {
+    _drawerPop++;
+    notifyListeners();
+  }
+
+  /// 서랍이 거의 찼는지 (`stored >= cap - 2`) — 서랍 카드 레드 틴트
+  bool get drawerNear => cap > 0 && stored >= cap - 2;
+
   /// 녹음 탭에서 0개 테이프를 눌러 왔을 때 (`goShop(hl)`)
   void highlightTape(TapeType type) {
     _hl = type;

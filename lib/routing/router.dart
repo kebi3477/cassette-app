@@ -97,7 +97,7 @@ GoRouter router({
                   );
                   context.go(Routes.record);
                 },
-                onGoShop: () => context.go(Routes.shop),
+                onGoShop: () => context.go(Routes.shopDrawer()),
                 onGoRecord: () => context.go(Routes.record),
               ),
             ),
@@ -108,11 +108,13 @@ GoRouter router({
             GoRoute(
               path: Routes.shop,
               builder: (context, state) {
-                final hl = int.tryParse(state.uri.queryParameters['hl'] ?? '');
+                final q = state.uri.queryParameters;
+                final hl = int.tryParse(q['hl'] ?? '');
                 return ShopScreen(
                   viewModel: context.read<ShopViewModel>(),
                   highlight: hl == null ? null : TapeType.fromMinutes(hl),
-                  buyRequest: state.uri.queryParameters['buy'],
+                  buyRequest: q['buy'],
+                  drawerRequest: q['hl'] == 'drawer' ? q['n'] ?? '' : null,
                 );
               },
             ),

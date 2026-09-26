@@ -22,6 +22,7 @@ class ShopScreen extends StatefulWidget {
     required this.viewModel,
     this.highlight,
     this.buyRequest,
+    this.drawerRequest,
   });
 
   final ShopViewModel viewModel;
@@ -32,6 +33,9 @@ class ShopScreen extends StatefulWidget {
   /// 있으면 [highlight] 테이프의 1개짜리 구매 시트를 바로 연다 (녹음 탭의 "+").
   /// 요청마다 값이 달라 같은 테이프를 다시 눌러도 열린다.
   final String? buyRequest;
+
+  /// 서랍 배너에서 왔다 — 서랍 카드 팝. 요청마다 값이 다르다.
+  final String? drawerRequest;
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -49,12 +53,18 @@ class _ShopScreenState extends State<ShopScreen> {
   void didUpdateWidget(ShopScreen old) {
     super.didUpdateWidget(old);
     if (old.highlight != widget.highlight ||
-        old.buyRequest != widget.buyRequest) {
+        old.buyRequest != widget.buyRequest ||
+        old.drawerRequest != widget.drawerRequest) {
       _applyHighlight();
     }
   }
 
   void _applyHighlight() {
+    if (widget.drawerRequest != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => widget.viewModel.highlightDrawer(),
+      );
+    }
     final hl = widget.highlight;
     if (hl == null) return;
     final buy = widget.buyRequest != null;
@@ -233,6 +243,14 @@ class _Body extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // 서랍 넓히기가 항상 맨 위 (`drawerTop`, v4)
+          for (final d in c.drawer) ...[
+            const _SectionTitle('서랍', top: 14),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+              child: _DrawerCard(vm: vm, product: d),
+            ),
+          ],
           const _SectionTitle('테이프', top: 14),
           for (final p in c.tapes)
             _TapeRow(
@@ -291,25 +309,221 @@ class _Body extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
             child: Text(NoticeCopy.refundWithin7Days, style: AppText.notice),
           ),
-          const _SectionTitle('서랍', top: 24),
-          for (final d in c.drawer)
-            _ShopRow(
-              icon: Container(
-                width: 48,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.drawerSwatch,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.black.withValues(alpha: .08),
-                  ),
-                ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 서랍 넓히기 카드 (`drawerTop`) — 거의 차면(`stored >= cap − 2`) 레드 틴트
+class _DrawerCard extends StatefulWidget {
+  const _DrawerCard({required this.vm, required this.product});
+
+  final ShopViewModel vm;
+  final DrawerProduct product;
+
+  @override
+  State<_DrawerCard> createState() => _DrawerCardState();
+}
+
+class _DrawerCardState extends State<_DrawerCard>
+    with SingleTickerProviderStateMixin {
+  // pop .5s: scale .6 → 1.08 (60%) → 1, opacity 0 → 1
+  late final AnimationController _pop = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+    value: 1,
+  );
+  bool _down = false;
+  int _seen = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _seen = widget.vm.drawerPop;
+  }
+
+  @override
+  void didUpdateWidget(_DrawerCard old) {
+    super.didUpdateWidget(old);
+    if (widget.vm.drawerPop != _seen) {
+      _seen = widget.vm.drawerPop;
+      _pop.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pop.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = widget.vm;
+    final d = widget.product;
+    final near = vm.drawerNear;
+    final full = vm.cap > 0 && vm.stored >= vm.cap;
+    final sub = full
+        ? '서랍이 꽉 찼어요 · ${d.slots}개 더 보관'
+        : near
+        ? '서랍이 거의 찼어요 · ${d.slots}개 더 보관'
+        : '테이프 ${d.slots}개 더 보관';
+    final pct = vm.cap == 0 ? 0.0 : (vm.stored / vm.cap).clamp(0.0, 1.0);
+    return AnimatedBuilder(
+      animation: _pop,
+      builder: (context, child) {
+        final t = _pop.value;
+        final scale = t < .6
+            ? .6 + (1.08 - .6) * (t / .6)
+            : 1.08 - .08 * ((t - .6) / .4);
+        return Opacity(
+          opacity: (t / .6).clamp(0.0, 1.0),
+          child: Transform.scale(scale: t >= 1 ? 1 : scale, child: child),
+        );
+      },
+      child: Semantics(
+        button: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) => setState(() => _down = true),
+          onTapCancel: () => setState(() => _down = false),
+          onTapUp: (_) => setState(() => _down = false),
+          onTap: () => vm.buy(d),
+          child: AnimatedScale(
+            // style-active: scale(.98)
+            scale: _down ? .98 : 1,
+            duration: const Duration(milliseconds: 100),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: near ? AppColors.redTint : AppColors.surfaceSoft,
+                borderRadius: BorderRadius.circular(AppRadius.button),
               ),
-              title: d.name,
-              sub: '테이프 ${d.slots}개 더 보관 · 지금 ${vm.stored}/${vm.cap}',
-              trailing: PricePill(label: '${d.price}'),
-              onTap: () => vm.buy(d),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const _DrawerIcon(),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(d.name, style: AppText.suit(700, 15.5)),
+                            const SizedBox(height: 2),
+                            Text(
+                              sub,
+                              style: AppText.suit(
+                                500,
+                                12.5,
+                                color: near
+                                    ? AppColors.textSecondary
+                                    : AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PricePill(label: '${d.price}'),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: SizedBox(
+                            height: 4,
+                            child: Stack(
+                              children: [
+                                const Positioned.fill(
+                                  child: ColoredBox(color: AppColors.recRing),
+                                ),
+                                TweenAnimationBuilder<double>(
+                                  // transition: width .4s
+                                  tween: Tween(end: pct),
+                                  duration: const Duration(milliseconds: 400),
+                                  builder: (context, w, _) =>
+                                      FractionallySizedBox(
+                                        widthFactor: w,
+                                        heightFactor: 1,
+                                        child: ColoredBox(
+                                          color: near
+                                              ? AppColors.red
+                                              : AppColors.ink,
+                                        ),
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${vm.stored}/${vm.cap}',
+                        style: AppText.suit(
+                          700,
+                          12.5,
+                          tabularNums: true,
+                          color: near ? AppColors.red : AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 서랍 아이콘 48×36 (흰 바탕, 안쪽 테두리 1.5 `#DDD3C2`, 가운데 칸막이, 손잡이 두 개)
+class _DrawerIcon extends StatelessWidget {
+  const _DrawerIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget handle(double top) => Positioned(
+      left: 19,
+      top: top,
+      child: Container(
+        width: 10,
+        height: 3,
+        decoration: BoxDecoration(
+          color: AppColors.ink,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+    return Container(
+      width: 48,
+      height: 36,
+      decoration: BoxDecoration(
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.shelfPlank, width: 1.5),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 테두리 안쪽 기준: left 4 − 1.5, top 17 − 1.5
+          const Positioned(
+            left: 2.5,
+            right: 2.5,
+            top: 15.5,
+            child: SizedBox(
+              height: 1.5,
+              child: ColoredBox(color: AppColors.shelfPlank),
+            ),
+          ),
+          handle(9 - 1.5),
+          handle(25 - 1.5),
         ],
       ),
     );

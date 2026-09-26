@@ -1,5 +1,7 @@
 import 'package:tapeletter_app/ui/shop/view_model/shop_view_model.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tapeletter_app/ui/core/themes/colors.dart';
 
 import '../../../../testing/app.dart';
 import '../../../../testing/fonts.dart';
@@ -31,8 +33,46 @@ void main() {
     expect(find.text('오늘 3번 남음'), findsOneWidget);
     expect(find.text('1,200'), findsOneWidget);
     expect(find.text('₩11,000'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('서랍 넓히기'), 200);
-    expect(find.text('테이프 10개 더 보관 · 지금 10/12'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('서랍 넓히기가 맨 위, 거의 차면(10/12) 레드 틴트', (tester) async {
+    final h = await pumpShop(tester);
+    final card = find.text('서랍 넓히기');
+    expect(
+      tester.getTopLeft(card).dy,
+      lessThan(tester.getTopLeft(find.text('3분 테이프')).dy),
+    );
+    expect(find.text('서랍이 거의 찼어요 · 10개 더 보관'), findsOneWidget);
+    expect(find.text('10/12'), findsOneWidget);
+    final tinted = find.ancestor(
+      of: card,
+      matching: find.byWidgetPredicate(
+        (w) =>
+            w is Container &&
+            (w.decoration as BoxDecoration?)?.color == AppColors.redTint,
+      ),
+    );
+    expect(tinted, findsOneWidget);
+
+    // 여유가 있으면 회색 카드, "테이프 10개 더 보관"
+    h.store.cap = 30;
+    h.users.invalidate();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('테이프 10개 더 보관'), findsOneWidget);
+    expect(tinted, findsNothing);
+
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    expect(find.text('100 크레딧 · 남는 크레딧 20'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('서랍 배너 "넓히기 ›" → 상점 서랍 카드 팝', (tester) async {
+    final h = await pumpShop(tester, loc: '/shop?hl=drawer&n=1');
+    expect(h.shopVm.drawerPop, 1);
+    await tester.pump(const Duration(milliseconds: 600));
     expect(tester.takeException(), isNull);
   });
 
