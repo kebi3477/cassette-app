@@ -18,6 +18,7 @@ import '../../core/ui/mini_tape.dart';
 import '../../core/ui/tape_motion.dart';
 import '../../core/ui/tape_widget.dart';
 import '../view_model/player_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 테이프 재생 오버레이 — 템플릿 `viewerOn` 블록 (`vParcel` / `vPlay`).
 class PlayerScreen extends StatelessWidget {
@@ -59,7 +60,7 @@ class PlayerScreen extends StatelessWidget {
                           button: true,
                           label: '닫기',
                           excludeSemantics: true,
-                          child: GestureDetector(
+                          child: Tappable(
                             behavior: HitTestBehavior.opaque,
                             onTap: onClose,
                             child: SizedBox.square(
@@ -102,7 +103,7 @@ class _ParcelView extends StatelessWidget {
     final item = vm.current;
     if (item == null) return const SizedBox.shrink();
     final tearing = vm.phase == ViewerPhase.tearing;
-    return GestureDetector(
+    return Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: vm.unwrap,
       child: Padding(
@@ -553,7 +554,7 @@ class _LoadError extends StatelessWidget {
           children: [
             Text('테이프를 불러오지 못했어요', style: AppText.suit(700, 15)),
             const SizedBox(height: 12),
-            GestureDetector(
+            Tappable(
               onTap: onRetry,
               child: Container(
                 height: 40,
@@ -670,7 +671,7 @@ class _RepeatButton extends StatelessWidget {
       label: '반복',
       value: mode.label,
       excludeSemantics: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: SizedBox.square(
@@ -747,7 +748,7 @@ class _SkipButton extends StatelessWidget {
       button: true,
       label: next ? '다음' : '이전',
       excludeSemantics: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Opacity(
@@ -859,7 +860,7 @@ class _QueueRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = TapePalette.of(item.type);
-    return GestureDetector(
+    return Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
@@ -929,7 +930,7 @@ class _MoreButton extends StatelessWidget {
       button: true,
       label: '더 보기',
       excludeSemantics: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: SizedBox.square(

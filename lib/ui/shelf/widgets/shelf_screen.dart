@@ -11,6 +11,7 @@ import 'shelf_bookcase_view.dart';
 import 'shelf_drag.dart';
 import 'shelf_list_view.dart';
 import 'shelf_sheets.dart';
+import '../../core/ui/tappable.dart';
 
 /// 서랍 탭 — 템플릿 `vShelf` 블록.
 class ShelfScreen extends StatefulWidget {
@@ -189,7 +190,7 @@ class _Header extends StatelessWidget {
               button: true,
               label: '칸 추가',
               excludeSemantics: true,
-              child: GestureDetector(
+              child: Tappable(
                 behavior: HitTestBehavior.opaque,
                 onTap: onAdd,
                 child: SizedBox.square(
@@ -223,7 +224,7 @@ class _ViewSwitch extends StatelessWidget {
         selected: on,
         label: label,
         excludeSemantics: true,
-        child: GestureDetector(
+        child: Tappable(
           onTap: () => onChanged(v),
           child: Container(
             width: 36,
@@ -309,7 +310,7 @@ class _FullBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Tappable(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(top: 4, bottom: 8),
@@ -408,7 +409,7 @@ class _EmptyShelf extends StatelessWidget {
             style: AppText.suit(500, 14, height: 1.5, color: AppColors.textSub),
           ),
           const SizedBox(height: 26),
-          GestureDetector(
+          Tappable(
             onTap: onGoRecord,
             child: Container(
               height: 48,
@@ -480,7 +481,7 @@ class _AddGroupButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Tappable(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(12, 18, 12, 0),
@@ -504,7 +505,7 @@ class _NearFull extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Tappable(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),

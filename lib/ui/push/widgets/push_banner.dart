@@ -4,6 +4,7 @@ import '../../auth/widgets/permission_screens.dart' show PushCard;
 import '../../core/themes/colors.dart';
 import '../../core/themes/dimens.dart';
 import '../view_model/push_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 앱 안 푸시 배너 (`pushOn`) — 위에서 `bannerIn .45s`로 내려오고 6초 뒤 사라진다.
 class PushBannerHost extends StatelessWidget {
@@ -27,7 +28,7 @@ class PushBannerHost extends StatelessWidget {
             key: ValueKey(viewModel.serial),
             child: Semantics(
               button: true,
-              child: GestureDetector(
+              child: Tappable(
                 onTap: viewModel.tapBanner,
                 child: PushCard(
                   title: m.title,

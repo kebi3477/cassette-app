@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../themes/colors.dart';
 import '../themes/dimens.dart';
 import '../themes/text_styles.dart';
+import 'tappable.dart';
 
 /// 고르는 칩 (높이 40, 패딩 0 16, radius 20, `700 14px`, 고르면 검정, `background .15s`)
 /// — 신고 사유(`rpReasons`), 칸 카테고리(`groupCats`)
@@ -23,7 +24,7 @@ class AppChoiceChip extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: AnimatedContainer(

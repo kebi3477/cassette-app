@@ -7,6 +7,7 @@ import '../../core/themes/tape_palette.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/app_icons.dart';
 import '../../core/ui/tape_widget.dart';
+import '../../core/ui/tappable.dart';
 
 /// 녹음 대기 화면의 테이프 캐러셀 (높이 226, 트랙 top 46).
 ///
@@ -141,7 +142,7 @@ class _TapeCarouselState extends State<TapeCarousel> {
                       child: Semantics(
                         button: true,
                         label: '${TapePalette.of(_ids[ti]).name} 테이프 사기',
-                        child: GestureDetector(
+                        child: Tappable(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => widget.onBuy(_ids[ti]),
                         ),

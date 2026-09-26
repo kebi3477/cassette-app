@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../themes/colors.dart';
 import '../themes/dimens.dart';
 import '../themes/text_styles.dart';
+import 'tappable.dart';
 
 /// 바텀시트 — 템플릿 `sheetOn` 블록.
 ///
@@ -91,7 +92,7 @@ class SheetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(

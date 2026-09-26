@@ -12,6 +12,7 @@ import '../../core/ui/skeleton.dart';
 import '../view_model/my_view_model.dart';
 import 'my_page_screen.dart';
 import 'my_sheets.dart';
+import '../../core/ui/tappable.dart';
 
 /// 마이 탭 홈 — 템플릿 `vMy` 블록. 이름, 크레딧, 아이콘 4개(`myMenu`), 보유 테이프.
 /// 받은·보낸 테이프, 친구, 설정은 하위 화면([MyPageScreen])으로 간다.
@@ -206,7 +207,7 @@ class _MyScreenState extends State<MyScreen> {
                       _Pill(label: '저장', dark: true, onTap: _done),
                     ],
                   )
-                : GestureDetector(
+                : Tappable(
                     behavior: HitTestBehavior.opaque,
                     onTap: _startEdit,
                     child: Row(
@@ -249,7 +250,7 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    child: GestureDetector(
+    child: Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
@@ -317,7 +318,7 @@ class _MenuTile extends StatelessWidget {
     button: true,
     label: page.title,
     excludeSemantics: true,
-    child: GestureDetector(
+    child: Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
@@ -565,7 +566,7 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(title, style: AppText.suit(800, 16)),
         if (action != null)
-          GestureDetector(
+          Tappable(
             onTap: onAction,
             child: Text(
               action!,
@@ -585,7 +586,7 @@ class _CreditRow extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Tappable(
     onTap: onTap,
     child: Container(
       height: 56,

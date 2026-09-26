@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../themes/colors.dart';
 import '../themes/dimens.dart';
 import 'animations.dart';
+import 'tappable.dart';
 
 /// 60 검정 재생/일시정지 버튼
 class PlayButton extends StatelessWidget {
@@ -17,7 +18,7 @@ class PlayButton extends StatelessWidget {
       button: true,
       label: playing ? '일시정지' : '재생',
       excludeSemantics: true,
-      child: GestureDetector(
+      child: Tappable(
         onTap: onTap,
         child: Container(
           width: AppSizes.playButton,

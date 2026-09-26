@@ -12,6 +12,7 @@ import '../../core/ui/choice_chip.dart';
 import '../../../utils/format.dart';
 import '../../report/widgets/report_sheet.dart';
 import '../view_model/shelf_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 받은 테이프 신고 — 보낸 사람을 차단 대상으로 (`report({target: 'tape'})`)
 TapeReport tapeReportOf(TapeItem item) => TapeReport(
@@ -356,7 +357,7 @@ class _GroupFormState extends State<_GroupForm> {
         if (g != null)
           Semantics(
             button: true,
-            child: GestureDetector(
+            child: Tappable(
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 Navigator.of(context).pop();

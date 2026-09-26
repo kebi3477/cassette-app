@@ -8,6 +8,7 @@ import '../../core/themes/text_styles.dart';
 import '../../core/ui/animations.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/css_paint.dart';
+import '../../core/ui/tappable.dart';
 
 /// 링크 오류 (`leOn`) — 이미 받은 링크 / 만료된 링크 / 내가 보낸 링크.
 class LinkErrorScreen extends StatelessWidget {
@@ -73,7 +74,7 @@ class LinkErrorScreen extends StatelessWidget {
                       button: true,
                       label: '닫기',
                       excludeSemantics: true,
-                      child: GestureDetector(
+                      child: Tappable(
                         behavior: HitTestBehavior.opaque,
                         onTap: onClose,
                         child: SizedBox.square(
@@ -142,7 +143,7 @@ class LinkErrorScreen extends StatelessWidget {
                     AppButton(label: cta, onTap: own ? onReshare : onClose),
                     if (own) ...[
                       const SizedBox(height: 2),
-                      GestureDetector(
+                      Tappable(
                         behavior: HitTestBehavior.opaque,
                         onTap: onClose,
                         child: SizedBox(

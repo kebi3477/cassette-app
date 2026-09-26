@@ -10,6 +10,7 @@ import '../../core/ui/mini_tape.dart';
 import '../../core/ui/parcel_box.dart';
 import '../view_model/shelf_view_model.dart';
 import 'shelf_drag.dart';
+import '../../core/ui/tappable.dart';
 
 /// 목록 보기 — 템플릿 `isList` 블록. "분류 안 함" + 사용자 칸, 드래그 정렬.
 class ShelfListSections extends StatelessWidget {
@@ -70,7 +71,7 @@ class ShelfListSections extends StatelessWidget {
                 DropZone(
                   controller: drag,
                   target: DropTarget(g.id, 0),
-                  child: GestureDetector(
+                  child: Tappable(
                     behavior: HitTestBehavior.opaque,
                     onTap: () => onEditGroup(g),
                     child: SectionHeader(
@@ -360,7 +361,7 @@ class _ShelfRowState extends State<ShelfRow>
     if (drag == null) {
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
+        onTap: Haptic.selection.wrap(widget.onTap),
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) => setState(() => _pressed = false),
         onTapCancel: () => setState(() => _pressed = false),
@@ -425,7 +426,7 @@ class MoreButton extends StatelessWidget {
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: Haptic.selection.wrap(onTap),
         onLongPress: () {},
         child: SizedBox(
           width: 36,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/models/tape_item.dart';
 import '../view_model/shelf_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 드래그 정렬의 화면 쪽 처리 — logic.js `rowDown`, `dragMove`, `relY`.
 ///
@@ -53,6 +54,8 @@ class ShelfDragController extends ChangeNotifier {
   void start(TapeItem item, Offset global) {
     viewModel.startDrag(item.id);
     if (!viewModel.dragging) return;
+    // 길게 눌러 집어 들었다
+    Haptic.medium.fire();
     _item = item;
     move(global);
   }
@@ -263,7 +266,7 @@ class _DragRowGesturesState extends State<DragRowGestures> {
                 TapGestureRecognizer.new,
                 (r) {
                   r.onTap = () {
-                    if (!_dragged) widget.onTap();
+                    if (!_dragged) Haptic.selection.wrap(widget.onTap)!();
                   };
                 },
               ),

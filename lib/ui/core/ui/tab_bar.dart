@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../themes/colors.dart';
 import '../themes/dimens.dart';
 import '../themes/text_styles.dart';
+import 'tappable.dart';
 
 enum AppTab { record, shelf, shop, my }
 
@@ -50,7 +51,7 @@ class AppTabBar extends StatelessWidget {
                 selected: tab == current,
                 label: _labels[tab],
                 excludeSemantics: true,
-                child: GestureDetector(
+                child: Tappable(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => onTap(tab),
                   child: _TabItem(

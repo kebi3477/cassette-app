@@ -9,6 +9,7 @@ import '../../core/ui/animations.dart';
 import '../../core/ui/buttons.dart';
 import '../../friend/widgets/alias_sheet.dart';
 import '../view_model/record_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 녹음 · 받는 사람 — 템플릿 `vPick` 블록. 즐겨찾기 먼저.
 class RecordPickView extends StatelessWidget {
@@ -89,7 +90,7 @@ class _FriendRowState extends State<_FriendRow> {
     final last = f.lastAt == null ? '-' : formatMonthDay(f.lastAt!);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: widget.onTap,
+      onTap: Haptic.selection.wrap(widget.onTap),
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
@@ -122,7 +123,7 @@ class _FriendRowState extends State<_FriendRow> {
               button: true,
               label: f.starred ? '즐겨찾기 해제' : '즐겨찾기',
               excludeSemantics: true,
-              child: GestureDetector(
+              child: Tappable(
                 behavior: HitTestBehavior.opaque,
                 onTap: widget.onStar,
                 child: SizedBox.square(

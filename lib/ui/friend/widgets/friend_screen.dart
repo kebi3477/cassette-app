@@ -10,6 +10,7 @@ import '../../core/themes/text_styles.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/mini_tape.dart';
 import '../view_model/friend_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 친구 화면 — 템플릿 `fvOn` 블록. 그 친구가 보낸 테이프만 모아 본다.
 class FriendScreen extends StatelessWidget {
@@ -76,7 +77,7 @@ class FriendScreen extends StatelessWidget {
                       if (vm.friend case final f?)
                         Semantics(
                           button: true,
-                          child: GestureDetector(
+                          child: Tappable(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => onAlias(f),
                             child: Container(
@@ -201,7 +202,7 @@ class _TapeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(

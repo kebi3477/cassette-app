@@ -14,6 +14,7 @@ import '../../core/ui/credit_icon.dart';
 import '../../core/ui/mini_tape.dart';
 import '../../core/ui/skeleton.dart';
 import '../view_model/shop_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 상점 탭 — 템플릿 `vShop` 블록. 테이프 → 크레딧 받기 → 서랍.
 class ShopScreen extends StatefulWidget {
@@ -389,7 +390,7 @@ class _DrawerCardState extends State<_DrawerCard>
           onTapDown: (_) => setState(() => _down = true),
           onTapCancel: () => setState(() => _down = false),
           onTapUp: (_) => setState(() => _down = false),
-          onTap: () => vm.buy(d),
+          onTap: Haptic.selection.wrap(() => vm.buy(d)),
           child: AnimatedScale(
             // style-active: scale(.98)
             scale: _down ? .98 : 1,
@@ -610,7 +611,7 @@ class _ShopRowState extends State<_ShopRow>
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: widget.onTap,
+      onTap: Haptic.selection.wrap(widget.onTap),
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
@@ -851,7 +852,7 @@ class _PackCardState extends State<_PackCard> {
   Widget build(BuildContext context) {
     final n = widget.coins;
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: Haptic.selection.wrap(widget.onTap),
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),

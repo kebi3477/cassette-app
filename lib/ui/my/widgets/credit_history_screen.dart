@@ -5,6 +5,7 @@ import '../../core/themes/text_styles.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/credit_icon.dart';
 import '../view_model/credit_history_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 크레딧 내역 — 템플릿 `histOn` 블록 (탭바 위 오버레이).
 class CreditHistoryScreen extends StatefulWidget {
@@ -78,7 +79,7 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    GestureDetector(
+                    Tappable(
                       onTap: widget.onCharge,
                       child: Container(
                         height: 40,

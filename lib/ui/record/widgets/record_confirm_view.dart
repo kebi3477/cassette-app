@@ -12,6 +12,7 @@ import '../../core/ui/tape_widget.dart';
 import '../../core/ui/app_sheet.dart';
 import '../view_model/record_view_model.dart';
 import 'record_deck.dart';
+import '../../core/ui/tappable.dart';
 
 /// 녹음 · 확인 — 템플릿 `vConfirm` 블록.
 ///
@@ -172,7 +173,7 @@ Future<void> showRedoSheet(
           },
         ),
         const SizedBox(height: 2),
-        GestureDetector(
+        Tappable(
           behavior: HitTestBehavior.opaque,
           onTap: () => Navigator.of(sheet).pop(),
           child: SizedBox(

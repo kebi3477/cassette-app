@@ -10,6 +10,7 @@ import '../../core/ui/app_sheet.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/credit_icon.dart';
 import '../view_model/shop_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// [ShopViewModel.sheet]이 생기면 바텀시트를 열고, 없어지면 닫는다.
 ///
@@ -116,7 +117,7 @@ class _TextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    child: GestureDetector(
+    child: Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
@@ -171,7 +172,7 @@ class _Charge extends StatelessWidget {
     Widget row(String left, String right, VoidCallback onTap, Color ink) =>
         Padding(
           padding: const EdgeInsets.only(top: 8),
-          child: GestureDetector(
+          child: Tappable(
             behavior: HitTestBehavior.opaque,
             onTap: onTap,
             child: Container(
@@ -344,7 +345,7 @@ class _Ad extends StatelessWidget {
                 button: true,
                 label: '광고 닫기',
                 excludeSemantics: true,
-                child: GestureDetector(
+                child: Tappable(
                   onTap: vm.closeAd,
                   child: Container(
                     width: 32,
@@ -494,7 +495,7 @@ class _Chip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Tappable(
     onTap: onTap,
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 150),
@@ -537,7 +538,7 @@ class _AmountPill extends StatelessWidget {
     selected: on,
     label: '$amount 크레딧',
     excludeSemantics: true,
-    child: GestureDetector(
+    child: Tappable(
       onTap: onTap,
       child: Container(
         height: 44,

@@ -11,6 +11,7 @@ import '../../core/ui/buttons.dart';
 import '../view_model/record_view_model.dart';
 import 'record_deck.dart';
 import 'tape_carousel.dart';
+import '../../core/ui/tappable.dart';
 
 /// 녹음 · 대기/녹음 중/멈춤 — 템플릿 `vIdle` 블록.
 class RecordIdleView extends StatelessWidget {
@@ -158,7 +159,7 @@ class _ToChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Tappable(
       onTap: onClear,
       child: Container(
         height: 34,

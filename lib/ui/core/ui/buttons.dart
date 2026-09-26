@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../themes/colors.dart';
 import '../themes/dimens.dart';
 import '../themes/text_styles.dart';
+import 'tappable.dart';
 
 /// 하단 56 버튼 (radius 16, `700 16px`). 검정·회색·카카오 변형은 색만 바꾼다.
 class AppButton extends StatelessWidget {
@@ -48,9 +49,13 @@ class AppButton extends StatelessWidget {
       button: true,
       label: label,
       excludeSemantics: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
+        // 비활성(회색 `#CFCFCC`) 버튼은 눌러도 울리지 않는다 (안내 토스트만)
+        haptic: background == AppColors.disabled
+            ? Haptic.none
+            : Haptic.selection,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           height: height,
@@ -94,7 +99,7 @@ class BackBar extends StatelessWidget {
           child: Semantics(
             button: true,
             label: '뒤로',
-            child: GestureDetector(
+            child: Tappable(
               behavior: HitTestBehavior.opaque,
               onTap: onBack,
               child: SizedBox(

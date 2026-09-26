@@ -10,6 +10,7 @@ import '../../core/ui/animations.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/parcel_box.dart';
 import '../../core/ui/tape_widget.dart';
+import '../../core/ui/tappable.dart';
 
 /// 온보딩 (`auOnb`) — 3장, 다음 / 건너뛰기.
 class OnboardingScreen extends StatefulWidget {
@@ -54,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: GestureDetector(
+                  child: Tappable(
                     onTap: widget.flow.finishOnboarding,
                     child: Text(
                       '건너뛰기',

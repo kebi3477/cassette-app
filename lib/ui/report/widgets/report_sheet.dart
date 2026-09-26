@@ -11,6 +11,7 @@ import '../../core/ui/app_sheet.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/choice_chip.dart';
 import '../view_model/report_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 신고 (`shReport`) — 테이프 ⋯, 친구 ⋯, 차단한 친구 "신고", 재생 화면 ⋯에서 연다.
 /// 네트워크가 끊기면 같은 시트에서 `shReportFail`로 바뀌고, 적은 내용은 남는다.
@@ -234,7 +235,7 @@ class _BlockToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       checked: on,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: SizedBox(
@@ -299,7 +300,7 @@ class _SubmitButton extends StatelessWidget {
       enabled: enabled,
       label: label,
       excludeSemantics: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: AnimatedContainer(
@@ -327,7 +328,7 @@ class _TextButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => Tappable(
     behavior: HitTestBehavior.opaque,
     onTap: onTap,
     child: SizedBox(

@@ -11,6 +11,7 @@ import '../view_model/shelf_view_model.dart';
 import '../../core/ui/animations.dart';
 import 'shelf_drag.dart';
 import 'shelf_list_view.dart';
+import '../../core/ui/tappable.dart';
 
 /// 책꽂이 보기 — 템플릿 `isShelf` 블록. 선반마다 등 30×108 카세트를 3px 간격으로.
 ///
@@ -138,7 +139,7 @@ class ShelfBookcase extends StatelessWidget {
                 DropZone(
                   controller: drag,
                   target: DropTarget(g.id, 0),
-                  child: GestureDetector(
+                  child: Tappable(
                     behavior: HitTestBehavior.opaque,
                     onTap: () => onEditGroup(g),
                     child: SectionHeader(
@@ -212,7 +213,7 @@ class _CoachMark extends StatelessWidget {
             const SizedBox(width: 14),
             Semantics(
               button: true,
-              child: GestureDetector(
+              child: Tappable(
                 behavior: HitTestBehavior.opaque,
                 onTap: onOk,
                 child: SizedBox(

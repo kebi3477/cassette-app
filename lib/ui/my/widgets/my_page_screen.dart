@@ -13,6 +13,7 @@ import '../../core/ui/parcel_box.dart';
 import '../../friend/widgets/alias_sheet.dart';
 import '../view_model/my_view_model.dart';
 import 'my_sheets.dart';
+import '../../core/ui/tappable.dart';
 
 /// 마이 하위 화면 (`mpOn`) — 받은 테이프 · 보낸 테이프 · 친구 · 설정.
 /// 탭바 위를 덮는 오버레이다 (`slideUp .3s`).
@@ -244,7 +245,7 @@ class ReceivedRow extends StatelessWidget {
     final x = tape.item;
     return Semantics(
       button: true,
-      child: GestureDetector(
+      child: Tappable(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: SizedBox(
@@ -330,7 +331,7 @@ class MyFriendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
@@ -347,7 +348,7 @@ class MyFriendRow extends StatelessWidget {
               button: true,
               label: friend.starred ? '즐겨찾기 해제' : '즐겨찾기',
               excludeSemantics: true,
-              child: GestureDetector(
+              child: Tappable(
                 behavior: HitTestBehavior.opaque,
                 onTap: onStar,
                 child: SizedBox.square(
@@ -372,7 +373,7 @@ class MyFriendRow extends StatelessWidget {
               button: true,
               label: '${friend.name} 더 보기',
               excludeSemantics: true,
-              child: GestureDetector(
+              child: Tappable(
                 behavior: HitTestBehavior.opaque,
                 onTap: onMore,
                 child: SizedBox(
@@ -423,7 +424,7 @@ class SentCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final s in vm.sent)
-          GestureDetector(
+          Tappable(
             behavior: HitTestBehavior.opaque,
             onTap: () => onTap(s),
             child: Container(
@@ -510,7 +511,7 @@ class SettingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: onTap != null,
-    child: GestureDetector(
+    child: Tappable(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(

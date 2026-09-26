@@ -7,6 +7,7 @@ import '../../core/ui/animations.dart';
 import '../../core/ui/app_icons.dart';
 import '../../core/ui/buttons.dart';
 import '../view_model/permissions_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 /// 마이크 권한 안내 (`auMic`) — 계속 → OS 권한 창 → 알림 안내
 class MicPromptScreen extends StatelessWidget {
@@ -53,7 +54,7 @@ class NotiPromptScreen extends StatelessWidget {
       buttons: [
         AppButton(label: '알림 받기', onTap: viewModel.askNotifications),
         const SizedBox(height: 2),
-        GestureDetector(
+        Tappable(
           behavior: HitTestBehavior.opaque,
           onTap: viewModel.later,
           child: SizedBox(

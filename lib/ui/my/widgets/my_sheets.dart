@@ -15,13 +15,14 @@ import '../../core/ui/buttons.dart';
 import '../../core/ui/mini_tape.dart';
 import '../../report/widgets/report_sheet.dart';
 import '../view_model/my_view_model.dart';
+import '../../core/ui/tappable.dart';
 
 TextStyle get _title => AppText.suit(800, 20, letterSpacingEm: -.01);
 TextStyle get _subMulti =>
     AppText.suit(500, 14, height: 1.55, color: AppColors.textSub);
 
 /// 글자만 있는 48 버튼 (취소)
-Widget _textButton(String label, VoidCallback onTap) => GestureDetector(
+Widget _textButton(String label, VoidCallback onTap) => Tappable(
   behavior: HitTestBehavior.opaque,
   onTap: onTap,
   child: SizedBox(
@@ -31,7 +32,7 @@ Widget _textButton(String label, VoidCallback onTap) => GestureDetector(
 );
 
 /// 차단한 친구 행의 34 알약 버튼 (`#F3F3F1`, `700 13.5px`)
-Widget _pillButton(String label, VoidCallback onTap) => GestureDetector(
+Widget _pillButton(String label, VoidCallback onTap) => Tappable(
   behavior: HitTestBehavior.opaque,
   onTap: onTap,
   child: Container(
@@ -376,7 +377,7 @@ class _WithdrawFormState extends State<_WithdrawForm> {
         const SizedBox(height: 6),
         Semantics(
           checked: _ok,
-          child: GestureDetector(
+          child: Tappable(
             behavior: HitTestBehavior.opaque,
             onTap: () => setState(() => _ok = !_ok),
             child: SizedBox(

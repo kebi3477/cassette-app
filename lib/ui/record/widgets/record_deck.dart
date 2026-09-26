@@ -4,6 +4,7 @@ import '../../core/themes/colors.dart';
 import '../../core/themes/deck_colors.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/css_paint.dart';
+import '../../core/ui/tappable.dart';
 
 /// 데크 키 — 왼쪽부터 REW·PLAY·REC·STOP·FF·EJECT
 enum DeckKey {
@@ -79,6 +80,8 @@ class _RecordDeckState extends State<RecordDeck> {
 
   void _press(DeckKey k) {
     if (!_state(k).enabled) return;
+    // 데크 키는 눌리는 순간 묵직하게 (비활성 키는 울리지 않는다)
+    Haptic.medium.fire();
     setState(() => _down = k);
   }
 
