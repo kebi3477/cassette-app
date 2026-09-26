@@ -21,7 +21,9 @@ import '../ui/link/widgets/link_error_screen.dart';
 import '../utils/result.dart';
 import '../domain/models/tape_type.dart';
 import '../ui/core/themes/dimens.dart';
+import '../ui/core/ui/toast.dart';
 import '../ui/friend/view_model/friend_view_model.dart';
+import '../ui/friend/widgets/alias_sheet.dart';
 import '../ui/friend/widgets/friend_screen.dart';
 import '../data/repositories/shelf_repository.dart';
 import '../ui/my/view_model/credit_history_view_model.dart';
@@ -46,137 +48,146 @@ import 'routes.dart';
 /// 재생·친구 화면은 탭바 위(루트 내비게이터)에 띄운다.
 ///
 /// [flow]가 있으면 처음 실행·로그인 관문을 거친다 (`redirect`).
-GoRouter router({
-  String initialLocation = Routes.record,
-  AppFlow? flow,
-}) => GoRouter(
-  initialLocation: initialLocation,
-  refreshListenable: flow,
-  redirect: flow == null
-      ? null
-      : (context, state) => flow.redirect(state.matchedLocation),
-  routes: [
-    ..._gateRoutes,
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, shell) => AppShell(
-        navigationShell: shell,
-        shellViewModel: context.read<ShellViewModel>(),
-        recordViewModel: context.read<RecordViewModel>(),
-        shopViewModel: context.read<ShopViewModel>(),
-      ),
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.record,
-              builder: (context, state) => RecordScreen(
-                viewModel: context.read<RecordViewModel>(),
-                onGoShop: (t) => context.go(Routes.shopHighlight(t.minutes)),
-                onBuyTape: (t) => context.go(Routes.shopBuy(t.minutes)),
-              ),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.shelf,
-              builder: (context, state) => ShelfScreen(
-                viewModel: context.read<ShelfViewModel>(),
-                onOpen: (item) => context.push(
-                  Routes.playItem(
-                    item.groupId == null
-                        ? const UnsortedSource()
-                        : GroupSource(item.groupId!),
-                    item.id,
+GoRouter router({String initialLocation = Routes.record, AppFlow? flow}) =>
+    GoRouter(
+      initialLocation: initialLocation,
+      refreshListenable: flow,
+      redirect: flow == null
+          ? null
+          : (context, state) => flow.redirect(state.matchedLocation),
+      routes: [
+        ..._gateRoutes,
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => AppShell(
+            navigationShell: shell,
+            shellViewModel: context.read<ShellViewModel>(),
+            recordViewModel: context.read<RecordViewModel>(),
+            shopViewModel: context.read<ShopViewModel>(),
+          ),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: Routes.record,
+                  builder: (context, state) => RecordScreen(
+                    viewModel: context.read<RecordViewModel>(),
+                    onGoShop: (t) =>
+                        context.go(Routes.shopHighlight(t.minutes)),
+                    onBuyTape: (t) => context.go(Routes.shopBuy(t.minutes)),
                   ),
                 ),
-                onReply: (item) {
-                  context.read<RecordViewModel>().recordTo(
-                    Friend(id: item.senderId!, name: item.from, starred: false),
-                  );
-                  context.go(Routes.record);
-                },
-                onGoShop: () => context.go(Routes.shopDrawer()),
-                onGoRecord: () => context.go(Routes.record),
-              ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: Routes.shelf,
+                  builder: (context, state) => ShelfScreen(
+                    viewModel: context.read<ShelfViewModel>(),
+                    onOpen: (item) => context.push(
+                      Routes.playItem(
+                        item.groupId == null
+                            ? const UnsortedSource()
+                            : GroupSource(item.groupId!),
+                        item.id,
+                      ),
+                    ),
+                    onReply: (item) {
+                      context.read<RecordViewModel>().recordTo(
+                        Friend(
+                          id: item.senderId!,
+                          name: item.from,
+                          originalName: item.senderName,
+                          starred: false,
+                        ),
+                      );
+                      context.go(Routes.record);
+                    },
+                    onGoShop: () => context.go(Routes.shopDrawer()),
+                    onGoRecord: () => context.go(Routes.record),
+                  ),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: Routes.shop,
+                  builder: (context, state) {
+                    final q = state.uri.queryParameters;
+                    final hl = int.tryParse(q['hl'] ?? '');
+                    return ShopScreen(
+                      viewModel: context.read<ShopViewModel>(),
+                      highlight: hl == null ? null : TapeType.fromMinutes(hl),
+                      buyRequest: q['buy'],
+                      drawerRequest: q['hl'] == 'drawer' ? q['n'] ?? '' : null,
+                    );
+                  },
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: Routes.my,
+                  builder: (context, state) => MyScreen(
+                    viewModel: context.read<MyViewModel>(),
+                    openSentId: state.uri.queryParameters['sent'],
+                    onOpenHistory: () => context.push(Routes.credits),
+                    onGoShop: () => context.go(Routes.shop),
+                    onOpenFriend: (f) => context.push(Routes.friend(f.id)),
+                    onRecordTo: (f) {
+                      context.read<RecordViewModel>().recordTo(f);
+                      context.go(Routes.record);
+                    },
+                    onGift: (f) =>
+                        context.read<ShopViewModel>().openGift(to: f),
+                    // 로그아웃·탈퇴하면 관문(redirect)이 로그인 화면으로 보낸다.
+                    onSignedOut: () =>
+                        context.read<ShelfRepository>().invalidate(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.shop,
-              builder: (context, state) {
-                final q = state.uri.queryParameters;
-                final hl = int.tryParse(q['hl'] ?? '');
-                return ShopScreen(
-                  viewModel: context.read<ShopViewModel>(),
-                  highlight: hl == null ? null : TapeType.fromMinutes(hl),
-                  buyRequest: q['buy'],
-                  drawerRequest: q['hl'] == 'drawer' ? q['n'] ?? '' : null,
-                );
-              },
+        GoRoute(
+          path: Routes.play,
+          pageBuilder: (context, state) => _overlay(
+            state,
+            PlayerRoute(
+              source: QueueSource.parse(state.uri.queryParameters['src'] ?? ''),
+              itemId: state.uri.queryParameters['id'] ?? '',
+              linkChip: state.uri.queryParameters['chip'] != '0',
             ),
-          ],
+          ),
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.my,
-              builder: (context, state) => MyScreen(
-                viewModel: context.read<MyViewModel>(),
-                openSentId: state.uri.queryParameters['sent'],
-                onOpenHistory: () => context.push(Routes.credits),
-                onGoShop: () => context.go(Routes.shop),
-                onOpenFriend: (f) => context.push(Routes.friend(f.id)),
-                onRecordTo: (f) {
-                  context.read<RecordViewModel>().recordTo(f);
-                  context.go(Routes.record);
-                },
-                onGift: (f) => context.read<ShopViewModel>().openGift(to: f),
-                // 로그아웃·탈퇴하면 관문(redirect)이 로그인 화면으로 보낸다.
-                onSignedOut: () => context.read<ShelfRepository>().invalidate(),
+        GoRoute(
+          path: Routes.linkError,
+          pageBuilder: (context, state) => _overlay(
+            state,
+            LinkErrorRoute(
+              kind: LinkErrorKind.values.byName(
+                state.uri.queryParameters['kind'] ?? 'expired',
               ),
+              url: state.uri.queryParameters['url'],
             ),
-          ],
+          ),
+        ),
+        GoRoute(
+          path: Routes.credits,
+          pageBuilder: (context, state) =>
+              _overlay(state, const CreditsRoute()),
+        ),
+        GoRoute(
+          path: Routes.friendPattern,
+          pageBuilder: (context, state) => _overlay(
+            state,
+            FriendRoute(userId: state.pathParameters['userId']!),
+          ),
         ),
       ],
-    ),
-    GoRoute(
-      path: Routes.play,
-      pageBuilder: (context, state) => _overlay(
-        state,
-        PlayerRoute(
-          source: QueueSource.parse(state.uri.queryParameters['src'] ?? ''),
-          itemId: state.uri.queryParameters['id'] ?? '',
-          linkChip: state.uri.queryParameters['chip'] != '0',
-        ),
-      ),
-    ),
-    GoRoute(
-      path: Routes.linkError,
-      pageBuilder: (context, state) => _overlay(
-        state,
-        LinkErrorRoute(
-          kind: LinkErrorKind.values.byName(
-            state.uri.queryParameters['kind'] ?? 'expired',
-          ),
-          url: state.uri.queryParameters['url'],
-        ),
-      ),
-    ),
-    GoRoute(
-      path: Routes.credits,
-      pageBuilder: (context, state) => _overlay(state, const CreditsRoute()),
-    ),
-    GoRoute(
-      path: Routes.friendPattern,
-      pageBuilder: (context, state) =>
-          _overlay(state, FriendRoute(userId: state.pathParameters['userId']!)),
-    ),
-  ],
-);
+    );
 
 /// 처음 실행 관문: 스플래시 → 온보딩 → 로그인 → 이름 → 권한 안내 (+ 강제 업데이트)
 final _gateRoutes = <RouteBase>[
@@ -324,7 +335,12 @@ class _PlayerRouteState extends State<PlayerRoute> {
                   await _vm.close();
                   if (!context.mounted) return;
                   context.read<RecordViewModel>().recordTo(
-                    Friend(id: senderId, name: item.from, starred: false),
+                    Friend(
+                      id: senderId,
+                      name: item.from,
+                      originalName: item.senderName,
+                      starred: false,
+                    ),
                   );
                   context.go(Routes.record);
                 },
@@ -361,6 +377,14 @@ class _FriendRouteState extends State<FriendRoute> {
     return FriendScreen(
       viewModel: _vm,
       onBack: () => context.pop(),
+      onAlias: (f) => showAliasSheet(
+        context,
+        friend: f,
+        onSave: (v) async {
+          final toast = context.read<ToastController>();
+          toast.show(await _vm.setNickname(v));
+        },
+      ),
       onPlay: (t) =>
           context.push(Routes.playItem(FriendSource(widget.userId), t.item.id)),
       onRecord: () {

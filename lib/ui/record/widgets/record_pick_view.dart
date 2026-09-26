@@ -7,6 +7,7 @@ import '../../core/themes/dimens.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/animations.dart';
 import '../../core/ui/buttons.dart';
+import '../../friend/widgets/alias_sheet.dart';
 import '../view_model/record_view_model.dart';
 
 /// 녹음 · 받는 사람 — 템플릿 `vPick` 블록. 즐겨찾기 먼저.
@@ -107,7 +108,7 @@ class _FriendRowState extends State<_FriendRow> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(f.name, style: AppText.suit(700, 16)),
+                  FriendNameLine(friend: f, style: AppText.suit(700, 16)),
                   const SizedBox(height: 2),
                   Text(
                     f.starred ? '즐겨찾기 · $last' : '최근 $last',

@@ -79,6 +79,9 @@ abstract class ApiClient {
   /// `PATCH /friends/{userId}` `{ starred }`
   Future<FriendDto> patchFriend(String userId, {required bool starred});
 
+  /// `PATCH /friends/{userId}` `{ nickname }` — 별명(최대 10자). null·빈 값이면 지운다.
+  Future<FriendDto> setFriendNickname(String userId, String? nickname);
+
   /// `GET /friends/{userId}/tapes`
   Future<FriendTapesDto> getFriendTapes(String userId);
 

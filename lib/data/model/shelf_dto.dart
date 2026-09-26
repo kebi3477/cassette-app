@@ -63,13 +63,14 @@ class ShelfItemDto {
   };
 
   ShelfItemDto copyWith({
+    UserRefDto? sender,
     bool? opened,
     DateTime? openedAt,
     String? Function()? groupId,
     String? Function()? groupName,
   }) => ShelfItemDto(
     id: id,
-    sender: sender,
+    sender: sender ?? this.sender,
     tapeType: tapeType,
     durationMs: durationMs,
     tag: tag,

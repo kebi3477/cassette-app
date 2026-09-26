@@ -29,6 +29,20 @@ class FriendRepositoryRemote extends FriendRepository {
   }
 
   @override
+  Future<Result<Friend>> setNickname(String friendId, String? nickname) async {
+    final v = nickname?.trim();
+    final r = await guard(
+      () async => (await _api.setFriendNickname(
+        friendId,
+        v == null || v.isEmpty ? null : v,
+      )).toDomain(),
+    );
+    // 별명은 서랍·보낸 테이프에도 보이므로 다시 불러오게 알린다.
+    if (r is Ok) notifyListeners();
+    return r;
+  }
+
+  @override
   Future<Result<FriendTapes>> getFriendTapes(String friendId) =>
       guard(() async => (await _api.getFriendTapes(friendId)).toDomain());
 

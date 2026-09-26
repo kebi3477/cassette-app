@@ -270,6 +270,16 @@ class HttpApiClient implements ApiClient {
       );
 
   @override
+  Future<FriendDto> setFriendNickname(String userId, String? nickname) async =>
+      FriendDto.fromJson(
+        await _json(
+          'PATCH',
+          '/friends/${_seg(userId)}',
+          body: {'nickname': nickname},
+        ),
+      );
+
+  @override
   Future<FriendTapesDto> getFriendTapes(String userId) async =>
       FriendTapesDto.fromJson(
         await _json('GET', '/friends/${_seg(userId)}/tapes'),

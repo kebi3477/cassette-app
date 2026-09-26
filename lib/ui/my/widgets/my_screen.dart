@@ -12,6 +12,7 @@ import '../../core/themes/tape_palette.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/credit_icon.dart';
 import '../../core/ui/skeleton.dart';
+import '../../friend/widgets/alias_sheet.dart';
 import '../view_model/my_view_model.dart';
 import 'my_sheets.dart';
 
@@ -150,6 +151,11 @@ class _MyScreenState extends State<MyScreen> {
                         friend: f,
                         onRecord: () => widget.onRecordTo(f),
                         onGift: () => widget.onGift(f),
+                        onAlias: () => showAliasSheet(
+                          context,
+                          friend: f,
+                          onSave: (v) => vm.setNickname(f, v),
+                        ),
                         onRemove: () => vm.removeFriend(f),
                         onBlock: () => vm.block(f),
                       ),
@@ -571,7 +577,12 @@ class _FriendRow extends StatelessWidget {
         height: 58,
         child: Row(
           children: [
-            Expanded(child: Text(friend.name, style: AppText.suit(700, 15))),
+            Expanded(
+              child: FriendNameLine(
+                friend: friend,
+                style: AppText.suit(700, 15),
+              ),
+            ),
             Semantics(
               button: true,
               label: friend.starred ? '즐겨찾기 해제' : '즐겨찾기',

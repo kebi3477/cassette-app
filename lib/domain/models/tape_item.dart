@@ -7,6 +7,7 @@ class TapeItem {
     required this.id,
     required this.from,
     this.senderId,
+    String? senderName,
     required this.date,
     required this.type,
     required this.duration,
@@ -14,7 +15,7 @@ class TapeItem {
     this.opened = true,
     this.viaLink = false,
     this.groupId,
-  });
+  }) : senderName = senderName ?? from;
 
   final String id;
 
@@ -23,6 +24,9 @@ class TapeItem {
 
   /// 보낸 사람 userId. 탈퇴했으면 null
   final String? senderId;
+
+  /// 보낸 사람의 원래 이름 ([from]은 별명이 있으면 별명). 답장 라벨에 쓴다.
+  final String senderName;
 
   /// 받은 날짜 (`sentAt`)
   final DateTime date;
@@ -45,6 +49,7 @@ class TapeItem {
     id: id,
     from: from,
     senderId: senderId,
+    senderName: senderName,
     date: date,
     type: type,
     duration: duration,

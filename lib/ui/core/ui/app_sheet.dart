@@ -75,6 +75,7 @@ class SheetRow extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.trailing,
+    this.trailingStyle,
     this.danger = false,
     this.divider = true,
   });
@@ -82,6 +83,7 @@ class SheetRow extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final String? trailing;
+  final TextStyle? trailingStyle;
   final bool danger;
   final bool divider;
 
@@ -114,7 +116,9 @@ class SheetRow extends StatelessWidget {
               if (trailing != null)
                 Text(
                   trailing!,
-                  style: AppText.suit(600, 13, color: AppColors.textCount),
+                  style:
+                      trailingStyle ??
+                      AppText.suit(600, 13, color: AppColors.textCount),
                 ),
             ],
           ),

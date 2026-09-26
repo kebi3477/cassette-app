@@ -163,6 +163,10 @@ class AuthorizedApiClient implements ApiClient {
       _protected(() => _inner.patchFriend(userId, starred: starred));
 
   @override
+  Future<FriendDto> setFriendNickname(String userId, String? nickname) =>
+      _protected(() => _inner.setFriendNickname(userId, nickname));
+
+  @override
   Future<FriendTapesDto> getFriendTapes(String userId) =>
       _protected(() => _inner.getFriendTapes(userId));
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../data/model/api_error.dart';
+import '../../../data/repositories/friend_repository.dart';
 import '../../../data/repositories/shelf_repository.dart';
 import '../../../data/services/app_prefs.dart';
 import '../../../domain/models/shelf.dart';
@@ -40,8 +41,11 @@ class ShelfViewModel extends ChangeNotifier {
     required ShelfRepository shelfRepository,
     required this._toast,
     this._prefs,
+    this._friends,
   }) : _repo = shelfRepository {
     _repo.addListener(_onRepoChanged);
+    // 별명이 바뀌면 서랍의 보낸 사람 이름도 바뀐다
+    _friends?.addListener(_onRepoChanged);
     _restoreView();
     _restoreCoach();
   }
@@ -59,6 +63,8 @@ class ShelfViewModel extends ChangeNotifier {
 
   /// 사용자가 고른 보기를 기억한다
   final AppPrefs? _prefs;
+
+  final FriendRepository? _friends;
 
   Shelf _shelf = Shelf.empty;
   bool _loaded = false;
@@ -404,6 +410,7 @@ class ShelfViewModel extends ChangeNotifier {
     _skelTimer?.cancel();
     _landTimer?.cancel();
     _repo.removeListener(_onRepoChanged);
+    _friends?.removeListener(_onRepoChanged);
     super.dispose();
   }
 }

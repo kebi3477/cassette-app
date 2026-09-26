@@ -1,3 +1,4 @@
+import 'package:characters/characters.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../model/api_error.dart';
@@ -394,6 +395,36 @@ class LocalApiClient implements ApiClient {
     return f;
   }
 
+  /// 별명 (최대 10자, 앞뒤 공백 제거, 비우면 지움)
+  @override
+  Future<FriendDto> setFriendNickname(String userId, String? nickname) async {
+    await _wait();
+    final v = nickname?.trim();
+    if (v != null && v.characters.length > 10) {
+      _fail(400, ApiErrorCode.invalidNickname, '별명은 10자까지 적을 수 있어요');
+    }
+    final f = _friend(userId)
+        .copyWith(nickname: () => v == null || v.isEmpty ? null : v);
+    _s.friends = [for (final x in _s.friends) x.userId == userId ? f : x];
+    return f;
+  }
+
+  /// 보낸 사람에 내가 붙인 별명을 얹는다 (서버는 응답마다 채운다)
+  ShelfItemDto _nick(ShelfItemDto x) {
+    final id = x.sender.userId;
+    final f = id == null
+        ? null
+        : _s.friends.where((f) => f.userId == id).firstOrNull;
+    if (f == null || f.nickname == x.sender.nickname) return x;
+    return x.copyWith(
+      sender: UserRefDto(
+        userId: x.sender.userId,
+        name: x.sender.name,
+        nickname: f.nickname,
+      ),
+    );
+  }
+
   @override
   Future<FriendTapesDto> getFriendTapes(String userId) async {
     await _wait();
@@ -773,10 +804,14 @@ class LocalApiClient implements ApiClient {
       cap: me.drawer.cap,
       full: me.drawer.full,
       unopenedCount: me.drawer.unopenedCount,
-      unsorted: List.of(_s.unsorted),
+      unsorted: [for (final x in _s.unsorted) _nick(x)],
       groups: [
         for (final g in _s.groups)
-          ShelfGroupDto(id: g.id, name: g.name, items: List.of(g.items)),
+          ShelfGroupDto(
+            id: g.id,
+            name: g.name,
+            items: [for (final x in g.items) _nick(x)],
+          ),
       ],
     );
   }

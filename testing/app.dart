@@ -80,6 +80,7 @@ Widget testApp(RecordHarness h, {String initialLocation = Routes.record}) {
           shelfRepository: h.shelf,
           toast: h.toast,
           prefs: h.prefs,
+          friends: h.friends,
         )..load(),
       ),
       ChangeNotifierProvider<RecordViewModel>.value(value: h.vm..load()),

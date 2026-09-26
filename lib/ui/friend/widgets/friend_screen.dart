@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../domain/models/friend.dart';
+
 import '../../../domain/models/friend_tapes.dart';
 import '../../core/themes/colors.dart';
 import '../../core/themes/dimens.dart';
@@ -15,12 +17,16 @@ class FriendScreen extends StatelessWidget {
     super.key,
     required this.viewModel,
     required this.onBack,
+    required this.onAlias,
     required this.onPlay,
     required this.onRecord,
   });
 
   final FriendViewModel viewModel;
   final VoidCallback onBack;
+
+  /// 별명 설정 시트
+  final ValueChanged<Friend> onAlias;
 
   /// 행을 누르거나 "모두 재생" (첫 테이프부터)
   final void Function(FriendTape tape) onPlay;
@@ -45,19 +51,53 @@ class FriendScreen extends StatelessWidget {
                 BackBar(onBack: onBack),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 4, 24, 18),
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(vm.name, style: AppText.bigTitle),
-                      const SizedBox(height: 4),
-                      Text(
-                        vm.subtitle,
-                        style: AppText.suit(
-                          500,
-                          13.5,
-                          color: AppColors.textMuted,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(vm.name, style: AppText.bigTitle),
+                            const SizedBox(height: 4),
+                            Text(
+                              vm.subtitle,
+                              style: AppText.suit(
+                                500,
+                                13.5,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      // 별명 설정 (`fvAlias`) — 40 높이 알약
+                      if (vm.friend case final f?)
+                        Semantics(
+                          button: true,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => onAlias(f),
+                            child: Container(
+                              height: 40,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Center(
+                                widthFactor: 1,
+                                child: Text(
+                                  '별명 설정',
+                                  style: AppText.suit(700, 13.5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),

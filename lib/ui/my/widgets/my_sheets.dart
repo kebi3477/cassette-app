@@ -48,12 +48,13 @@ Widget _pillButton(String label, VoidCallback onTap) => GestureDetector(
   ),
 );
 
-/// 친구 ⋯ (`shFriend`): 녹음해서 보내기 / 크레딧 선물하기 / 친구 삭제 / 신고하기 / 차단
+/// 친구 ⋯ (`shFriend`): 녹음해서 보내기 / 크레딧 선물하기 / 별명 설정 / 친구 삭제 / 신고하기 / 차단
 Future<void> showFriendSheet(
   BuildContext context, {
   required Friend friend,
   required VoidCallback onRecord,
   required VoidCallback onGift,
+  required VoidCallback onAlias,
   required VoidCallback onRemove,
   required VoidCallback onBlock,
 }) {
@@ -75,6 +76,12 @@ Future<void> showFriendSheet(
           ),
           SheetRow(label: '녹음해서 보내기', onTap: () => then(onRecord)),
           SheetRow(label: '크레딧 선물하기', onTap: () => then(onGift)),
+          SheetRow(
+            label: '별명 설정',
+            trailing: friend.nickname ?? '없음',
+            trailingStyle: AppText.suit(500, 13.5, color: AppColors.textMuted),
+            onTap: () => then(onAlias),
+          ),
           SheetRow(label: '친구 삭제', onTap: () => then(onRemove)),
           SheetRow(
             label: '신고하기',

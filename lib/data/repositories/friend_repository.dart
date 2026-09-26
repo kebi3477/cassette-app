@@ -11,6 +11,9 @@ abstract class FriendRepository extends ChangeNotifier {
 
   Future<Result<Friend>> setStarred(String friendId, bool starred);
 
+  /// 별명 (`PATCH /friends/{userId} { nickname }`) — null·빈 값이면 원래 이름으로
+  Future<Result<Friend>> setNickname(String friendId, String? nickname);
+
   /// 친구 화면 — 그 친구가 보낸 테이프 (`GET /friends/{userId}/tapes`)
   Future<Result<FriendTapes>> getFriendTapes(String friendId);
 

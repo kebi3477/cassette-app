@@ -67,6 +67,7 @@ abstract final class ApiErrorCode {
   static const invalidRefreshToken = 'INVALID_REFRESH_TOKEN';
   static const socialTokenInvalid = 'SOCIAL_TOKEN_INVALID';
   static const invalidName = 'INVALID_NAME';
+  static const invalidNickname = 'INVALID_NICKNAME';
   static const linkNotFound = 'LINK_NOT_FOUND';
   static const linkExpired = 'LINK_EXPIRED';
   static const linkOwn = 'LINK_OWN';

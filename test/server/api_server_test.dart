@@ -416,6 +416,47 @@ void main() {
     expect(top.delta, 100);
   });
 
+  test('별명: PATCH /friends/{id} → 목록·서랍 sender·보낸 테이프 recipient에 nickname, 비우면 null', () async {
+    final a = await login('alias', name: '민경');
+    await a.api.devSeed();
+    final mom = (await a.api.getFriends()).items.firstWhere(
+      (f) => f.name == '엄마',
+    );
+    final set = await a.api.setFriendNickname(mom.userId, '우리 엄마');
+    expect(set.nickname, '우리 엄마');
+    expect(set.name, '엄마');
+    expect(
+      (await a.api.getFriends()).items
+          .firstWhere((f) => f.userId == mom.userId)
+          .nickname,
+      '우리 엄마',
+    );
+    final shelf = await a.api.getShelf();
+    final fromMom = [
+      ...shelf.unsorted,
+      for (final g in shelf.groups) ...g.items,
+    ].where((x) => x.sender.userId == mom.userId);
+    expect(fromMom, isNotEmpty);
+    expect(fromMom.every((x) => x.sender.nickname == '우리 엄마'), isTrue);
+    expect(fromMom.every((x) => x.sender.name == '엄마'), isTrue);
+    final sent = (await a.api.getSent()).items.where(
+      (x) => x.recipient?.userId == mom.userId,
+    );
+    expect(sent.every((x) => x.recipient!.nickname == '우리 엄마'), isTrue);
+
+    await expectLater(
+      a.api.setFriendNickname(mom.userId, '열한글자가넘는별명이다'),
+      apiError(400, ApiErrorCode.invalidNickname),
+    );
+    final cleared = await a.api.setFriendNickname(mom.userId, null);
+    expect(cleared.nickname, isNull);
+    expect(
+      (await a.api.setFriendNickname(mom.userId, '')).nickname,
+      isNull,
+      reason: '빈 문자열도 지우기',
+    );
+  });
+
   test('차단 · 해제', () async {
     final a = await login('block', name: '민경');
     await a.api.devSeed();

@@ -37,10 +37,14 @@ class FriendDto {
     'lastAt': lastAt == null ? null : dateToJson(lastAt!),
   };
 
-  FriendDto copyWith({bool? starred, DateTime? lastAt}) => FriendDto(
+  FriendDto copyWith({
+    bool? starred,
+    DateTime? lastAt,
+    String? Function()? nickname,
+  }) => FriendDto(
     userId: userId,
     name: name,
-    nickname: nickname,
+    nickname: nickname == null ? this.nickname : nickname(),
     starred: starred ?? this.starred,
     lastAt: lastAt ?? this.lastAt,
   );

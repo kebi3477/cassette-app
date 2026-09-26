@@ -286,6 +286,7 @@ List<SingleChildWidget> get appViewModels => [
       shelfRepository: c.read(),
       toast: c.read(),
       prefs: c.read(),
+      friends: c.read(),
     )..load(),
   ),
   ChangeNotifierProvider(

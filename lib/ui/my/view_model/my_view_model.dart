@@ -193,7 +193,21 @@ class MyViewModel extends ChangeNotifier {
 
   /// 친구가 바뀌면(차단·신고하고 차단 포함) 친구와 차단 목록을 함께 다시 불러온다.
   Future<void> _onFriendsChanged() async {
-    await Future.wait([_loadFriends(), _loadBlocked()]);
+    // 별명이 바뀌면 보낸 테이프 이름도 바뀐다
+    await Future.wait([_loadFriends(), _loadBlocked(), _loadSent()]);
+  }
+
+  /// 별명 저장 (`saveAlias`) — 비우면 원래 이름으로
+  Future<void> setNickname(Friend f, String value) async {
+    final r = await _friendsRepo.setNickname(f.id, value);
+    switch (r) {
+      case Ok():
+        _toast.show(value.isEmpty ? '원래 이름으로 보여요' : '별명을 저장했어요');
+      case Error(:final error):
+        _toast.show(
+          error is ApiException ? error.message : '잠시 문제가 생겼어요. 다시 시도해 주세요',
+        );
+    }
   }
 
   Future<void> _loadBlocked() async {

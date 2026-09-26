@@ -69,6 +69,35 @@ void main() {
     expect(f.starred, isTrue);
   });
 
+  test('별명: PATCH /friends/{id} — 목록·친구 화면·서랍 보낸 사람, 비우면 원래 이름', () async {
+    final repo = FriendRepositoryRemote(api);
+    final f = ok<Friend>(await repo.setNickname('u-mom', '  우리 엄마 '));
+    expect(f.name, '우리 엄마');
+    expect(f.nickname, '우리 엄마');
+    expect(f.originalName, '엄마');
+    expect(f.originalHint, '엄마');
+    final list = ok<List<Friend>>(await repo.getFriends());
+    expect(list.firstWhere((x) => x.id == 'u-mom').name, '우리 엄마');
+    final tapes = ok<FriendTapes>(await repo.getFriendTapes('u-mom'));
+    expect(tapes.friend.name, '우리 엄마');
+    final shelf = ok<Shelf>(await ShelfRepositoryRemote(api).getShelf());
+    final mine = [
+      ...shelf.unsorted,
+      for (final g in shelf.groups) ...g.items,
+    ].where((t) => t.senderName == '엄마').toList();
+    expect(mine, isNotEmpty);
+    expect(mine.every((t) => t.from == '우리 엄마'), isTrue);
+
+    final cleared = ok<Friend>(await repo.setNickname('u-mom', '   '));
+    expect(cleared.nickname, isNull);
+    expect(cleared.name, '엄마');
+    expect(cleared.originalHint, isNull);
+    expect(
+      apiError(await repo.setNickname('u-mom', '열한글자가넘는별명이다')).code,
+      'INVALID_NICKNAME',
+    );
+  });
+
   test('친구 화면: 뜯은 테이프만 + 칸 이름, 안 뜯은 수', () async {
     final repo = FriendRepositoryRemote(api);
     final mom = ok<FriendTapes>(await repo.getFriendTapes('u-mom'));

@@ -278,7 +278,8 @@ class RecordViewModel extends ChangeNotifier {
   /// 다른 화면에서 "녹음해서 보내기"로 들어올 때 (`recTo`).
   void recordTo(Friend friend) {
     if (_phase != RecordPhase.idle) return;
-    _to = Recipient.friend(friendId: friend.id, name: friend.name);
+    // 테이프 라벨처럼 상대가 보는 곳은 원래 이름
+    _to = Recipient.friend(friendId: friend.id, name: friend.originalName);
     _sec = 0;
     notifyListeners();
   }
@@ -595,7 +596,7 @@ class RecordViewModel extends ChangeNotifier {
   }
 
   void pickFriend(Friend f) =>
-      toLabel(Recipient.friend(friendId: f.id, name: f.name));
+      toLabel(Recipient.friend(friendId: f.id, name: f.originalName));
 
   void pickNew() => toLabel(const Recipient.newFriend());
 
@@ -638,7 +639,7 @@ class RecordViewModel extends ChangeNotifier {
   void backPick() {
     _typeTimer?.cancel();
     final t = _to;
-    final known = _friends.any((f) => f.name == t?.name);
+    final known = _friends.any((f) => f.id == t?.friendId);
     _phase = (t?.isNew ?? false) || known
         ? RecordPhase.pick
         : RecordPhase.confirm;

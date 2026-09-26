@@ -53,14 +53,21 @@ extension MeDtoMapper on MeDto {
 }
 
 extension FriendDtoMapper on FriendDto {
-  Friend toDomain() =>
-      Friend(id: userId, name: displayName, starred: starred, lastAt: lastAt);
+  Friend toDomain() => Friend(
+    id: userId,
+    name: displayName,
+    originalName: name,
+    nickname: nickname,
+    starred: starred,
+    lastAt: lastAt,
+  );
 }
 
 extension ShelfItemDtoMapper on ShelfItemDto {
   TapeItem toDomain() => TapeItem(
     id: id,
     from: sender.displayName,
+    senderName: sender.name,
     senderId: sender.userId,
     date: sentAt,
     type: TapeType.fromMinutes(tapeType),
