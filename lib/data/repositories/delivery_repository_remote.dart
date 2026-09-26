@@ -22,7 +22,8 @@ class DeliveryRepositoryRemote implements DeliveryRepository {
       CreateDeliveryRequest(
         recordingId: recordingId,
         recipientId: to.isNew ? null : to.friendId,
-        linkName: to.isNew ? to.name : null,
+        // 친구에게는 linkName을 보내지 않는다(같이 보내면 400). 새 친구는 적었을 때만
+        linkName: to.isNew ? to.linkName : null,
       ),
       idempotencyKey: idempotencyKey,
     )).toDomain(),

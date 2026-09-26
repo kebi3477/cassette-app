@@ -198,7 +198,8 @@ class RecordViewModel extends ChangeNotifier {
   String get typedName {
     final t = _to;
     if (t == null) return '';
-    if (t.isNew) return _newName;
+    // 비우면 "새 친구" (`s.newName || '새 친구'`)
+    if (t.isNew) return _newName.isEmpty ? Recipient.unnamed : _newName;
     return t.name.characters.take(_typed).toString();
   }
 
@@ -208,8 +209,8 @@ class RecordViewModel extends ChangeNotifier {
     return t != null && !t.isNew ? '${t.name}에게 보내기' : '누구에게 보낼까요?';
   }
 
-  /// 새 친구 이름이 비었으면 보내기 버튼이 흐려진다 (`sendBg`)
-  bool get canSend => !(_to?.isNew == true && _newName.trim().isEmpty);
+  /// 보내기 버튼 (`sendBg` 항상 `#111`) — 새 친구 이름은 선택 입력 (v3)
+  bool get canSend => true;
 
   bool get sentToNew => _to?.isNew == true;
 
@@ -649,14 +650,13 @@ class RecordViewModel extends ChangeNotifier {
   void sendNow() {
     final t = _to;
     if (t == null) return;
-    final name = t.isNew ? _newName.trim() : t.name;
-    if (name.isEmpty) {
-      _toast.show('받는 사람 이름을 적어주세요');
-      return;
-    }
+    final typed = _newName.trim();
     _typeTimer?.cancel();
-    _to = t.withName(name);
-    final keyFor = '${_recording?.id}|${t.friendId ?? ''}|$name';
+    // 새 친구 이름을 비우면 linkName을 보내지 않는다 → 서버·화면 모두 "새 친구"
+    _to = t.isNew
+        ? Recipient.newFriend(linkName: typed.isEmpty ? null : typed)
+        : t;
+    final keyFor = '${_recording?.id}|${t.friendId ?? ''}|${_to!.linkName}';
     if (_idemFor != keyFor) {
       _idemKey = newIdempotencyKey();
       _idemFor = keyFor;

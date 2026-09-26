@@ -4,5 +4,7 @@ abstract final class AppLinks {
   static final privacy = Uri.parse('https://tapeletter.lab241.com/privacy');
 
   /// 문의 이메일이 정해지면 mailto:로 바꾼다. 그때까지는 처리방침의 보호책임자·연락처 절로 보낸다.
-  static final contact = Uri.parse('https://tapeletter.lab241.com/privacy#officer');
+  static final contact = Uri.parse(
+    'https://tapeletter.lab241.com/privacy#officer',
+  );
 }

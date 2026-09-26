@@ -24,6 +24,9 @@ class FakeDeliveryRepository implements DeliveryRepository {
   final List<String> keys = [];
   final List<SentTape> sent = [];
 
+  /// 보낸 받는 사람 (새 친구면 linkName이 비었는지 본다)
+  final List<Recipient> recipients = [];
+
   @override
   Future<Result<SentTape>> send({
     required String recordingId,
@@ -31,6 +34,7 @@ class FakeDeliveryRepository implements DeliveryRepository {
     required String idempotencyKey,
   }) async {
     keys.add(idempotencyKey);
+    recipients.add(to);
     await Future<void>.delayed(delay);
     if (fail) return Result.error(Exception('offline'));
     final s = store;
@@ -44,7 +48,9 @@ class FakeDeliveryRepository implements DeliveryRepository {
       date: DateTime(2026, 9, 25),
       type: type,
       link: to.isNew,
-      shareUrl: to.isNew ? Uri.parse('https://tapeletter.lab241.com/t/test') : null,
+      shareUrl: to.isNew
+          ? Uri.parse('https://tapeletter.lab241.com/t/test')
+          : null,
     );
     sent.add(t);
     return Result.ok(t);

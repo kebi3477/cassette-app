@@ -2,6 +2,7 @@ import '../../domain/models/blocked_user.dart';
 import '../../domain/models/friend.dart';
 import '../../domain/models/friend_tapes.dart';
 import '../../domain/models/me.dart';
+import '../../domain/models/recipient.dart';
 import '../../domain/models/recording.dart';
 import '../../domain/models/sent_tape.dart';
 import '../../domain/models/shelf.dart';
@@ -134,10 +135,11 @@ extension SentTapeDtoMapper on SentTapeDto {
     return SentTape(
       id: id,
       status: s,
-      to: recipient?.displayName ?? linkName ?? '',
+      // recipient.nickname → recipient.name → linkName → "새 친구"
+      to: recipient?.displayName ?? linkName ?? Recipient.unnamed,
       date: sentAt,
       type: TapeType.fromMinutes(tapeType),
-      link: linkName != null,
+      link: share != null || linkName != null || status.startsWith('link_'),
       claimed: claimedAt != null || recipient != null,
       openedAt: openedAt,
       shareUrl: share == null ? null : Uri.parse(share!.url),

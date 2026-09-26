@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:tapeletter_app/data/model/api_error.dart';
 import 'package:tapeletter_app/data/model/auth_dto.dart';
 import 'package:tapeletter_app/data/model/delivery_dto.dart';
+import 'package:tapeletter_app/data/model/mappers.dart';
 import 'package:tapeletter_app/data/model/me_dto.dart';
 import 'package:tapeletter_app/data/model/recording_dto.dart';
 import 'package:tapeletter_app/data/model/report_dto.dart';
@@ -244,6 +245,44 @@ void main() {
     final friends = await a.api.getFriends();
     expect(friends.items.map((f) => f.userId), contains(c.id));
     expect((await a.api.getSentTape(sent.id)).status, isNot('link_pending'));
+  });
+
+  test('새 친구 이름은 선택: linkName 없이 링크로, 받으면 recipient가 채워진다', () async {
+    final a = await login('noname-a', name: '민경');
+    final b = await login('noname-b', name: '지현');
+    await a.api.devFriend(userId: b.id);
+
+    // 친구에게 linkName을 같이 보내면 400 (앱은 만들 수 없는 본문이라 직접 보낸다)
+    final rec0 = await recordSample(a.api);
+    final raw = await Dio().post<Object?>(
+      '$baseUrl/deliveries',
+      data: {'recordingId': rec0.id, 'recipientId': b.id, 'linkName': '지현'},
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer ${a.auth.tokens.accessToken}',
+          'Idempotency-Key': newIdempotencyKey(),
+        },
+        validateStatus: (_) => true,
+      ),
+    );
+    expect(raw.statusCode, 400);
+    expect((raw.data as Map)['code'], ApiErrorCode.validationFailed);
+
+    final rec = await recordSample(a.api);
+    final sent = await a.api.createDelivery(
+      CreateDeliveryRequest(recordingId: rec.id),
+      idempotencyKey: newIdempotencyKey(),
+    );
+    expect(sent.linkName, isNull);
+    expect(sent.recipient, isNull);
+    expect(sent.toDomain().to, '새 친구');
+    final token = Uri.parse(sent.share!.url).pathSegments.last;
+
+    final c = await login('noname-c', name: '하늘');
+    await c.api.claimShare(token, idempotencyKey: newIdempotencyKey());
+    final after = await a.api.getSentTape(sent.id);
+    expect(after.recipient?.userId, c.id);
+    expect(after.toDomain().to, '하늘');
   });
 
   test('서랍: 칸 만들기 · 옮기기 · 정렬 · 칸 지우기', () async {

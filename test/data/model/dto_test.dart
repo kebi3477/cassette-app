@@ -356,4 +356,63 @@ void main() {
       expect(sent.toDomain().to, '우리 엄마');
     });
   });
+
+  group('새 친구 이름 (linkName 선택)', () {
+    test('POST /deliveries: 비우면 linkName을 보내지 않는다, 친구에게는 linkName 없음', () {
+      expect(const CreateDeliveryRequest(recordingId: 'r1').toJson(), {
+        'recordingId': 'r1',
+      });
+      expect(
+        const CreateDeliveryRequest(recordingId: 'r1', linkName: '유진').toJson(),
+        {'recordingId': 'r1', 'linkName': '유진'},
+      );
+      expect(
+        const CreateDeliveryRequest(
+          recordingId: 'r1',
+          recipientId: 'u1',
+        ).toJson(),
+        {'recordingId': 'r1', 'recipientId': 'u1'},
+      );
+    });
+
+    test('SentTape 이름: nickname → name → linkName → "새 친구"', () {
+      SentTapeDto sent({Map<String, Object?>? recipient, String? linkName}) =>
+          SentTapeDto.fromJson({
+            'id': 's1',
+            'recipient': recipient,
+            'linkName': linkName,
+            'tapeType': 1,
+            'durationMs': 20000,
+            'tag': null,
+            'sentAt': '2026-09-24T09:00:00.000Z',
+            'status': recipient == null ? 'link_pending' : 'opened',
+            'claimedAt': null,
+            'openedAt': null,
+            'share': recipient == null
+                ? {
+                    'url': 'https://tapeletter.lab241.com/t/x',
+                    'expiresAt': '2026-10-01T09:00:00.000Z',
+                  }
+                : null,
+          });
+      expect(
+        sent(
+          recipient: {'userId': 'u', 'name': '엄마', 'nickname': '우리 엄마'},
+          linkName: '엄마님',
+        ).toDomain().to,
+        '우리 엄마',
+      );
+      expect(
+        sent(
+          recipient: {'userId': 'u', 'name': '엄마'},
+          linkName: '엄마님',
+        ).toDomain().to,
+        '엄마',
+      );
+      expect(sent(linkName: '유진').toDomain().to, '유진');
+      final unnamed = sent().toDomain();
+      expect(unnamed.to, '새 친구');
+      expect(unnamed.link, isTrue);
+    });
+  });
 }

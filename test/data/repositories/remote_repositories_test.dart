@@ -242,7 +242,7 @@ void main() {
       final link = ok<SentTape>(
         await repo.send(
           recordingId: one.id,
-          to: const Recipient.newFriend(name: '유진'),
+          to: const Recipient.newFriend(linkName: '유진'),
           idempotencyKey: 'k3',
         ),
       );

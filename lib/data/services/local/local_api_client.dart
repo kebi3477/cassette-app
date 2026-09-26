@@ -592,6 +592,9 @@ class LocalApiClient implements ApiClient {
       throw const ApiException.network();
     }
     await _wait(_b.sendDelay);
+    if (body.recipientId != null && body.linkName != null) {
+      _fail(400, ApiErrorCode.validationFailed, '요청이 올바르지 않아요');
+    }
     final r = _rec(body.recordingId);
     final dto = _recDto(r);
     if (r.sent) {
@@ -684,7 +687,7 @@ class LocalApiClient implements ApiClient {
     final i = _s.sent.indexWhere((x) => x.id == id);
     if (i < 0) _fail(404, ApiErrorCode.tapeNotFound, '테이프를 찾을 수 없어요');
     final t = _s.sent[i];
-    if (t.linkName == null || t.recipient != null) {
+    if (t.share == null || t.recipient != null) {
       _fail(409, ApiErrorCode.linkTaken, '이미 다른 분이 받은 테이프예요');
     }
     final now = _s.now();

@@ -182,14 +182,16 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.text('받는 사람 이름'), findsOneWidget);
-
-    await tester.tap(find.text('보내기'));
-    await tester.pump();
-    expect(find.text('받는 사람 이름을 적어주세요'), findsOneWidget);
+    expect(find.text('받는 사람 이름 (선택)'), findsOneWidget);
+    expect(find.text('예) 지현, 동생'), findsOneWidget);
+    expect(find.text('누구에게 보냈는지 알아보는 이름이에요. 비우면 ‘새 친구’로 적혀요'), findsOneWidget);
+    expect(find.text('0/8'), findsOneWidget);
+    expect(find.text('새 친구'), findsOneWidget, reason: '라벨 카드');
+    expect(tester.takeException(), isNull);
 
     await tester.enterText(find.byType(TextField), '유진');
     await tester.pump();
+    expect(find.text('2/8'), findsOneWidget);
     await tester.tap(find.text('보내기'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 3));

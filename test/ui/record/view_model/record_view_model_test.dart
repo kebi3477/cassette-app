@@ -303,7 +303,7 @@ void main() {
       });
     });
 
-    test('새 친구: 비어 있으면 토스트, 이름은 8자까지', () {
+    test('새 친구: 이름은 선택(비우면 "새 친구", linkName 없음), 8자까지', () {
       fakeAsync((async) {
         final h = RecordHarness();
         h.vm.load();
@@ -313,15 +313,24 @@ void main() {
         h.vm.goSend();
         h.vm.pickNew();
         expect(h.vm.to!.isNew, isTrue);
-        expect(h.vm.canSend, isFalse);
-        h.vm.sendNow();
-        expect(h.toast.message, '받는 사람 이름을 적어주세요');
-        expect(h.vm.phase, RecordPhase.label);
+        expect(h.vm.canSend, isTrue);
+        expect(h.vm.typedName, '새 친구');
 
         h.vm.setNewName('가나다라마바사아자차');
         expect(h.vm.newName, '가나다라마바사아');
         expect(h.vm.typedName, '가나다라마바사아');
-        expect(h.vm.canSend, isTrue);
+        h.vm.setNewName('  ');
+        h.vm.setNewName('');
+        expect(h.vm.typedName, '새 친구');
+
+        h.vm.sendNow();
+        expect(h.vm.phase, RecordPhase.sending);
+        async.elapse(const Duration(seconds: 3));
+        final to = h.deliveries.recipients.single;
+        expect(to.isNew, isTrue);
+        expect(to.linkName, isNull, reason: '비우면 linkName을 보내지 않는다');
+        expect(to.name, '새 친구');
+        async.elapse(const Duration(seconds: 3));
       });
     });
   });

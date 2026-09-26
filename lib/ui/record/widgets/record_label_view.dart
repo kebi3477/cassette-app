@@ -60,43 +60,7 @@ class _RecordLabelViewState extends State<RecordLabelView> {
                     ),
                     if (isNew) ...[
                       const SizedBox(height: 34),
-                      SizedBox(
-                        width: 280,
-                        height: 52,
-                        child: TextField(
-                          controller: _name,
-                          onChanged: vm.setNewName,
-                          textAlign: TextAlign.center,
-                          style: AppText.suit(700, 20),
-                          cursorColor: AppColors.ink,
-                          inputFormatters: [_MaxCharacters(User.maxNameLength)],
-                          textInputAction: TextInputAction.done,
-                          decoration: InputDecoration(
-                            hintText: '받는 사람 이름',
-                            hintStyle: AppText.suit(
-                              700,
-                              20,
-                              color: AppColors.textFaint,
-                            ),
-                            isCollapsed: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 13,
-                            ),
-                            enabledBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.ink,
-                                width: 2,
-                              ),
-                            ),
-                            focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: AppColors.ink,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      _NewNameField(vm: vm, controller: _name),
                     ],
                   ],
                 ),
@@ -134,6 +98,84 @@ class _MaxCharacters extends TextInputFormatter {
     return TextEditingValue(
       text: text,
       selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
+/// 새 친구 이름 (`isNewTo`, v3) — 선택 입력, 최대 8자. 비우면 "새 친구"로 적힌다.
+class _NewNameField extends StatelessWidget {
+  const _NewNameField({required this.vm, required this.controller});
+
+  final RecordViewModel vm;
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final n = vm.newName.characters.length;
+    final underline = const UnderlineInputBorder(
+      borderSide: BorderSide(color: AppColors.ink, width: 2),
+    );
+    return SizedBox(
+      width: 280,
+      child: Column(
+        children: [
+          Text(
+            '받는 사람 이름 (선택)',
+            style: AppText.suit(600, 13, color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 52,
+            child: TextField(
+              controller: controller,
+              onChanged: vm.setNewName,
+              textAlign: TextAlign.center,
+              style: AppText.suit(700, 20),
+              cursorColor: AppColors.ink,
+              inputFormatters: [_MaxCharacters(User.maxNameLength)],
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                hintText: '예) 지현, 동생',
+                hintStyle: AppText.suit(700, 20, color: AppColors.textFaint),
+                isCollapsed: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 13),
+                enabledBorder: underline,
+                focusedBorder: underline,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  '누구에게 보냈는지 알아보는 이름이에요. 비우면 ‘새 친구’로 적혀요',
+                  style: AppText.suit(
+                    500,
+                    12.5,
+                    height: 1.5,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '$n/${User.maxNameLength}',
+                style: AppText.suit(
+                  600,
+                  12.5,
+                  height: 1.5,
+                  tabularNums: true,
+                  color: n >= User.maxNameLength
+                      ? AppColors.red
+                      : AppColors.textFaint,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

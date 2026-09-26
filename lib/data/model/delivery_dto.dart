@@ -8,10 +8,12 @@ class CreateDeliveryRequest {
     this.recipientId,
     this.linkName,
     this.tag,
-  }) : assert((recipientId == null) != (linkName == null));
+  }) : assert(recipientId == null || linkName == null);
 
   final String recordingId;
   final String? recipientId;
+
+  /// 새 친구에게 적은 이름 (선택). recipientId가 없으면 링크로 보낸다.
   final String? linkName;
 
   /// `birthday` · `congrats` · `thinking`. 선택 필드 — 디자인에 태그를 고르거나
