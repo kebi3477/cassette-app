@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/ui/notice_copy.dart';
+
 import '../../../domain/models/shop.dart';
 import '../../core/themes/colors.dart';
 import '../../core/themes/dimens.dart';
@@ -147,6 +149,12 @@ class _Buy extends StatelessWidget {
       ),
       const SizedBox(height: 24),
       AppButton(label: '구매', onTap: vm.confirmBuy),
+      const SizedBox(height: 12),
+      Text(
+        NoticeCopy.noRefundPurchase,
+        textAlign: TextAlign.center,
+        style: AppText.notice,
+      ),
     ],
   );
 }
@@ -204,6 +212,8 @@ class _Charge extends StatelessWidget {
             () => vm.charge(p),
             AppColors.textSecondary,
           ),
+        const SizedBox(height: 12),
+        Text(NoticeCopy.refundWithin7Days, style: AppText.notice),
       ],
     );
   }

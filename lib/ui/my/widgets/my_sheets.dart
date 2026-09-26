@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/ui/notice_copy.dart';
+
 import '../../../domain/models/friend.dart';
 import '../../../domain/models/report.dart';
 import '../../../domain/models/sent_tape.dart';
@@ -362,6 +364,8 @@ class _WithdrawFormState extends State<_WithdrawForm> {
             ],
           ),
         ),
+        const SizedBox(height: 10),
+        Text(NoticeCopy.refundBeforeWithdraw, style: AppText.notice),
         const SizedBox(height: 6),
         Semantics(
           checked: _ok,

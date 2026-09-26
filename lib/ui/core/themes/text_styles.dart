@@ -50,6 +50,9 @@ abstract final class AppText {
   static final result = suit(800, 24, height: 1.3, letterSpacingEm: -.02);
 
   /// 800 20px SUIT
+  /// 결제·환불 안내 보조 글자 (`500 12px/1.6`, `#9A9A97`) — 전자상거래법 안내
+  static final notice = suit(500, 12, height: 1.6, color: AppColors.textMuted);
+
   static final sheetTitle = suit(800, 20);
 
   /// 800 17px SUIT, -0.01em

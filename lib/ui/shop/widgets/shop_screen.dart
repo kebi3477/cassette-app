@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/ui/notice_copy.dart';
+
 import '../../../domain/models/shop.dart';
 import '../../../domain/models/tape_type.dart';
 import '../../core/themes/colors.dart';
@@ -284,6 +286,10 @@ class _Body extends StatelessWidget {
               ],
               const SizedBox(width: 12),
             ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Text(NoticeCopy.refundWithin7Days, style: AppText.notice),
           ),
           const _SectionTitle('서랍', top: 24),
           for (final d in c.drawer)
