@@ -10,6 +10,7 @@ import 'package:cassette_app/data/model/auth_dto.dart';
 import 'package:cassette_app/data/model/delivery_dto.dart';
 import 'package:cassette_app/data/model/me_dto.dart';
 import 'package:cassette_app/data/model/recording_dto.dart';
+import 'package:cassette_app/data/model/report_dto.dart';
 import 'package:cassette_app/data/model/shelf_dto.dart';
 import 'package:cassette_app/data/model/shop_dto.dart';
 import 'package:cassette_app/data/services/api/api_status.dart';
@@ -404,6 +405,68 @@ void main() {
     await expectLater(
       a.api.blockUser(a.id),
       apiError(400, ApiErrorCode.cannotBlockSelf),
+    );
+  });
+
+  test('신고: 테이프(같이 차단)·사람, 24시간 중복은 기존 신고, 없는 대상 404', () async {
+    final a = await login('report', name: '민경');
+    await a.api.devSeed();
+    final shelf = await a.api.getShelf();
+    final tape = shelf.groups.first.items.first;
+    final senderId = tape.sender.userId!;
+    expect(tape.sender.nickname, isNull, reason: '별명 필드를 받는다');
+
+    final key = newIdempotencyKey();
+    final r1 = await a.api.createReport(
+      CreateReportRequest.tape(
+        deliveryId: tape.id,
+        reason: 'spam',
+        memo: '  광고예요  ',
+        alsoBlock: true,
+      ),
+      idempotencyKey: key,
+    );
+    expect(r1.id, isNotEmpty);
+    expect(
+      (await a.api.getBlocks()).items.map((b) => b.userId),
+      contains(senderId),
+      reason: '테이프 신고의 alsoBlock은 보낸 사람을 차단',
+    );
+    expect(
+      (await a.api.getFriends()).items.map((f) => f.userId),
+      isNot(contains(senderId)),
+    );
+
+    // 24시간 안 같은 대상 → 새 키여도 기존 신고
+    final r2 = await a.api.createReport(
+      CreateReportRequest.tape(deliveryId: tape.id, reason: 'other'),
+      idempotencyKey: newIdempotencyKey(),
+    );
+    expect(r2.id, r1.id);
+
+    // 사람 신고 (차단한 사람도 가능)
+    final person = await a.api.createReport(
+      CreateReportRequest.user(userId: senderId, reason: 'harassment'),
+      idempotencyKey: newIdempotencyKey(),
+    );
+    expect(person.id, isNot(r1.id));
+
+    await expectLater(
+      a.api.createReport(
+        const CreateReportRequest.tape(
+          deliveryId: '00000000-0000-4000-8000-000000000000',
+          reason: 'spam',
+        ),
+        idempotencyKey: newIdempotencyKey(),
+      ),
+      apiError(404, ApiErrorCode.reportTargetNotFound),
+    );
+    await expectLater(
+      a.api.createReport(
+        CreateReportRequest.user(userId: a.id, reason: 'spam'),
+        idempotencyKey: newIdempotencyKey(),
+      ),
+      apiError(400, ApiErrorCode.cannotReportSelf),
     );
   });
 
