@@ -15,6 +15,8 @@ enum FailMode {
   linkExpired,
   linkOwn,
   rejoinRestricted,
+  reportLimit,
+  reportGone,
   offline;
 
   static FailMode parse(String value) =>

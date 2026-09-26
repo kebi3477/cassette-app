@@ -25,10 +25,14 @@ class PlayerScreen extends StatelessWidget {
     super.key,
     required this.viewModel,
     required this.onClose,
+    this.onMore,
   });
 
   final PlayerViewModel viewModel;
   final VoidCallback onClose;
+
+  /// 재생 중 왼쪽 위 ⋯ (`vMore`) — 답장·신고
+  final VoidCallback? onMore;
 
   @override
   Widget build(BuildContext context) {
@@ -46,26 +50,30 @@ class PlayerScreen extends StatelessWidget {
                   height: AppSizes.backBar,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Semantics(
-                        button: true,
-                        label: '닫기',
-                        excludeSemantics: true,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: onClose,
-                          child: SizedBox.square(
-                            dimension: AppSizes.minTap,
-                            child: Center(
-                              child: Text(
-                                '✕',
-                                style: AppText.suit(400, 22, height: 1),
+                    child: Row(
+                      children: [
+                        if (vm.phase == ViewerPhase.play && onMore != null)
+                          _MoreButton(onTap: onMore!),
+                        const Spacer(),
+                        Semantics(
+                          button: true,
+                          label: '닫기',
+                          excludeSemantics: true,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: onClose,
+                            child: SizedBox.square(
+                              dimension: AppSizes.minTap,
+                              child: Center(
+                                child: Text(
+                                  '✕',
+                                  style: AppText.suit(400, 22, height: 1),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -895,6 +903,47 @@ class _QueueRow extends StatelessWidget {
                     ),
                   ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 재생 화면 왼쪽 위 ⋯ (44, 점 4px 세 개, 간격 4)
+class _MoreButton extends StatelessWidget {
+  const _MoreButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget dot() => Container(
+      width: 4,
+      height: 4,
+      decoration: const BoxDecoration(
+        color: AppColors.ink,
+        shape: BoxShape.circle,
+      ),
+    );
+    return Semantics(
+      button: true,
+      label: '더 보기',
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: SizedBox.square(
+          dimension: AppSizes.minTap,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              dot(),
+              const SizedBox(width: 4),
+              dot(),
+              const SizedBox(width: 4),
+              dot(),
+            ],
+          ),
         ),
       ),
     );

@@ -87,6 +87,8 @@ abstract final class ApiErrorCode {
   static const idempotencyInProgress = 'IDEMPOTENCY_IN_PROGRESS';
   static const idempotencyKeyReused = 'IDEMPOTENCY_KEY_REUSED';
   static const rateLimited = 'RATE_LIMITED';
+  static const reportTargetNotFound = 'REPORT_TARGET_NOT_FOUND';
+  static const cannotReportSelf = 'CANNOT_REPORT_SELF';
 
   /// 저장소 PUT 실패 (앱이 만든 코드. 서버 오류 코드가 아니다)
   static const uploadFailed = 'UPLOAD_FAILED';

@@ -4,6 +4,7 @@ import 'package:provider/single_child_widget.dart';
 
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/app_repository.dart';
+import '../data/repositories/report_repository.dart';
 import '../data/repositories/auth_repository_remote.dart';
 import '../data/repositories/device_repository.dart';
 import '../data/repositories/share_repository.dart';
@@ -87,7 +88,7 @@ List<SingleChildWidget> providersHttp({
 /// 실패 흉내: `flutter run --dart-define=FAIL_MODE=convertSlow`
 /// (`convertSlow` · `convertFail` · `sendFail` · `loadFail` · `payFail` · `adFail` ·
 /// `serverError` · `forceUpdate` · `linkTaken` · `linkExpired` · `linkOwn` ·
-/// `rejoinRestricted` · `offline`)
+/// `rejoinRestricted` · `reportLimit` · `reportGone` · `offline`)
 List<SingleChildWidget> providersLocal({
   LocalStore? store,
   LocalBehavior? behavior,
@@ -206,6 +207,9 @@ List<SingleChildWidget> get repositories => [
     create: (c) => ShareRepositoryRemote(c.read(), c.read()),
   ),
   Provider<AppRepository>(create: (c) => AppRepository(c.read())),
+  Provider<ReportRepository>(
+    create: (c) => ReportRepository(c.read(), c.read()),
+  ),
   Provider<DeviceRepository>(create: (c) => DeviceRepository(c.read())),
 ];
 

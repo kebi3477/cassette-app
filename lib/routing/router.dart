@@ -33,6 +33,7 @@ import '../ui/player/widgets/player_screen.dart';
 import '../ui/record/view_model/record_view_model.dart';
 import '../ui/record/widgets/record_screen.dart';
 import '../ui/shelf/view_model/shelf_view_model.dart';
+import '../ui/shelf/widgets/shelf_sheets.dart';
 import '../ui/shelf/widgets/shelf_screen.dart';
 import '../ui/shell/view_model/shell_view_model.dart';
 import '../ui/shell/widgets/app_shell.dart';
@@ -306,6 +307,26 @@ class _PlayerRouteState extends State<PlayerRoute> {
       onClose: () async {
         await _vm.close();
         if (context.mounted) context.pop();
+      },
+      onMore: () {
+        final item = _vm.current;
+        if (item == null) return;
+        final senderId = item.senderId;
+        showViewerItemSheet(
+          context,
+          item: item,
+          // 답장: 재생을 닫고 녹음 탭 (서랍 ⋯의 답장과 같다)
+          onReply: senderId == null
+              ? null
+              : () async {
+                  await _vm.close();
+                  if (!context.mounted) return;
+                  context.read<RecordViewModel>().recordTo(
+                    Friend(id: senderId, name: item.from, starred: false),
+                  );
+                  context.go(Routes.record);
+                },
+        );
       },
     );
   }

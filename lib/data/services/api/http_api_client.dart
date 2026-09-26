@@ -10,6 +10,7 @@ import '../../model/json.dart';
 import '../../model/me_dto.dart';
 import '../../model/page_dto.dart';
 import '../../model/recording_dto.dart';
+import '../../model/report_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/shop_dto.dart';
 import '../../model/wallet_dto.dart';
@@ -455,6 +456,20 @@ class HttpApiClient implements ApiClient {
     await _json(
       'POST',
       '/billing/iap',
+      body: body.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  // ── reports ───────────────────────────────────────
+  @override
+  Future<ReportResultDto> createReport(
+    CreateReportRequest body, {
+    required String idempotencyKey,
+  }) async => ReportResultDto.fromJson(
+    await _json(
+      'POST',
+      '/reports',
       body: body.toJson(),
       idempotencyKey: idempotencyKey,
     ),

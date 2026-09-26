@@ -1,4 +1,5 @@
 import 'package:cassette_app/data/repositories/app_repository.dart';
+import 'package:cassette_app/data/repositories/report_repository.dart';
 import 'package:cassette_app/data/repositories/auth_repository_remote.dart';
 import 'package:cassette_app/data/repositories/device_repository.dart';
 import 'package:cassette_app/data/repositories/share_repository_remote.dart';
@@ -74,6 +75,7 @@ class RecordHarness {
     shelf = ShelfRepositoryRemote(client);
     shareRepo = ShareRepositoryRemote(client, shelf);
     app = AppRepository(client);
+    reports = ReportRepository(client, friends);
     devices = DeviceRepository(client);
     this.deliveries = deliveries ?? FakeDeliveryRepository(store: this.store);
     shop = ShopRepositoryRemote(client);
@@ -126,6 +128,7 @@ class RecordHarness {
   late final AuthRepositoryRemote auth;
   late final ShareRepositoryRemote shareRepo;
   late final AppRepository app;
+  late final ReportRepository reports;
   late final DeviceRepository devices;
   late final UserRepositoryRemote users;
   late final FriendRepositoryRemote friends;

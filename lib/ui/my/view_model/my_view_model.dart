@@ -45,7 +45,7 @@ class MyViewModel extends ChangeNotifier {
        _deliveries = deliveryRepository,
        _auth = authRepository {
     _users.addListener(_loadMe);
-    _friendsRepo.addListener(_loadFriends);
+    _friendsRepo.addListener(_onFriendsChanged);
     _walletRepo.addListener(_loadWallet);
   }
 
@@ -189,6 +189,11 @@ class MyViewModel extends ChangeNotifier {
       _sentCursor = r.value.nextCursor;
       notifyListeners();
     }
+  }
+
+  /// 친구가 바뀌면(차단·신고하고 차단 포함) 친구와 차단 목록을 함께 다시 불러온다.
+  Future<void> _onFriendsChanged() async {
+    await Future.wait([_loadFriends(), _loadBlocked()]);
   }
 
   Future<void> _loadBlocked() async {
@@ -357,7 +362,7 @@ class MyViewModel extends ChangeNotifier {
   void dispose() {
     _skelTimer?.cancel();
     _users.removeListener(_loadMe);
-    _friendsRepo.removeListener(_loadFriends);
+    _friendsRepo.removeListener(_onFriendsChanged);
     _walletRepo.removeListener(_loadWallet);
     super.dispose();
   }

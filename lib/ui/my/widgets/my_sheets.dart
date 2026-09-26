@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/friend.dart';
+import '../../../domain/models/report.dart';
 import '../../../domain/models/sent_tape.dart';
 import '../../../utils/format.dart';
 import '../../core/themes/colors.dart';
@@ -10,6 +11,7 @@ import '../../core/themes/text_styles.dart';
 import '../../core/ui/app_sheet.dart';
 import '../../core/ui/buttons.dart';
 import '../../core/ui/mini_tape.dart';
+import '../../report/widgets/report_sheet.dart';
 import '../view_model/my_view_model.dart';
 
 TextStyle get _title => AppText.suit(800, 20, letterSpacingEm: -.01);
@@ -26,7 +28,25 @@ Widget _textButton(String label, VoidCallback onTap) => GestureDetector(
   ),
 );
 
-/// 친구 ⋯ (`shFriend`): 녹음해서 보내기 / 크레딧 선물하기 / 친구 삭제 / 차단
+/// 차단한 친구 행의 34 알약 버튼 (`#F3F3F1`, `700 13.5px`)
+Widget _pillButton(String label, VoidCallback onTap) => GestureDetector(
+  behavior: HitTestBehavior.opaque,
+  onTap: onTap,
+  child: Container(
+    height: 34,
+    padding: const EdgeInsets.symmetric(horizontal: 14),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(17),
+    ),
+    child: Center(
+      widthFactor: 1,
+      child: Text(label, style: AppText.suit(700, 13.5)),
+    ),
+  ),
+);
+
+/// 친구 ⋯ (`shFriend`): 녹음해서 보내기 / 크레딧 선물하기 / 친구 삭제 / 신고하기 / 차단
 Future<void> showFriendSheet(
   BuildContext context, {
   required Friend friend,
@@ -54,6 +74,16 @@ Future<void> showFriendSheet(
           SheetRow(label: '녹음해서 보내기', onTap: () => then(onRecord)),
           SheetRow(label: '크레딧 선물하기', onTap: () => then(onGift)),
           SheetRow(label: '친구 삭제', onTap: () => then(onRemove)),
+          SheetRow(
+            label: '신고하기',
+            onTap: () {
+              Navigator.of(sheet).pop();
+              showReportSheet(
+                context,
+                target: PersonReport(userId: friend.id, name: friend.name),
+              );
+            },
+          ),
           SheetRow(
             label: '차단',
             danger: true,
@@ -102,7 +132,7 @@ Future<void> showBlockSheet(
   );
 }
 
-/// 차단한 친구 (`shBlocked`) — 해제
+/// 차단한 친구 (`shBlocked`) — 신고 / 해제
 Future<void> showBlockedSheet(
   BuildContext context, {
   required MyViewModel viewModel,
@@ -130,22 +160,25 @@ Future<void> showBlockedSheet(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(b.name, style: AppText.suit(700, 16)),
-                    GestureDetector(
-                      onTap: () => viewModel.unblock(b),
-                      child: Container(
-                        height: 34,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(17),
-                        ),
-                        child: Center(
-                          widthFactor: 1,
-                          child: Text('해제', style: AppText.suit(700, 13.5)),
-                        ),
+                    Expanded(
+                      child: Text(
+                        b.name,
+                        style: AppText.suit(700, 16),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    // 이미 차단한 사람이라 신고 시트의 차단 체크는 숨긴다
+                    _pillButton('신고', () {
+                      Navigator.of(sheet).pop();
+                      showReportSheet(
+                        context,
+                        target: PersonReport(userId: b.id, name: b.name),
+                        alreadyBlocked: true,
+                      );
+                    }),
+                    const SizedBox(width: 6),
+                    _pillButton('해제', () => viewModel.unblock(b)),
                   ],
                 ),
               ),

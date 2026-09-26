@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../domain/models/report.dart';
 import '../../../domain/models/shelf.dart';
 import '../../../domain/models/tape_item.dart';
 import '../../core/themes/colors.dart';
 import '../../core/themes/text_styles.dart';
 import '../../core/ui/app_sheet.dart';
 import '../../core/ui/buttons.dart';
+import '../../../utils/format.dart';
+import '../../report/widgets/report_sheet.dart';
 import '../view_model/shelf_view_model.dart';
 
-/// ⋯ 메뉴 (`shItem`): 답장 녹음하기 / 다른 칸으로 옮기기 / 지우기.
+/// 받은 테이프 신고 — 보낸 사람을 차단 대상으로 (`report({target: 'tape'})`)
+TapeReport tapeReportOf(TapeItem item) => TapeReport(
+  deliveryId: item.id,
+  name: item.from,
+  userId: item.senderId,
+  date: formatMonthDay(item.date),
+);
+
+/// ⋯ 메뉴 (`shItem`): 답장 녹음하기 / 다른 칸으로 옮기기 / 신고하기 / 지우기.
 Future<void> showItemSheet(
   BuildContext context, {
   required ShelfViewModel viewModel,
@@ -51,12 +62,63 @@ Future<void> showItemSheet(
               },
             ),
           SheetRow(
+            label: '신고하기',
+            onTap: () {
+              close();
+              showReportSheet(context, target: tapeReportOf(item));
+            },
+          ),
+          SheetRow(
             label: '지우기',
             danger: true,
             divider: false,
             onTap: () {
               close();
               viewModel.deleteItem(item.id);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// 재생 화면 ⋯ (`vMore` → `shItem`, `itemFull: false`): 답장 녹음하기 / 신고하기만.
+Future<void> showViewerItemSheet(
+  BuildContext context, {
+  required TapeItem item,
+  required VoidCallback? onReply,
+}) {
+  return showAppSheet<void>(
+    context,
+    builder: (sheet) {
+      void close() => Navigator.of(sheet).pop();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(item.from, style: AppText.sheetTitle),
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 10),
+            // itemSub = [date, where] — 재생 화면에서는 where가 비어 날짜만
+            child: Text(
+              formatMonthDay(item.date),
+              style: AppText.suit(500, 13.5, color: AppColors.textMuted),
+            ),
+          ),
+          if (onReply != null)
+            SheetRow(
+              label: '답장 녹음하기',
+              onTap: () {
+                close();
+                onReply();
+              },
+            ),
+          SheetRow(
+            label: '신고하기',
+            onTap: () {
+              close();
+              showReportSheet(context, target: tapeReportOf(item));
             },
           ),
         ],

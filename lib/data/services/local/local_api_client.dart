@@ -8,6 +8,7 @@ import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
 import '../../model/page_dto.dart';
 import '../../model/recording_dto.dart';
+import '../../model/report_dto.dart';
 import '../../model/shop_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/wallet_dto.dart';
@@ -1114,5 +1115,59 @@ class LocalApiClient implements ApiClient {
     );
     _s.friends = [f, ..._s.friends.where((x) => x.userId != f.userId)];
     return f;
+  }
+
+  // ── reports ───────────────────────────────────────
+  /// 받은 신고 (시험에서 확인)
+  final List<CreateReportRequest> reports = [];
+  final Map<String, ReportResultDto> _reportKeys = {};
+
+  @override
+  Future<ReportResultDto> createReport(
+    CreateReportRequest body, {
+    required String idempotencyKey,
+  }) async {
+    await _wait();
+    final replay = _reportKeys[idempotencyKey];
+    if (replay != null) return replay;
+    if (_b.offline) throw ApiException.network();
+    if (_b.failMode == FailMode.reportLimit) {
+      _fail(429, ApiErrorCode.rateLimited, '잠시 후에 다시 시도해 주세요');
+    }
+    if (_b.failMode == FailMode.reportGone) {
+      _fail(404, ApiErrorCode.reportTargetNotFound, '신고할 대상을 찾을 수 없어요');
+    }
+    // 테이프면 보낸 사람을, 사람이면 그 사람을 차단 대상으로
+    String? blockId;
+    final deliveryId = body.deliveryId;
+    if (deliveryId != null) {
+      final all = [..._s.unsorted, for (final g in _s.groups) ...g.items];
+      final item = all.where((x) => x.id == deliveryId).firstOrNull;
+      if (item == null) {
+        _fail(404, ApiErrorCode.reportTargetNotFound, '신고할 대상을 찾을 수 없어요');
+      }
+      blockId = item.sender.userId;
+    } else {
+      final id = body.userId!;
+      if (id == LocalStore.meId) {
+        _fail(400, ApiErrorCode.cannotReportSelf, '나는 신고할 수 없어요');
+      }
+      final known =
+          _s.friends.any((f) => f.userId == id) ||
+          _s.blocked.any((b) => b.userId == id) ||
+          _senderName(id) != null;
+      if (!known) {
+        _fail(404, ApiErrorCode.reportTargetNotFound, '신고할 대상을 찾을 수 없어요');
+      }
+      blockId = id;
+    }
+    if (body.alsoBlock && blockId != null) {
+      final already = _s.blocked.any((b) => b.userId == blockId);
+      if (!already) await blockUser(blockId);
+    }
+    reports.add(body);
+    final r = ReportResultDto(id: _s.nextId('rp'), createdAt: _s.now());
+    _reportKeys[idempotencyKey] = r;
+    return r;
   }
 }

@@ -4,6 +4,7 @@ import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
 import '../../model/page_dto.dart';
 import '../../model/recording_dto.dart';
+import '../../model/report_dto.dart';
 import '../../model/shop_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/wallet_dto.dart';
@@ -177,6 +178,13 @@ abstract class ApiClient {
   /// `POST /billing/iap` 🔑
   Future<IapResultDto> verifyIap(
     IapRequest body, {
+    required String idempotencyKey,
+  });
+
+  // reports
+  /// `POST /reports` 🔑 — 신고 (테이프·사람), `alsoBlock`이면 같이 차단
+  Future<ReportResultDto> createReport(
+    CreateReportRequest body, {
     required String idempotencyKey,
   });
 

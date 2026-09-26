@@ -1,5 +1,6 @@
 import 'package:cassette_app/data/repositories/app_repository.dart';
 import 'package:cassette_app/data/repositories/auth_repository.dart';
+import 'package:cassette_app/data/repositories/report_repository.dart';
 import 'package:cassette_app/data/repositories/device_repository.dart';
 import 'package:cassette_app/data/repositories/friend_repository.dart';
 import 'package:cassette_app/data/repositories/share_repository.dart';
@@ -53,6 +54,7 @@ Widget testApp(RecordHarness h, {String initialLocation = Routes.record}) {
       ChangeNotifierProvider<AuthRepository>.value(value: h.auth),
       Provider<AppPrefs>.value(value: h.prefs),
       Provider<AppRepository>.value(value: h.app),
+      Provider<ReportRepository>.value(value: h.reports),
       Provider<DeviceRepository>.value(value: h.devices),
       Provider<ShareRepository>.value(value: h.shareRepo),
       Provider<AppInfoService>.value(value: FakeAppInfoService()),

@@ -7,6 +7,7 @@ import '../../model/friend_dto.dart';
 import '../../model/me_dto.dart';
 import '../../model/page_dto.dart';
 import '../../model/recording_dto.dart';
+import '../../model/report_dto.dart';
 import '../../model/shelf_dto.dart';
 import '../../model/shop_dto.dart';
 import '../../model/wallet_dto.dart';
@@ -293,6 +294,14 @@ class AuthorizedApiClient implements ApiClient {
   @override
   Future<WalletDto> devCredits(DevCreditsRequest body) =>
       _protected(() => _inner.devCredits(body));
+
+  @override
+  Future<ReportResultDto> createReport(
+    CreateReportRequest body, {
+    required String idempotencyKey,
+  }) => _protected(
+    () => _inner.createReport(body, idempotencyKey: idempotencyKey),
+  );
 
   @override
   Future<void> devSeed() => _protected(_inner.devSeed);
