@@ -15,12 +15,21 @@ import '../view_model/shop_view_model.dart';
 
 /// 상점 탭 — 템플릿 `vShop` 블록. 테이프 → 크레딧 받기 → 서랍.
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({super.key, required this.viewModel, this.highlight});
+  const ShopScreen({
+    super.key,
+    required this.viewModel,
+    this.highlight,
+    this.buyRequest,
+  });
 
   final ShopViewModel viewModel;
 
   /// 녹음 탭에서 0개인 테이프를 눌러 들어왔을 때 강조할 테이프 (`hl`)
   final TapeType? highlight;
+
+  /// 있으면 [highlight] 테이프의 1개짜리 구매 시트를 바로 연다 (녹음 탭의 "+").
+  /// 요청마다 값이 달라 같은 테이프를 다시 눌러도 열린다.
+  final String? buyRequest;
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -37,14 +46,20 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   void didUpdateWidget(ShopScreen old) {
     super.didUpdateWidget(old);
-    if (old.highlight != widget.highlight) _applyHighlight();
+    if (old.highlight != widget.highlight ||
+        old.buyRequest != widget.buyRequest) {
+      _applyHighlight();
+    }
   }
 
   void _applyHighlight() {
     final hl = widget.highlight;
     if (hl == null) return;
+    final buy = widget.buyRequest != null;
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => widget.viewModel.highlightTape(hl),
+      (_) => buy
+          ? widget.viewModel.buyTape(hl)
+          : widget.viewModel.highlightTape(hl),
     );
   }
 

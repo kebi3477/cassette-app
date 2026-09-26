@@ -281,6 +281,36 @@ void main() {
     });
   });
 
+  test('녹음 탭의 "+": 강조하고 1개짜리 구매 시트를 바로 연다', () {
+    fakeAsync((async) {
+      setup(async);
+      vm.buyTape(TapeType.five);
+      async.flushMicrotasks();
+      expect(vm.highlight, TapeType.five);
+      final s = vm.sheet as BuySheet;
+      expect(s.item.id, 'tape5_1');
+      async.elapse(const Duration(seconds: 2));
+    });
+  });
+
+  test('"+"로 연 구매 시트: 크레딧이 모자라면 충전 시트로', () {
+    fakeAsync((async) {
+      setup(async);
+      h.store.credits = 10;
+      h.wallet.invalidate();
+      async.flushMicrotasks();
+      vm.buyTape(TapeType.three);
+      async.flushMicrotasks();
+      expect((vm.sheet as BuySheet).item.id, 'tape3_1');
+      vm.confirmBuy();
+      async.flushMicrotasks();
+      final c = vm.sheet as ChargeSheet;
+      expect(c.need, 20);
+      expect((c.after as TapeProduct).id, 'tape3_1');
+      async.elapse(const Duration(seconds: 2));
+    });
+  });
+
   test('녹음 탭에서 온 강조는 1.6초', () {
     fakeAsync((async) {
       setup(async);

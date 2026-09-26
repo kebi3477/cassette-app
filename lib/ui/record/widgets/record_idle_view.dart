@@ -18,12 +18,16 @@ class RecordIdleView extends StatelessWidget {
     super.key,
     required this.viewModel,
     required this.onGoShop,
+    required this.onBuyTape,
   });
 
   final RecordViewModel viewModel;
 
-  /// 0개인 테이프를 누르면 상점으로 간다 (`goShop`).
+  /// 0개인 테이프에서 녹음 버튼을 누르면 상점으로 간다 (`goShop`).
   final ValueChanged<TapeType> onGoShop;
+
+  /// 0개인 테이프의 "+" → 상점에서 바로 구매 시트
+  final ValueChanged<TapeType> onBuyTape;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +49,7 @@ class RecordIdleView extends StatelessWidget {
                   owned: vm.wallet.ownedOf,
                   enabled: vm.phase == RecordPhase.idle,
                   onSelect: vm.selectTape,
-                  onBuy: onGoShop,
+                  onBuy: onBuyTape,
                   packL: palette.packL(vm.progress),
                   packR: palette.packR(vm.progress),
                   spinning: vm.phase == RecordPhase.rec,

@@ -4,6 +4,7 @@ import 'package:cassette_app/ui/record/view_model/record_view_model.dart';
 import 'package:cassette_app/ui/record/widgets/record_button.dart';
 import 'package:cassette_app/ui/record/widgets/tape_carousel.dart';
 import 'package:flutter/material.dart';
+import 'package:cassette_app/ui/shop/view_model/shop_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../testing/app.dart';
@@ -86,6 +87,38 @@ void main() {
     expect(find.text('상점'), findsNWidgets(2));
     expect(h.vm.phase, RecordPhase.idle);
     expect(h.shopVm.highlight, TapeType.five);
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('0개인 테이프의 "+"를 누르면 상점에서 바로 구매 시트', (tester) async {
+    final h = await pumpApp(tester);
+    for (var i = 0; i < 2; i++) {
+      await tester.drag(find.byType(TapeCarousel), const Offset(-120, 0));
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    expect(h.vm.tape, TapeType.five);
+    await tester.pump(const Duration(seconds: 1)); // 캐러셀이 자리 잡을 때까지
+    // 알약 자리의 누르는 칸이 받는다 (글자 자체가 아니라)
+    await tester.tapAt(tester.getCenter(find.text('+')));
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(h.shopVm.highlight, TapeType.five);
+    expect((h.shopVm.sheet as BuySheet).item.id, 'tape5_1');
+    expect(find.text('5분 테이프'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    // 닫고 다시 눌러도 또 열린다
+    h.shopVm.closeSheet();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('녹음').last);
+    await tester.pump(const Duration(milliseconds: 400));
+    // 알약 자리의 누르는 칸이 받는다 (글자 자체가 아니라)
+    await tester.tapAt(tester.getCenter(find.text('+')));
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(h.shopVm.sheet, isA<BuySheet>());
     await tester.pump(const Duration(seconds: 2));
   });
 

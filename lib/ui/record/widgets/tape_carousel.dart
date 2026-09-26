@@ -72,6 +72,13 @@ class _TapeCarouselState extends State<TapeCarousel> {
     widget.onSelect(_ids[ni]);
   }
 
+  /// 테이프 칸의 위치와, 그 위로 올라간 개수 알약의 거리
+  static const _itemTop = 46.0;
+  static const _pillOffset = 38.0;
+
+  bool _locked(int i) =>
+      i >= 0 && !_ids[i].isUnlimited && widget.owned(_ids[i]) <= 0;
+
   @override
   Widget build(BuildContext context) {
     final ti = _ids.indexOf(widget.selected);
@@ -109,7 +116,7 @@ class _TapeCarouselState extends State<TapeCarousel> {
                   for (var i = 0; i < _ids.length; i++)
                     Positioned(
                       left: x + i * TapeCarousel.step,
-                      top: 46,
+                      top: _itemTop,
                       width: TapeCarousel.slot,
                       height: 168,
                       child: _CarouselItem(
@@ -121,7 +128,23 @@ class _TapeCarouselState extends State<TapeCarousel> {
                             : TapePalette.of(_ids[i]).packFull,
                         packR: i == ti ? widget.packR : TapePalette.packEmpty,
                         spinning: i == ti && widget.spinning,
-                        onBuy: () => widget.onBuy(_ids[i]),
+                      ),
+                    ),
+                  // 0개인 가운데 테이프의 알약(+)을 누르는 자리. 알약은 테이프 칸 위로
+                  // 삐져나와 있어(top −38) 칸 안에서는 눌리지 않으므로, 같은 자리에 따로 둔다.
+                  if (_locked(ti))
+                    Positioned(
+                      left: x + ti * TapeCarousel.step,
+                      top: _itemTop - _pillOffset,
+                      width: TapeCarousel.slot,
+                      height: AppSizes.pill,
+                      child: Semantics(
+                        button: true,
+                        label: '${TapePalette.of(_ids[ti]).name} 테이프 사기',
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => widget.onBuy(_ids[ti]),
+                        ),
                       ),
                     ),
                 ],
@@ -142,7 +165,6 @@ class _CarouselItem extends StatelessWidget {
     required this.packL,
     required this.packR,
     required this.spinning,
-    required this.onBuy,
   });
 
   final TapeType type;
@@ -151,7 +173,6 @@ class _CarouselItem extends StatelessWidget {
   final double packL;
   final double packR;
   final bool spinning;
-  final VoidCallback onBuy;
 
   @override
   Widget build(BuildContext context) {
@@ -172,13 +193,9 @@ class _CarouselItem extends StatelessWidget {
               left: 0,
               right: 0,
               top: -38,
+              // 0개인 가운데 테이프의 알약만 누를 수 있다 (pointer-events) — 누르는 자리는 캐러셀이 둔다
               child: Center(
-                child: _CountPill(
-                  type: type,
-                  count: count,
-                  // 0개인 가운데 테이프의 알약만 누를 수 있다 (pointer-events)
-                  onTap: locked && on ? onBuy : null,
-                ),
+                child: _CountPill(type: type, count: count),
               ),
             ),
             IgnorePointer(
@@ -213,11 +230,10 @@ class _CarouselItem extends StatelessWidget {
 
 /// 개수 알약 (높이 28, 최소 너비 44, 패딩 0 14, `800 13px`).
 class _CountPill extends StatelessWidget {
-  const _CountPill({required this.type, required this.count, this.onTap});
+  const _CountPill({required this.type, required this.count});
 
   final TapeType type;
   final int count;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -262,11 +278,6 @@ class _CountPill extends StatelessWidget {
         ],
       ),
     );
-    if (onTap == null) return pill;
-    return Semantics(
-      button: true,
-      label: '${TapePalette.of(type).name} 테이프 사러 가기',
-      child: GestureDetector(onTap: onTap, child: pill),
-    );
+    return pill;
   }
 }

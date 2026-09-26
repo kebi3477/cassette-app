@@ -221,6 +221,22 @@ class ShopViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 녹음 탭에서 0개 테이프의 "+"를 눌러 왔을 때 — 강조하고 1개짜리 구매 시트(`shBuy`)를 연다.
+  /// 크레딧이 모자라면 "사기"에서 충전 시트로 이어진다.
+  Future<void> buyTape(TapeType type) async {
+    highlightTape(type);
+    TapeProduct? find() =>
+        _catalog.tapes.where((p) => p.type == type && p.qty == 1).firstOrNull;
+    var item = find();
+    if (item == null) {
+      // 상점에 처음 들어온 순간이면 상품 목록을 먼저 받는다
+      final c = await _shop.getCatalog();
+      if (c is Ok<ShopCatalog>) _catalog = c.value;
+      item = find();
+    }
+    if (item != null) buy(item);
+  }
+
   // ── 시트 ──────────────────────────────────────────
   void _show(ShopSheet? s) {
     _sheet = s;

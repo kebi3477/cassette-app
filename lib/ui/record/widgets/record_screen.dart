@@ -15,12 +15,16 @@ class RecordScreen extends StatefulWidget {
     super.key,
     required this.viewModel,
     required this.onGoShop,
+    required this.onBuyTape,
   });
 
   final RecordViewModel viewModel;
 
   /// 0개인 테이프를 사러 상점으로 (해당 테이프 행을 강조)
   final ValueChanged<TapeType> onGoShop;
+
+  /// 0개인 테이프의 "+" → 상점에서 강조 + 1개짜리 구매 시트
+  final ValueChanged<TapeType> onBuyTape;
 
   @override
   State<RecordScreen> createState() => _RecordScreenState();
@@ -58,6 +62,7 @@ class _RecordScreenState extends State<RecordScreen> {
             key: const ValueKey('idle'),
             viewModel: vm,
             onGoShop: widget.onGoShop,
+            onBuyTape: widget.onBuyTape,
           ),
           RecordPhase.confirm => RecordConfirmView(
             key: const ValueKey('confirm'),
