@@ -1,0 +1,12 @@
+# 앱 아이콘 생성 설정. 원본은 디자인 핸드오프 assets/app-icon.svg (1024)
+# - assets/launcher/icon.png: 빨간(#E5402B) 정사각형 + 흰 심볼, 투명 없음 (iOS가 모서리를 둥글게 자른다)
+# - assets/launcher/icon_foreground.png: Android 적응형 아이콘 전경 (흰 심볼을 안전 영역에 맞게 2/3로)
+# 다시 만들기: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/launcher/icon.png"
+  ios: true
+  remove_alpha_ios: true
+  android: true
+  adaptive_icon_background: "#E5402B"
+  adaptive_icon_foreground: "assets/launcher/icon_foreground.png"
+  adaptive_icon_foreground_inset: 0

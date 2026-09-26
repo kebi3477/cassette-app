@@ -78,6 +78,15 @@ xcrun devicectl device install app --device <기기 ID> build/ios/iphoneos/Runne
 3. 로그의 `testDeviceIdentifiers = @[ @"…" ]` 값을 `ADMOB_TEST_DEVICE_IDS`(쉼표 구분)로 넣어 빌드한다
    `flutter build ios --release --dart-define=ADMOB_TEST_DEVICE_IDS=<ID>`
 
+## 앱 아이콘
+
+원본은 디자인 핸드오프 `assets/app-icon.svg`. `assets/launcher/icon.png`(빨간 정사각형 + 흰 심볼, 투명 없음)와 `icon_foreground.png`(Android 적응형 전경, 안전 영역에 맞춰 2/3)에서 `flutter_launcher_icons`로 만든다.
+
+```bash
+dart run flutter_launcher_icons
+git checkout ios/Runner.xcodeproj/project.pbxproj   # 도구 버그: ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS를 AppIcon으로 바꿔 버린다. 되돌린다
+```
+
 ## Firebase (푸시)
 
 Firebase 프로젝트 `cassette-f83aa`. 설정 파일은 **커밋하지 않는다** (`.gitignore`에 있다). Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받아 넣는다. 번들 ID `com.kebi.tapeletter`로 앱을 등록해 받은 파일이어야 한다.
