@@ -89,7 +89,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["kakaoNativeAppKey"] = dartDefines["KAKAO_NATIVE_APP_KEY"] ?: "NONE"
+        manifestPlaceholders["kakaoNativeAppKey"] = dartDefines["KAKAO_NATIVE_APP_KEY"] ?: "b53a18d3cc2caf80784d6ffd8bddb7c4" // env.dart·Env.xcconfig와 같은 기본값
         manifestPlaceholders["publicHost"] = dartDefines["PUBLIC_HOST"] ?: "tapeletter.lab241.com"
     }
 
