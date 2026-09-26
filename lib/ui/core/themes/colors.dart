@@ -25,7 +25,7 @@ abstract final class AppColors {
   static const labelPaper = Color(0xFFF7F5F0);
   static const dim = Color(0x5C000000); // rgba(0,0,0,.36)
 
-  // 원본 템플릿에서 쓰는 보조 색 (source/CassetteApp.template.html)
+  // 원본 템플릿에서 쓰는 보조 색 (source/TapeletterApp.template.html)
   /// 부제·설명 글자 (`#8A8A87`)
   static const textSub = Color(0xFF8A8A87);
 

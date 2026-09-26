@@ -12,8 +12,8 @@ tapeletter 앱(옛 이름 cassette). 목소리를 1·3·5분짜리 카세트테�
 
 ## 디자인
 
-- Claude Design 프로젝트: https://claude.ai/design/p/42baf543-407c-43b6-a96e-04d5997ef801 (`Cassette App.dc.html`)
-- 핸드오프: `../design_handoff_cassette_app/` (저장소 바깥, 위 프로젝트에서 받은 v2). 읽는 순서는 그 폴더의 `README.md` → `docs/READING_THE_SOURCE.md` → `docs/BEHAVIOR.md` → `docs/DATA_MODEL.md`. **수치·문구·타이밍·상태 전이는 `source/CassetteApp.logic.js`와 `source/CassetteApp.template.html`이 정답이다.** README나 docs가 source와 다르면 source를 따른다. 추측하지 않는다
+- Claude Design 프로젝트: https://claude.ai/design/p/42baf543-407c-43b6-a96e-04d5997ef801 (`Tapeletter App.dc.html`)
+- 핸드오프: `../design_handoff_cassette_app/` (저장소 바깥, 위 프로젝트에서 받은 v4). 읽는 순서는 그 폴더의 `README.md` → `docs/READING_THE_SOURCE.md` → `docs/BEHAVIOR.md` → `docs/DATA_MODEL.md`. **수치·문구·타이밍·상태 전이는 `source/TapeletterApp.logic.js`와 `source/TapeletterApp.template.html`이 정답이다.** README나 docs가 source와 다르면 source를 따른다. 추측하지 않는다
 - 하이파이이고 기준 화면은 390×844다. 색·글자·간격·모서리·애니메이션·문구를 픽셀 단위로 맞춘다
 - 토큰(`tokens/tokens.json`)은 `lib/ui/core/themes/`로 옮긴다. 위젯에 hex를 하드코딩하지 않는다. 글꼴은 SUIT 하나, 숫자는 tabular figures
 - 아이콘·로고는 핸드오프 `assets/`의 SVG를 앱 `assets/`로 복사해 그대로 쓴다

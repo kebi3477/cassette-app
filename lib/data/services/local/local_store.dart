@@ -5,7 +5,7 @@ import '../../model/wallet_dto.dart';
 
 /// 서버 없이 앱을 돌리기 위한 메모리 저장소. [LocalApiClient]가 서버처럼 읽고 쓴다.
 ///
-/// 초기값은 프로토타입 `state = {…}`(source/CassetteApp.logic.js)와 같다.
+/// 초기값은 프로토타입 `state = {…}`(source/TapeletterApp.logic.js)와 같다.
 /// 날짜는 프로토타입의 `MM.DD`에 2026년을 붙이고, 시간대와 상관없이 같은 날로 보이게
 /// UTC 정오로 둔다. 재생 길이는 프로토타입 `DUR`(1분 20s · 3분 34s · 5분 48s)과 같다.
 class LocalStore {
