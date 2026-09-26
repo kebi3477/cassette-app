@@ -41,6 +41,8 @@ void main() {
     // 마이크·알림 안내는 OS 권한 창이 화면을 가리므로 건너뛴다 (위젯 시험에서 확인).
     // 시뮬레이터는 simctl privacy로 마이크를 미리 허용해도 flutter drive가 다시 설치하며 초기화한다.
     await SharedAppPrefs().setPermissionsAsked();
+    // 테이프 이름으로 행을 누르려고 목록 보기로 (기본은 책장형)
+    await SharedAppPrefs().setShelfView('list');
 
     await app.main();
 
