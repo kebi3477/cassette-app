@@ -131,7 +131,9 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-/// "계속하면 이용약관과 개인정보 처리방침에 동의하게 돼요" (500 12/1.6 `#A5A5A2`)
+/// 약관 동의·만 14세 안내 (500 12/1.6 `#9A9A97`). "이용약관"·"개인정보 처리방침"은
+/// `#6E6E6B` 밑줄 링크로 문서를 연다 (`openDoc`).
+/// CSS의 `text-underline-offset:2px`는 Flutter 글자 스타일에 없어 기본 위치의 밑줄로 그린다.
 class _Terms extends StatefulWidget {
   const _Terms({required this.onTerms, required this.onPrivacy});
 
@@ -157,8 +159,12 @@ class _TermsState extends State<_Terms> {
 
   @override
   Widget build(BuildContext context) {
-    final base = AppText.suit(500, 12, height: 1.6, color: AppColors.textCount);
-    final link = base.copyWith(decoration: TextDecoration.underline);
+    final base = AppText.suit(500, 12, height: 1.6, color: AppColors.textMuted);
+    final link = base.copyWith(
+      color: AppColors.textSecondary,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColors.textSecondary,
+    );
     return Text.rich(
       TextSpan(
         style: base,
@@ -167,7 +173,7 @@ class _TermsState extends State<_Terms> {
           TextSpan(text: '이용약관', style: link, recognizer: _t),
           const TextSpan(text: '과 '),
           TextSpan(text: '개인정보 처리방침', style: link, recognizer: _p),
-          const TextSpan(text: '에 동의하게 돼요'),
+          const TextSpan(text: '에 동의하게 돼요.\n만 14세 이상만 이용할 수 있어요'),
         ],
       ),
       textAlign: TextAlign.center,
