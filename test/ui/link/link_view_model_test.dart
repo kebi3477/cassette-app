@@ -43,6 +43,14 @@ void main() {
       expect(vm.tokenOf(Uri.parse('https://cassette.example/t')), isNull);
     });
 
+    test('카카오 로그인 복귀 주소(kakao{키}://oauth)는 건드리지 않는다', () async {
+      final vm = h.linkVm;
+      final kakao = Uri.parse('kakaob53a18d3://oauth?code=abc&state=x');
+      expect(vm.tokenOf(kakao), isNull);
+      await vm.accept(kakao);
+      expect(await h.prefs.pendingLink(), isNull);
+    });
+
     test('웹의 "앱에서 열기": cassette://t/{token}', () {
       final vm = h.linkVm;
       expect(vm.tokenOf(Uri.parse('cassette://t/abc123')), 'abc123');

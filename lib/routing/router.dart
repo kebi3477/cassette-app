@@ -389,8 +389,18 @@ class _LoginRouteState extends State<LoginRoute> {
     toast: context.read(),
   );
 
+  /// 카카오톡·Apple 창에서 돌아왔을 때 (SDK가 끝나지 않으면 "연결 중…"을 푼다)
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onResume: _vm.onResumed);
+  }
+
   @override
   void dispose() {
+    _lifecycle.dispose();
     _vm.dispose();
     super.dispose();
   }

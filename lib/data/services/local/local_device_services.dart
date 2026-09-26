@@ -14,8 +14,11 @@ class LocalSocialAuthService implements SocialAuthService {
     authorizationCode: 'local-code',
   );
 
+  /// 있으면 카카오 로그인이 이 Future가 끝날 때까지 기다린다 (카카오톡에서 돌아오지 않는 경우 흉내).
+  Completer<SocialLogin>? kakaoPending;
+
   @override
-  Future<SocialLogin> kakao() async => kakaoResult;
+  Future<SocialLogin> kakao() async => kakaoPending?.future ?? kakaoResult;
 
   @override
   Future<SocialLogin> apple() async => appleResult;
